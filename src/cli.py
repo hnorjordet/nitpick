@@ -15,12 +15,24 @@ sys.path.insert(0, str(Path(__file__).parent))
 from parsers.xliff_parser import XLIFFParser
 from parsers.tmx_parser import TMXParser
 from parsers.xbench_parser import XbenchParser
+from parsers.segment_adapter import trans_units_to_segments
+from parsers.termlist_parser import load_termlist, load_checklist
 from regex_engine.regex_processor import RegexProcessor
 from backup.backup_manager import BackupManager
 from patterns.pattern_library import PatternLibrary, Pattern
 from validators.icu_validator import ICUValidator
 from qa.qa_profile import QAProfileManager, QAProfile
+from spellcheck.spell_engine import (
+    load_all_dictionaries, build_exclusion_set, run_spellcheck, get_suggestions,
+)
+from spellcheck.dic_manager import list_dics, add_word
+from terminology.term_checker import check_segments
+from qachecks.number_checker import check_numbers
+from qachecks.qa_checker import run_qa_checks, ALL_QA_CHECKS
+from settings.settings_manager import load as load_settings_obj, save as save_settings_obj, Settings
+from merging.xliff_merger import scan_folder, merge_xliff_files, suggest_output_name
 import json
+from dataclasses import asdict
 
 
 def get_parser(file_path: str, target_lang: str = None):
@@ -1049,10 +1061,292 @@ def apply_edits_command(args):
         return 1
 
 
+# ─── SpellcheckQA commands (sc- prefix) ─────────────────────────────────────
+
+def _sc_out(data) -> None:
+    """Write JSON to stdout for sc- commands."""
+    print(json.dumps(data, ensure_ascii=False))
+
+
+def _sc_err(msg: str) -> None:
+    print(msg, file=sys.stderr)
+
+
+def _sc_parse_and_convert(file_path: str):
+    """Parse XLIFF with the RegEx parser and convert to SpellcheckQA segments."""
+    parser = XLIFFParser(file_path)
+    if not parser.parse():
+        return None, None
+    segments = trans_units_to_segments(parser.get_trans_units(), Path(file_path).name)
+    return parser, segments
+
+
+def sc_load_file_command(args):
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    out_segments = [
+        {"id": s.id, "source": s.source_plain, "target": s.target_plain, "file_name": s.file_name}
+        for s in segments
+    ]
+    stats = {
+        "total_segments": len(segments),
+        "translated": sum(1 for s in segments if s.target_plain.strip()),
+        "untranslated": sum(1 for s in segments if not s.target_plain.strip()),
+        "locked": sum(1 for s in segments if s.is_locked),
+    }
+    # Extract target language from first <file> element
+    target_language = ""
+    nsmap = parser.root.nsmap
+    default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
+    file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
+    if file_elements:
+        target_language = file_elements[0].get("target-language", "")
+    _sc_out({"segments": out_segments, "target_language": target_language, "stats": stats})
+    return 0
+
+
+def sc_list_dics_command(args):
+    dics = list_dics(args.folder)
+    _sc_out([asdict(d) for d in dics])
+    return 0
+
+
+def sc_load_settings_command(args):
+    s = load_settings_obj()
+    _sc_out(asdict(s))
+    return 0
+
+
+def sc_save_settings_command(args):
+    try:
+        data = json.loads(args.data)
+        s = Settings(
+            dic_folder=data.get("dic_folder", ""),
+            selected_dics=data.get("selected_dics", []),
+            termlists=data.get("termlists", []),
+            checklists=data.get("checklists", []),
+            backup_enabled=data.get("backup_enabled", True),
+            strict_lang_match=data.get("strict_lang_match", False),
+            skip_locked=data.get("skip_locked", True),
+            compound_check=data.get("compound_check", True),
+            watch_folder_enabled=data.get("watch_folder_enabled", False),
+            watch_folder=data.get("watch_folder", ""),
+            qa_checks=data.get("qa_checks", {}),
+        )
+        save_settings_obj(s)
+        _sc_out({"ok": True})
+    except Exception as e:
+        _sc_err(f"Failed to save settings: {e}")
+        return 1
+    return 0
+
+
+def sc_run_spellcheck_command(args):
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    dic_paths = [d.strip() for d in args.dics.split(",") if d.strip()] if args.dics else []
+    dicts = load_all_dictionaries(dic_paths)
+    if not dicts:
+        _sc_err("No dictionaries loaded")
+        return 1
+    excl_paths = [p.strip() for p in args.exclusion_files.split(",") if p.strip()] if args.exclusion_files else []
+    exclusion_set = build_exclusion_set(excl_paths)
+    skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
+    compound_check = (args.compound_check.lower() != "false") if args.compound_check else True
+    flagged = run_spellcheck(segments, dicts, exclusion_set,
+                             skip_locked=skip_locked, compound_check=compound_check)
+    _sc_out({
+        "flagged_words": [
+            {"word": fw.word, "count": fw.count, "segment_ids": fw.segment_ids}
+            for fw in flagged
+        ]
+    })
+    return 0
+
+
+def sc_get_suggestions_command(args):
+    dic_paths = [p.strip() for p in args.dics.split(",") if p.strip()]
+    dicts = load_all_dictionaries(dic_paths)
+    suggestions = get_suggestions(args.word, dicts)
+    _sc_out({"suggestions": suggestions})
+    return 0
+
+
+def sc_add_to_dic_command(args):
+    backup = args.backup.lower() == "true" if args.backup else True
+    new_count = add_word(args.word, args.dic, backup=backup)
+    if new_count < 0:
+        _sc_err(f"Failed to add '{args.word}' to {args.dic}")
+        return 1
+    _sc_out({"word_count": new_count, "word": args.word})
+    return 0
+
+
+def sc_get_segments_for_word_command(args):
+    import re as re_mod
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    pattern = r"(?<!\w)" + re_mod.escape(args.word) + r"(?!\w)"
+    matching = []
+    for seg in segments:
+        if re_mod.search(pattern, seg.target_plain, re_mod.IGNORECASE):
+            matching.append({
+                "id": seg.id, "source": seg.source_plain,
+                "target": seg.target_plain, "file_name": seg.file_name,
+            })
+        if len(matching) >= 5:
+            break
+    _sc_out({"segments": matching, "word": args.word})
+    return 0
+
+
+def sc_apply_spellcheck_edits_command(args):
+    try:
+        with open(args.edits_file, "r", encoding="utf-8") as f:
+            edits = json.load(f)
+    except Exception as e:
+        _sc_err(f"Failed to read edits file: {e}")
+        return 1
+
+    xliff_path = Path(args.file)
+    xliff_parser = XLIFFParser(str(xliff_path))
+    if not xliff_parser.parse():
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+
+    import shutil
+    backup_path = str(xliff_path) + ".bak"
+    shutil.copy2(xliff_path, backup_path)
+
+    # Build lookup from segments adapter for write-back
+    segments = trans_units_to_segments(xliff_parser.get_trans_units(), xliff_path.name)
+    seg_map = {s.id: s for s in segments}
+
+    for edit in edits:
+        seg_id = edit.get("id", "")
+        new_target = edit.get("target", "")
+        if seg_id and seg_id in seg_map:
+            seg = seg_map[seg_id]
+            elem = seg.target_element
+            if elem is not None:
+                elem.clear()
+                elem.text = new_target
+                seg.target_plain = new_target
+                seg.target_raw = new_target
+
+    if not xliff_parser.save():
+        _sc_err("Failed to save XLIFF")
+        return 1
+    _sc_out({"ok": True, "backup_path": backup_path})
+    return 0
+
+
+def sc_run_term_check_command(args):
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    term_entries = []
+    if args.termlists:
+        for path in args.termlists.split(","):
+            path = path.strip()
+            if path:
+                term_entries.extend(load_termlist(path))
+    check_rules = []
+    if args.checklists:
+        for path in args.checklists.split(","):
+            path = path.strip()
+            if path:
+                check_rules.extend(load_checklist(path))
+    violations = check_segments(segments, term_entries, check_rules)
+    _sc_out({
+        "violations": [
+            {
+                "segment_id": v.segment_id, "file_name": v.file_name,
+                "violation_type": v.violation_type, "source_term": v.source_term,
+                "target_term": v.target_term, "description": v.description,
+                "source_text": v.source_text, "target_text": v.target_text,
+                "check_source": v.check_source,
+            } for v in violations
+        ]
+    })
+    return 0
+
+
+def sc_run_number_check_command(args):
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
+    violations = check_numbers(segments, skip_locked=skip_locked)
+    _sc_out({
+        "violations": [
+            {
+                "segment_id": v.segment_id, "file_name": v.file_name,
+                "violation_type": v.violation_type, "source_term": v.source_term,
+                "target_term": v.target_term, "description": v.description,
+                "source_text": v.source_text, "target_text": v.target_text,
+                "check_source": v.check_source,
+            } for v in violations
+        ]
+    })
+    return 0
+
+
+def sc_run_qa_checks_command(args):
+    parser, segments = _sc_parse_and_convert(args.file)
+    if parser is None:
+        _sc_err(f"Failed to parse: {args.file}")
+        return 1
+    skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
+    if args.checks == "all" or not args.checks:
+        enabled = {k: True for k in ALL_QA_CHECKS}
+    elif args.checks == "none":
+        enabled = {k: False for k in ALL_QA_CHECKS}
+    else:
+        check_ids = {c.strip() for c in args.checks.split(",")}
+        enabled = {k: (k in check_ids) for k in ALL_QA_CHECKS}
+    violations = run_qa_checks(segments, enabled, skip_locked=skip_locked)
+    _sc_out({
+        "violations": [
+            {
+                "segment_id": v.segment_id, "file_name": v.file_name,
+                "violation_type": v.violation_type, "source_term": v.source_term,
+                "target_term": v.target_term, "description": v.description,
+                "source_text": v.source_text, "target_text": v.target_text,
+                "check_source": v.check_source,
+            } for v in violations
+        ]
+    })
+    return 0
+
+
+def sc_scan_watch_folder_command(args):
+    files = scan_folder(args.folder)
+    _sc_out({"files": files})
+    return 0
+
+
+def sc_merge_files_command(args):
+    input_files = [f.strip() for f in args.files.split(",") if f.strip()]
+    folder = str(Path(input_files[0]).parent) if input_files else "."
+    output_path = args.output or suggest_output_name(input_files, folder)
+    result = merge_xliff_files(input_files, output_path)
+    _sc_out(result)
+    return 0
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='XLIFF Regex Tool - Find & Replace with regex in XLIFF files'
+        description='QA-App CLI - XLIFF RegEx & Spellcheck QA Tool'
     )
 
     subparsers = parser.add_subparsers(dest='command', help='Commands')
@@ -1156,6 +1450,79 @@ def main():
     patterns_parser.add_argument('--output', '-o', help='Output file (for apply)')
     patterns_parser.add_argument('--no-backup', action='store_true', help='Skip backup (for apply)')
     patterns_parser.set_defaults(func=patterns_command)
+
+    # ─── SpellcheckQA subcommands (sc- prefix) ──────────────────────────────
+
+    p = subparsers.add_parser('sc-load-file')
+    p.add_argument('--file', required=True)
+    p.set_defaults(func=sc_load_file_command)
+
+    p = subparsers.add_parser('sc-list-dics')
+    p.add_argument('--folder', required=True)
+    p.set_defaults(func=sc_list_dics_command)
+
+    p = subparsers.add_parser('sc-load-settings')
+    p.set_defaults(func=sc_load_settings_command)
+
+    p = subparsers.add_parser('sc-save-settings')
+    p.add_argument('--data', required=True)
+    p.set_defaults(func=sc_save_settings_command)
+
+    p = subparsers.add_parser('sc-run-spellcheck')
+    p.add_argument('--file', required=True)
+    p.add_argument('--dics', required=True)
+    p.add_argument('--exclusion-files', default="")
+    p.add_argument('--skip-locked', default="true")
+    p.add_argument('--compound-check', default="true")
+    p.set_defaults(func=sc_run_spellcheck_command)
+
+    p = subparsers.add_parser('sc-get-suggestions')
+    p.add_argument('--word', required=True)
+    p.add_argument('--dics', required=True)
+    p.set_defaults(func=sc_get_suggestions_command)
+
+    p = subparsers.add_parser('sc-add-to-dic')
+    p.add_argument('--word', required=True)
+    p.add_argument('--dic', required=True)
+    p.add_argument('--backup', default="true")
+    p.set_defaults(func=sc_add_to_dic_command)
+
+    p = subparsers.add_parser('sc-get-segments-for-word')
+    p.add_argument('--file', required=True)
+    p.add_argument('--word', required=True)
+    p.add_argument('--dics', default="")
+    p.set_defaults(func=sc_get_segments_for_word_command)
+
+    p = subparsers.add_parser('sc-apply-spellcheck-edits')
+    p.add_argument('--file', required=True)
+    p.add_argument('--edits-file', required=True)
+    p.set_defaults(func=sc_apply_spellcheck_edits_command)
+
+    p = subparsers.add_parser('sc-run-term-check')
+    p.add_argument('--file', required=True)
+    p.add_argument('--termlists', default="")
+    p.add_argument('--checklists', default="")
+    p.set_defaults(func=sc_run_term_check_command)
+
+    p = subparsers.add_parser('sc-run-number-check')
+    p.add_argument('--file', required=True)
+    p.add_argument('--skip-locked', default="true")
+    p.set_defaults(func=sc_run_number_check_command)
+
+    p = subparsers.add_parser('sc-run-qa-checks')
+    p.add_argument('--file', required=True)
+    p.add_argument('--skip-locked', default="true")
+    p.add_argument('--checks', default="all")
+    p.set_defaults(func=sc_run_qa_checks_command)
+
+    p = subparsers.add_parser('sc-scan-watch-folder')
+    p.add_argument('--folder', required=True)
+    p.set_defaults(func=sc_scan_watch_folder_command)
+
+    p = subparsers.add_parser('sc-merge-files')
+    p.add_argument('--files', required=True)
+    p.add_argument('--output', default="")
+    p.set_defaults(func=sc_merge_files_command)
 
     args = parser.parse_args()
 

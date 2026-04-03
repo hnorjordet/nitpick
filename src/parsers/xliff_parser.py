@@ -3,9 +3,11 @@ XLIFF Parser for handling XLIFF, MQXLIFF, and SDLXLIFF files.
 Preserves XML structure and tags while enabling regex operations on translatable content.
 """
 
+import re
+from html import unescape
 from lxml import etree
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -17,6 +19,8 @@ class TransUnit:
     target: Optional[etree._Element]
     element: etree._Element  # Reference to the original trans-unit element
     tms_metadata: Optional[Dict[str, str]] = None  # TMS integration metadata
+    file_name: str = ""  # Value of <file original=""> attribute
+    is_locked: bool = False  # Segment is locked/read-only in CAT tool
 
     def get_source_text(self) -> str:
         """Extract text content from source, preserving inline tags."""
@@ -94,6 +98,49 @@ class TransUnit:
             # If parsing fails, treat as plain text
             self.target.text = new_text
 
+    # Tags whose content is markup/code, not translatable text — skip entirely
+    _SKIP_CONTENT_TAGS = {"ph", "bpt", "ept", "it", "sub", "x", "bx", "ex"}
+
+    def _element_plain_text(self, element: Optional[etree._Element]) -> str:
+        """
+        Extract plain text from an lxml element by walking text nodes.
+        Tags in _SKIP_CONTENT_TAGS are skipped entirely (their content is
+        markup/code). Tags like g and mrk wrap translatable text and are
+        recursed into.
+        """
+        if element is None:
+            return ""
+        parts = []
+        if element.text:
+            parts.append(element.text)
+        for child in element:
+            tag = etree.QName(child).localname
+            if tag not in self._SKIP_CONTENT_TAGS:
+                parts.append(self._element_plain_text(child))
+            if child.tail:
+                parts.append(child.tail)
+        text = unescape("".join(parts))
+        text = re.sub(r"<[^>]+>", " ", text)
+        return text.strip()
+
+    def get_plain_text(self, field: str = "target") -> str:
+        """Get plain text (tags stripped) for source or target."""
+        elem = self.source if field == "source" else self.target
+        return self._element_plain_text(elem)
+
+    def get_inner_xml(self, field: str = "target") -> str:
+        """Get raw inner XML content (with inline tags) for source or target."""
+        elem = self.source if field == "source" else self.target
+        if elem is None:
+            return ""
+        content = etree.tostring(elem, encoding='unicode', method='xml')
+        tag_name = etree.QName(elem).localname
+        start = content.find('>')
+        end = content.rfind(f'</{tag_name}>')
+        if start >= 0 and end > start:
+            return content[start + 1:end]
+        return ""
+
 
 class XLIFFParser:
     """
@@ -145,16 +192,23 @@ class XLIFFParser:
                         self.phrase_job_uid = attr_value
                         break
 
-            # Find all trans-unit elements
-            # These can be in different locations depending on XLIFF variant
-            trans_unit_xpath = ".//ns:trans-unit"
+            # Find all trans-unit elements, grouped by <file> element
             namespaces = {'ns': default_ns}
+            file_elements = self.root.xpath(".//ns:file", namespaces=namespaces)
 
-            for tu_element in self.root.xpath(trans_unit_xpath, namespaces=namespaces):
-                trans_units = self._parse_trans_unit(tu_element, default_ns)
-                if trans_units:
-                    # _parse_trans_unit now returns a list
-                    self.trans_units.extend(trans_units)
+            if file_elements:
+                for file_elem in file_elements:
+                    file_name = file_elem.get("original", self.file_path.name)
+                    for tu_element in file_elem.xpath(".//ns:trans-unit", namespaces=namespaces):
+                        trans_units = self._parse_trans_unit(tu_element, default_ns, file_name)
+                        if trans_units:
+                            self.trans_units.extend(trans_units)
+            else:
+                # Fallback: no <file> elements, search globally
+                for tu_element in self.root.xpath(".//ns:trans-unit", namespaces=namespaces):
+                    trans_units = self._parse_trans_unit(tu_element, default_ns, self.file_path.name)
+                    if trans_units:
+                        self.trans_units.extend(trans_units)
 
             return True
 
@@ -162,12 +216,41 @@ class XLIFFParser:
             print(f"Error parsing XLIFF file: {e}")
             return False
 
-    def _parse_trans_unit(self, element: etree._Element, namespace: str) -> List[TransUnit]:
+    @staticmethod
+    def _is_tu_locked(element: etree._Element, namespace: str) -> bool:
+        """Detect whether a trans-unit is locked/read-only in any supported variant."""
+        SDL_NS = "http://sdl.com/FileTypes/SdlXliff/1.0"
+        ns = {"ns": namespace, "sdl": SDL_NS}
+
+        if element.get("translate", "").lower() == "no":
+            return True
+        if element.get("locked", "").lower() in ("yes", "true", "1"):
+            return True
+
+        target_elem = element.find("ns:target", namespaces=ns)
+        if target_elem is not None and target_elem.get("state", "").lower() == "locked":
+            return True
+
+        for attr_name, attr_val in element.attrib.items():
+            local = etree.QName(attr_name).localname if "{" in attr_name else attr_name
+            if local == "locked" and attr_val.lower() in ("true", "yes", "1"):
+                return True
+
+        sdl_seg_defs = element.find(f"{{{SDL_NS}}}seg-defs")
+        if sdl_seg_defs is not None:
+            for sdl_seg in sdl_seg_defs:
+                if sdl_seg.get("locked", "").lower() in ("true", "yes", "1"):
+                    return True
+
+        return False
+
+    def _parse_trans_unit(self, element: etree._Element, namespace: str, file_name: str = "") -> List[TransUnit]:
         """Parse a single trans-unit element. Returns a list of TransUnit objects.
         For SDLXLIFF with <mrk mtype="seg"> sub-segments, returns multiple TransUnits.
         """
         try:
             tu_id = element.get('id', '')
+            is_locked = self._is_tu_locked(element, namespace)
 
             # Extract TMS metadata from trans-unit attributes
             tms_metadata = {}
@@ -243,7 +326,9 @@ class XLIFFParser:
                             source=source_copy,
                             target=target_copy,
                             element=element,  # Keep reference to parent trans-unit
-                            tms_metadata=tms_data
+                            tms_metadata=tms_data,
+                            file_name=file_name,
+                            is_locked=is_locked,
                         ))
 
                     return trans_units
@@ -264,7 +349,9 @@ class XLIFFParser:
                 source=source,
                 target=target,
                 element=element,
-                tms_metadata=tms_data
+                tms_metadata=tms_data,
+                file_name=file_name,
+                is_locked=is_locked,
             )]
 
         except Exception as e:
