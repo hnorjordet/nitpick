@@ -1,9 +1,13 @@
 use std::process::Command;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tauri::{Manager, menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder, CheckMenuItemBuilder, PredefinedMenuItem}, Listener};
 use tauri::Emitter;
+use notify::{Watcher, RecursiveMode, recommended_watcher, Event as NotifyEvent, EventKind};
+use notify::event::CreateKind;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Metadata {
@@ -49,6 +53,44 @@ struct Stats {
     total_units: i32,
     translated: i32,
     untranslated: i32,
+}
+
+// ─── Shared Python invocation helper for sc-* commands ──────────────────────
+
+fn sc_invoke_python(app_handle: &tauri::AppHandle, args: Vec<&str>) -> Result<Value, String> {
+    let (cmd, script) = if cfg!(dev) {
+        let project_root = concat!(env!("CARGO_MANIFEST_DIR"), "/../../");
+        let python = format!("{}venv/bin/python3", project_root);
+        let script = format!("{}src/cli.py", project_root);
+        (python, Some(script))
+    } else {
+        let resource_dir = app_handle.path()
+            .resource_dir()
+            .map_err(|e| format!("Failed to get resource directory: {}", e))?;
+        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        (cli_path, None)
+    };
+
+    let mut command = Command::new(&cmd);
+    if let Some(ref s) = script {
+        command.arg(s);
+    }
+    for arg in &args {
+        command.arg(arg);
+    }
+
+    let output = command
+        .output()
+        .map_err(|e| format!("Failed to execute CLI: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("CLI error: {}", stderr));
+    }
+
+    let json_str = String::from_utf8_lossy(&output.stdout);
+    serde_json::from_str(&json_str)
+        .map_err(|e| format!("Failed to parse JSON: {} (output: {})", e, json_str))
 }
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -152,7 +194,7 @@ fn open_xliff(file_path: String, target_lang: Option<String>, app_handle: tauri:
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        resource_dir.join("bin/xliff_cli").to_string_lossy().to_string()
+        resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string()
     };
 
     // Call CLI executable to parse XLIFF/TMX file
@@ -199,7 +241,7 @@ fn get_tmx_languages(file_path: String, app_handle: tauri::AppHandle) -> Result<
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/xliff_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
         Command::new(&cli_path)
             .arg("tmx-languages")
             .arg(&file_path)
@@ -256,7 +298,7 @@ fn save_xliff(file_path: String, edited_units: Vec<EditedUnit>, target_lang: Opt
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/xliff_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
 
         let mut cmd = Command::new(&cli_path);
         cmd.arg("apply-edits").arg(&file_path).arg(&temp_json);
@@ -518,7 +560,7 @@ fn batch_find(file_path: String, profile_path: String, app_handle: tauri::AppHan
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/xliff_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
 
         Command::new(&cli_path)
             .arg("batch-find")
@@ -640,7 +682,7 @@ fn batch_replace(file_path: String, profile_path: String, app_handle: tauri::App
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/xliff_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
 
         Command::new(&cli_path)
             .arg("batch-replace")
@@ -1092,27 +1134,176 @@ fn import_qa_profile(import_path: String) -> Result<String, String> {
     Ok(format!("Profile imported successfully as {}", file_name))
 }
 
-/// Check for a pending file path written by SpellcheckQA's "Open in RegEx Tool" action.
-/// Reads ~/.spellcheck-qa/pending_file.txt, returns its contents, then deletes the file.
-/// Returns None if no pending file exists.
+// ─── SpellcheckQA commands (sc_ prefix) ─────────────────────────────────────
+
 #[tauri::command]
-fn check_pending_file() -> Option<String> {
-    let home = std::env::var("HOME").ok()?;
-    let ipc_path = std::path::PathBuf::from(home)
-        .join(".spellcheck-qa")
-        .join("pending_file.txt");
-    if !ipc_path.exists() {
-        return None;
+fn sc_load_file(file_path: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec!["sc-load-file", "--file", &file_path])
+}
+
+#[tauri::command]
+fn sc_list_dics(folder: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec!["sc-list-dics", "--folder", &folder])
+}
+
+#[tauri::command]
+fn sc_load_settings(app_handle: tauri::AppHandle) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec!["sc-load-settings"])
+}
+
+#[tauri::command]
+fn sc_save_settings(data: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec!["sc-save-settings", "--data", &data])
+}
+
+#[tauri::command]
+fn sc_run_spellcheck(
+    file_path: String,
+    dics: Vec<String>,
+    exclusion_files: Vec<String>,
+    skip_locked: bool,
+    compound_check: bool,
+    app_handle: tauri::AppHandle,
+) -> Result<Value, String> {
+    let dics_str = dics.join(",");
+    let excl_str = exclusion_files.join(",");
+    let skip_locked_str = if skip_locked { "true" } else { "false" };
+    let compound_check_str = if compound_check { "true" } else { "false" };
+    let mut args = vec!["sc-run-spellcheck", "--file", file_path.as_str(), "--dics", dics_str.as_str()];
+    if !excl_str.is_empty() {
+        args.push("--exclusion-files");
+        args.push(excl_str.as_str());
     }
-    let content = std::fs::read_to_string(&ipc_path).ok()?;
-    let _ = std::fs::remove_file(&ipc_path);
-    let trimmed = content.trim().to_string();
-    if trimmed.is_empty() { None } else { Some(trimmed) }
+    args.push("--skip-locked");
+    args.push(skip_locked_str);
+    args.push("--compound-check");
+    args.push(compound_check_str);
+    sc_invoke_python(&app_handle, args)
+}
+
+#[tauri::command]
+fn sc_get_suggestions(word: String, dics: Vec<String>, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let dics_joined = dics.join(",");
+    sc_invoke_python(&app_handle, vec!["sc-get-suggestions", "--word", &word, "--dics", &dics_joined])
+}
+
+#[tauri::command]
+fn sc_add_to_dic(word: String, dic_path: String, backup: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let backup_str = if backup { "true" } else { "false" };
+    sc_invoke_python(&app_handle, vec!["sc-add-to-dic", "--word", &word, "--dic", &dic_path, "--backup", backup_str])
+}
+
+#[tauri::command]
+fn sc_get_segments_for_word(file_path: String, word: String, dics: Vec<String>, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let dics_str = dics.join(",");
+    sc_invoke_python(&app_handle, vec!["sc-get-segments-for-word", "--file", &file_path, "--word", &word, "--dics", &dics_str])
+}
+
+#[tauri::command]
+fn sc_apply_spellcheck_edits(file_path: String, edits: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let temp_path = format!("/tmp/qa_edits_{}.json", std::process::id());
+    fs::write(&temp_path, &edits).map_err(|e| format!("Failed to write temp edits file: {}", e))?;
+    let result = sc_invoke_python(&app_handle, vec!["sc-apply-spellcheck-edits", "--file", &file_path, "--edits-file", &temp_path]);
+    let _ = fs::remove_file(&temp_path);
+    result
+}
+
+#[tauri::command]
+fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<String>, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let tl_str = termlists.join(",");
+    let cl_str = checklists.join(",");
+    let mut args = vec!["sc-run-term-check", "--file", file_path.as_str()];
+    if !tl_str.is_empty() {
+        args.push("--termlists");
+        args.push(tl_str.as_str());
+    }
+    if !cl_str.is_empty() {
+        args.push("--checklists");
+        args.push(cl_str.as_str());
+    }
+    sc_invoke_python(&app_handle, args)
+}
+
+#[tauri::command]
+fn sc_run_number_check(file_path: String, skip_locked: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let skip_locked_str = if skip_locked { "true" } else { "false" };
+    sc_invoke_python(&app_handle, vec!["sc-run-number-check", "--file", &file_path, "--skip-locked", skip_locked_str])
+}
+
+#[tauri::command]
+fn sc_run_qa_checks(file_path: String, skip_locked: bool, checks: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let skip_locked_str = if skip_locked { "true" } else { "false" };
+    sc_invoke_python(&app_handle, vec!["sc-run-qa-checks", "--file", &file_path, "--skip-locked", skip_locked_str, "--checks", &checks])
+}
+
+#[tauri::command]
+fn sc_save_report(path: String, content: String) -> Result<(), String> {
+    fs::write(&path, content).map_err(|e| format!("Failed to write report: {}", e))
+}
+
+#[tauri::command]
+fn sc_scan_watch_folder(folder: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec!["sc-scan-watch-folder", "--folder", &folder])
+}
+
+#[tauri::command]
+fn sc_merge_files(files: Vec<String>, output: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+    let files_str = files.join(",");
+    let mut args = vec!["sc-merge-files", "--files", files_str.as_str()];
+    if !output.is_empty() {
+        args.push("--output");
+        args.push(output.as_str());
+    }
+    sc_invoke_python(&app_handle, args)
+}
+
+// ─── Folder watcher ─────────────────────────────────────────────────────────
+
+struct WatcherState(Mutex<Option<Box<dyn Watcher + Send>>>);
+
+#[tauri::command]
+fn sc_start_folder_watch(folder: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+    let state = app_handle.state::<WatcherState>();
+    let mut guard = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    *guard = None;
+
+    let app_handle_clone = app_handle.clone();
+    let xliff_extensions = vec!["xlf", "xliff", "mxliff", "mqxliff", "sdlxliff"];
+
+    let mut watcher = recommended_watcher(move |res: Result<NotifyEvent, notify::Error>| {
+        if let Ok(event) = res {
+            if matches!(event.kind, EventKind::Create(CreateKind::File)) {
+                for path in &event.paths {
+                    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+                    if xliff_extensions.contains(&ext.as_str()) {
+                        let path_str = path.to_string_lossy().to_string();
+                        let _ = app_handle_clone.emit("xliff-file-detected", path_str);
+                    }
+                }
+            }
+        }
+    })
+    .map_err(|e| format!("Failed to create watcher: {}", e))?;
+
+    watcher.watch(PathBuf::from(&folder).as_path(), RecursiveMode::NonRecursive)
+        .map_err(|e| format!("Failed to watch folder: {}", e))?;
+
+    *guard = Some(Box::new(watcher));
+    Ok(())
+}
+
+#[tauri::command]
+fn sc_stop_folder_watch(app_handle: tauri::AppHandle) -> Result<(), String> {
+    let state = app_handle.state::<WatcherState>();
+    let mut guard = state.0.lock().map_err(|e| format!("Lock error: {}", e))?;
+    *guard = None;
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(WatcherState(Mutex::new(None)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1126,7 +1317,7 @@ pub fn run() {
                 .accelerator("CmdOrCtrl+S")
                 .build(app)?;
 
-            let about_item = MenuItemBuilder::with_id("about", "About XLIFF Regex Tool")
+            let about_item = MenuItemBuilder::with_id("about", "About QA-App")
                 .build(app)?;
 
             let settings_item = MenuItemBuilder::with_id("settings", "Settings...")
@@ -1307,7 +1498,23 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, open_xliff, save_xliff, get_tmx_languages, load_regex_library, save_regex_library, batch_find, list_qa_profiles, batch_replace, save_qa_profile, delete_qa_profile, load_qa_profile, export_regex_library, import_regex_library, export_qa_profile, import_qa_profile, get_user_guide_content, get_changelog_content, check_pending_file])
+        .invoke_handler(tauri::generate_handler![
+            // RegEx commands
+            greet, open_xliff, save_xliff, get_tmx_languages,
+            load_regex_library, save_regex_library,
+            batch_find, list_qa_profiles, batch_replace,
+            save_qa_profile, delete_qa_profile, load_qa_profile,
+            export_regex_library, import_regex_library,
+            export_qa_profile, import_qa_profile,
+            get_user_guide_content, get_changelog_content,
+            // SpellcheckQA commands
+            sc_load_file, sc_list_dics, sc_load_settings, sc_save_settings,
+            sc_run_spellcheck, sc_get_suggestions, sc_add_to_dic,
+            sc_get_segments_for_word, sc_apply_spellcheck_edits,
+            sc_run_term_check, sc_run_number_check, sc_run_qa_checks,
+            sc_save_report, sc_scan_watch_folder, sc_merge_files,
+            sc_start_folder_watch, sc_stop_folder_watch,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
