@@ -1,0 +1,1831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qa_profile>
+    <metadata>
+        <name>Landsnavn</name>
+        <description>Erstatter engelske landsnavn med norske</description>
+        <language>no</language>
+        <created>1771286400</created>
+        <modified>1771286400</modified>
+    </metadata>
+
+    <checks>
+        <check order="1" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Afghanistan&apos; med &apos;Afghanistan&apos;</description>
+            <pattern>\bAfghanistan\b</pattern>
+            <replacement>Afghanistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="2" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Albania&apos; med &apos;Albania&apos;</description>
+            <pattern>\bAlbania\b</pattern>
+            <replacement>Albania</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="3" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Algeria&apos; med &apos;Algerie&apos;</description>
+            <pattern>\bAlgeria\b</pattern>
+            <replacement>Algerie</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="4" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Andorra&apos; med &apos;Andorra&apos;</description>
+            <pattern>\bAndorra\b</pattern>
+            <replacement>Andorra</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="5" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Angola&apos; med &apos;Angola&apos;</description>
+            <pattern>\bAngola\b</pattern>
+            <replacement>Angola</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="6" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Antigua and Barbuda&apos; med &apos;Antigua og Barbuda&apos;</description>
+            <pattern>\bAntigua and Barbuda\b</pattern>
+            <replacement>Antigua og Barbuda</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="7" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Argentina&apos; med &apos;Argentina&apos;</description>
+            <pattern>\bArgentina\b</pattern>
+            <replacement>Argentina</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="8" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Armenia&apos; med &apos;Armenia&apos;</description>
+            <pattern>\bArmenia\b</pattern>
+            <replacement>Armenia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="9" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Australia&apos; med &apos;Australia&apos;</description>
+            <pattern>\bAustralia\b</pattern>
+            <replacement>Australia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="10" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Austria&apos; med &apos;Østerrike&apos;</description>
+            <pattern>\bAustria\b</pattern>
+            <replacement>Østerrike</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="11" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Azerbaijan&apos; med &apos;Aserbajdsjan&apos;</description>
+            <pattern>\bAzerbaijan\b</pattern>
+            <replacement>Aserbajdsjan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="12" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bahamas&apos; med &apos;Bahamas&apos;</description>
+            <pattern>\bBahamas\b</pattern>
+            <replacement>Bahamas</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="13" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bahrain&apos; med &apos;Bahrain&apos;</description>
+            <pattern>\bBahrain\b</pattern>
+            <replacement>Bahrain</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="14" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bangladesh&apos; med &apos;Bangladesh&apos;</description>
+            <pattern>\bBangladesh\b</pattern>
+            <replacement>Bangladesh</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="15" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Barbados&apos; med &apos;Barbados&apos;</description>
+            <pattern>\bBarbados\b</pattern>
+            <replacement>Barbados</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="16" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Belarus&apos; med &apos;Belarus&apos;</description>
+            <pattern>\bBelarus\b</pattern>
+            <replacement>Belarus</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="17" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Belgium&apos; med &apos;Belgia&apos;</description>
+            <pattern>\bBelgium\b</pattern>
+            <replacement>Belgia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="18" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Belize&apos; med &apos;Belize&apos;</description>
+            <pattern>\bBelize\b</pattern>
+            <replacement>Belize</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="19" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Benin&apos; med &apos;Benin&apos;</description>
+            <pattern>\bBenin\b</pattern>
+            <replacement>Benin</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="20" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bhutan&apos; med &apos;Bhutan&apos;</description>
+            <pattern>\bBhutan\b</pattern>
+            <replacement>Bhutan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="21" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bolivia&apos; med &apos;Bolivia&apos;</description>
+            <pattern>\bBolivia\b</pattern>
+            <replacement>Bolivia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="22" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bosnia and Herzegovina&apos; med &apos;Bosnia-Hercegovina&apos;</description>
+            <pattern>\bBosnia and Herzegovina\b</pattern>
+            <replacement>Bosnia-Hercegovina</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="23" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Botswana&apos; med &apos;Botswana&apos;</description>
+            <pattern>\bBotswana\b</pattern>
+            <replacement>Botswana</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="24" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Brazil&apos; med &apos;Brasil&apos;</description>
+            <pattern>\bBrazil\b</pattern>
+            <replacement>Brasil</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="25" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Brunei Darussalam&apos; med &apos;Brunei&apos;</description>
+            <pattern>\bBrunei Darussalam\b</pattern>
+            <replacement>Brunei</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="26" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Bulgaria&apos; med &apos;Bulgaria&apos;</description>
+            <pattern>\bBulgaria\b</pattern>
+            <replacement>Bulgaria</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="27" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Burkina Faso&apos; med &apos;Burkina Faso&apos;</description>
+            <pattern>\bBurkina Faso\b</pattern>
+            <replacement>Burkina Faso</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="28" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Burundi&apos; med &apos;Burundi&apos;</description>
+            <pattern>\bBurundi\b</pattern>
+            <replacement>Burundi</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="29" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Cambodia&apos; med &apos;Kambodsja&apos;</description>
+            <pattern>\bCambodia\b</pattern>
+            <replacement>Kambodsja</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="30" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Cameroon&apos; med &apos;Kamerun&apos;</description>
+            <pattern>\bCameroon\b</pattern>
+            <replacement>Kamerun</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="31" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Canada&apos; med &apos;Canada&apos;</description>
+            <pattern>\bCanada\b</pattern>
+            <replacement>Canada</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="32" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Cape Verde&apos; med &apos;Kapp Verde&apos;</description>
+            <pattern>\bCape Verde\b</pattern>
+            <replacement>Kapp Verde</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="33" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Central African Republic&apos; med &apos;Den sentralafrikanske republikk&apos;</description>
+            <pattern>\bCentral African Republic\b</pattern>
+            <replacement>Den sentralafrikanske republikk</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="34" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Chad&apos; med &apos;Tsjad&apos;</description>
+            <pattern>\bChad\b</pattern>
+            <replacement>Tsjad</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="35" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Chile&apos; med &apos;Chile&apos;</description>
+            <pattern>\bChile\b</pattern>
+            <replacement>Chile</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="36" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;China&apos; med &apos;Kina&apos;</description>
+            <pattern>\bChina\b</pattern>
+            <replacement>Kina</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="37" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Colombia&apos; med &apos;Colombia&apos;</description>
+            <pattern>\bColombia\b</pattern>
+            <replacement>Colombia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="38" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Comoros&apos; med &apos;Komorene&apos;</description>
+            <pattern>\bComoros\b</pattern>
+            <replacement>Komorene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="39" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Congo&apos; med &apos;Kongo-Brazzaville&apos;</description>
+            <pattern>\bCongo\b</pattern>
+            <replacement>Kongo-Brazzaville</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="40" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Congo, The Democratic Republic of the&apos; med &apos;Kongo&apos;</description>
+            <pattern>\bCongo, The Democratic Republic of the\b</pattern>
+            <replacement>Kongo</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="41" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Costa Rica&apos; med &apos;Costa Rica&apos;</description>
+            <pattern>\bCosta Rica\b</pattern>
+            <replacement>Costa Rica</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="42" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Croatia&apos; med &apos;Kroatia&apos;</description>
+            <pattern>\bCroatia\b</pattern>
+            <replacement>Kroatia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="43" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Cuba&apos; med &apos;Cuba&apos;</description>
+            <pattern>\bCuba\b</pattern>
+            <replacement>Cuba</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="44" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Cyprus&apos; med &apos;Kypros&apos;</description>
+            <pattern>\bCyprus\b</pattern>
+            <replacement>Kypros</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="45" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Czech Republic&apos; med &apos;Tsjekkia&apos;</description>
+            <pattern>\bCzech Republic\b</pattern>
+            <replacement>Tsjekkia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="46" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Côte d&apos;Ivoire&apos; med &apos;Elfenbenskysten&apos;</description>
+            <pattern>\bCôte d&apos;Ivoire\b</pattern>
+            <replacement>Elfenbenskysten</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="47" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Denmark&apos; med &apos;Danmark&apos;</description>
+            <pattern>\bDenmark\b</pattern>
+            <replacement>Danmark</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="48" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Djibouti&apos; med &apos;Djibouti&apos;</description>
+            <pattern>\bDjibouti\b</pattern>
+            <replacement>Djibouti</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="49" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Dominica&apos; med &apos;Dominica&apos;</description>
+            <pattern>\bDominica\b</pattern>
+            <replacement>Dominica</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="50" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Dominican Republic&apos; med &apos;Den dominikanske republikk&apos;</description>
+            <pattern>\bDominican Republic\b</pattern>
+            <replacement>Den dominikanske republikk</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="51" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Ecuador&apos; med &apos;Ecuador&apos;</description>
+            <pattern>\bEcuador\b</pattern>
+            <replacement>Ecuador</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="52" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Egypt&apos; med &apos;Egypt&apos;</description>
+            <pattern>\bEgypt\b</pattern>
+            <replacement>Egypt</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="53" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;El Salvador&apos; med &apos;El Salvador&apos;</description>
+            <pattern>\bEl Salvador\b</pattern>
+            <replacement>El Salvador</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="54" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Equatorial Guinea&apos; med &apos;Ekvatorial-Guinea&apos;</description>
+            <pattern>\bEquatorial Guinea\b</pattern>
+            <replacement>Ekvatorial-Guinea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="55" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Eritrea&apos; med &apos;Eritrea&apos;</description>
+            <pattern>\bEritrea\b</pattern>
+            <replacement>Eritrea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="56" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Estonia&apos; med &apos;Estland&apos;</description>
+            <pattern>\bEstonia\b</pattern>
+            <replacement>Estland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="57" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Eswatini&apos; med &apos;Eswatini&apos;</description>
+            <pattern>\bEswatini\b</pattern>
+            <replacement>Eswatini</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="58" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Ethiopia&apos; med &apos;Etiopia&apos;</description>
+            <pattern>\bEthiopia\b</pattern>
+            <replacement>Etiopia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="59" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Fiji&apos; med &apos;Fiji&apos;</description>
+            <pattern>\bFiji\b</pattern>
+            <replacement>Fiji</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="60" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Finland&apos; med &apos;Finland&apos;</description>
+            <pattern>\bFinland\b</pattern>
+            <replacement>Finland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="61" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;France&apos; med &apos;Frankrike&apos;</description>
+            <pattern>\bFrance\b</pattern>
+            <replacement>Frankrike</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="62" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Gabon&apos; med &apos;Gabon&apos;</description>
+            <pattern>\bGabon\b</pattern>
+            <replacement>Gabon</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="63" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Gambia&apos; med &apos;Gambia&apos;</description>
+            <pattern>\bGambia\b</pattern>
+            <replacement>Gambia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="64" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Georgia&apos; med &apos;Georgia&apos;</description>
+            <pattern>\bGeorgia\b</pattern>
+            <replacement>Georgia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="65" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Germany&apos; med &apos;Tyskland&apos;</description>
+            <pattern>\bGermany\b</pattern>
+            <replacement>Tyskland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="66" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Ghana&apos; med &apos;Ghana&apos;</description>
+            <pattern>\bGhana\b</pattern>
+            <replacement>Ghana</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="67" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Greece&apos; med &apos;Hellas&apos;</description>
+            <pattern>\bGreece\b</pattern>
+            <replacement>Hellas</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="68" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Grenada&apos; med &apos;Grenada&apos;</description>
+            <pattern>\bGrenada\b</pattern>
+            <replacement>Grenada</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="69" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Guatemala&apos; med &apos;Guatemala&apos;</description>
+            <pattern>\bGuatemala\b</pattern>
+            <replacement>Guatemala</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="70" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Guinea&apos; med &apos;Guinea&apos;</description>
+            <pattern>\bGuinea\b</pattern>
+            <replacement>Guinea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="71" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Guinea-Bissau&apos; med &apos;Guinea-Bissau&apos;</description>
+            <pattern>\bGuinea-Bissau\b</pattern>
+            <replacement>Guinea-Bissau</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="72" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Guyana&apos; med &apos;Guyana&apos;</description>
+            <pattern>\bGuyana\b</pattern>
+            <replacement>Guyana</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="73" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Haiti&apos; med &apos;Haiti&apos;</description>
+            <pattern>\bHaiti\b</pattern>
+            <replacement>Haiti</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="74" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Honduras&apos; med &apos;Honduras&apos;</description>
+            <pattern>\bHonduras\b</pattern>
+            <replacement>Honduras</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="75" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Hungary&apos; med &apos;Ungarn&apos;</description>
+            <pattern>\bHungary\b</pattern>
+            <replacement>Ungarn</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="76" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Iceland&apos; med &apos;Island&apos;</description>
+            <pattern>\bIceland\b</pattern>
+            <replacement>Island</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="77" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;India&apos; med &apos;India&apos;</description>
+            <pattern>\bIndia\b</pattern>
+            <replacement>India</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="78" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Indonesia&apos; med &apos;Indonesia&apos;</description>
+            <pattern>\bIndonesia\b</pattern>
+            <replacement>Indonesia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="79" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Iran, Islamic Republic of&apos; med &apos;Iran&apos;</description>
+            <pattern>\bIran, Islamic Republic of\b</pattern>
+            <replacement>Iran</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="80" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Iraq&apos; med &apos;Irak&apos;</description>
+            <pattern>\bIraq\b</pattern>
+            <replacement>Irak</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="81" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Ireland&apos; med &apos;Irland&apos;</description>
+            <pattern>\bIreland\b</pattern>
+            <replacement>Irland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="82" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Israel&apos; med &apos;Israel&apos;</description>
+            <pattern>\bIsrael\b</pattern>
+            <replacement>Israel</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="83" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Italy&apos; med &apos;Italia&apos;</description>
+            <pattern>\bItaly\b</pattern>
+            <replacement>Italia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="84" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Jamaica&apos; med &apos;Jamaica&apos;</description>
+            <pattern>\bJamaica\b</pattern>
+            <replacement>Jamaica</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="85" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Japan&apos; med &apos;Japan&apos;</description>
+            <pattern>\bJapan\b</pattern>
+            <replacement>Japan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="86" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Jordan&apos; med &apos;Jordan&apos;</description>
+            <pattern>\bJordan\b</pattern>
+            <replacement>Jordan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="87" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kazakhstan&apos; med &apos;Kasakhstan&apos;</description>
+            <pattern>\bKazakhstan\b</pattern>
+            <replacement>Kasakhstan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="88" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kenya&apos; med &apos;Kenya&apos;</description>
+            <pattern>\bKenya\b</pattern>
+            <replacement>Kenya</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="89" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kiribati&apos; med &apos;Kiribati&apos;</description>
+            <pattern>\bKiribati\b</pattern>
+            <replacement>Kiribati</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="90" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Korea, Democratic People&apos;s Republic of&apos; med &apos;Nord-Korea&apos;</description>
+            <pattern>\bKorea, Democratic People&apos;s Republic of\b</pattern>
+            <replacement>Nord-Korea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="91" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Korea, Republic of&apos; med &apos;Sør-Korea&apos;</description>
+            <pattern>\bKorea, Republic of\b</pattern>
+            <replacement>Sør-Korea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="92" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kosovo&apos; med &apos;Kosovo&apos;</description>
+            <pattern>\bKosovo\b</pattern>
+            <replacement>Kosovo</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="93" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kuwait&apos; med &apos;Kuwait&apos;</description>
+            <pattern>\bKuwait\b</pattern>
+            <replacement>Kuwait</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="94" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Kyrgyzstan&apos; med &apos;Kirgisistan&apos;</description>
+            <pattern>\bKyrgyzstan\b</pattern>
+            <replacement>Kirgisistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="95" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Lao People&apos;s Democratic Republic&apos; med &apos;Laos&apos;</description>
+            <pattern>\bLao People&apos;s Democratic Republic\b</pattern>
+            <replacement>Laos</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="96" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Latvia&apos; med &apos;Latvia&apos;</description>
+            <pattern>\bLatvia\b</pattern>
+            <replacement>Latvia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="97" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Lebanon&apos; med &apos;Libanon&apos;</description>
+            <pattern>\bLebanon\b</pattern>
+            <replacement>Libanon</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="98" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Lesotho&apos; med &apos;Lesotho&apos;</description>
+            <pattern>\bLesotho\b</pattern>
+            <replacement>Lesotho</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="99" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Liberia&apos; med &apos;Liberia&apos;</description>
+            <pattern>\bLiberia\b</pattern>
+            <replacement>Liberia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="100" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Libya&apos; med &apos;Libya&apos;</description>
+            <pattern>\bLibya\b</pattern>
+            <replacement>Libya</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="101" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Liechtenstein&apos; med &apos;Liechtenstein&apos;</description>
+            <pattern>\bLiechtenstein\b</pattern>
+            <replacement>Liechtenstein</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="102" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Lithuania&apos; med &apos;Litauen&apos;</description>
+            <pattern>\bLithuania\b</pattern>
+            <replacement>Litauen</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="103" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Luxembourg&apos; med &apos;Luxembourg&apos;</description>
+            <pattern>\bLuxembourg\b</pattern>
+            <replacement>Luxembourg</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="104" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Madagascar&apos; med &apos;Madagaskar&apos;</description>
+            <pattern>\bMadagascar\b</pattern>
+            <replacement>Madagaskar</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="105" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Malawi&apos; med &apos;Malawi&apos;</description>
+            <pattern>\bMalawi\b</pattern>
+            <replacement>Malawi</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="106" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Malaysia&apos; med &apos;Malaysia&apos;</description>
+            <pattern>\bMalaysia\b</pattern>
+            <replacement>Malaysia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="107" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Maldives&apos; med &apos;Maldivene&apos;</description>
+            <pattern>\bMaldives\b</pattern>
+            <replacement>Maldivene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="108" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mali&apos; med &apos;Mali&apos;</description>
+            <pattern>\bMali\b</pattern>
+            <replacement>Mali</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="109" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Malta&apos; med &apos;Malta&apos;</description>
+            <pattern>\bMalta\b</pattern>
+            <replacement>Malta</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="110" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Marshall Islands&apos; med &apos;Marshalløyene&apos;</description>
+            <pattern>\bMarshall Islands\b</pattern>
+            <replacement>Marshalløyene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="111" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mauritania&apos; med &apos;Mauritania&apos;</description>
+            <pattern>\bMauritania\b</pattern>
+            <replacement>Mauritania</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="112" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mauritius&apos; med &apos;Mauritius&apos;</description>
+            <pattern>\bMauritius\b</pattern>
+            <replacement>Mauritius</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="113" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mexico&apos; med &apos;Mexico&apos;</description>
+            <pattern>\bMexico\b</pattern>
+            <replacement>Mexico</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="114" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Micronesia, Federated States of&apos; med &apos;Mikronesiaføderasjonen&apos;</description>
+            <pattern>\bMicronesia, Federated States of\b</pattern>
+            <replacement>Mikronesiaføderasjonen</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="115" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Moldova, Republic of&apos; med &apos;Moldova&apos;</description>
+            <pattern>\bMoldova, Republic of\b</pattern>
+            <replacement>Moldova</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="116" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Monaco&apos; med &apos;Monaco&apos;</description>
+            <pattern>\bMonaco\b</pattern>
+            <replacement>Monaco</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="117" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mongolia&apos; med &apos;Mongolia&apos;</description>
+            <pattern>\bMongolia\b</pattern>
+            <replacement>Mongolia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="118" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Montenegro&apos; med &apos;Montenegro&apos;</description>
+            <pattern>\bMontenegro\b</pattern>
+            <replacement>Montenegro</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="119" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Morocco&apos; med &apos;Marokko&apos;</description>
+            <pattern>\bMorocco\b</pattern>
+            <replacement>Marokko</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="120" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Mozambique&apos; med &apos;Mosambik&apos;</description>
+            <pattern>\bMozambique\b</pattern>
+            <replacement>Mosambik</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="121" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Myanmar&apos; med &apos;Myanmar&apos;</description>
+            <pattern>\bMyanmar\b</pattern>
+            <replacement>Myanmar</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="122" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Namibia&apos; med &apos;Namibia&apos;</description>
+            <pattern>\bNamibia\b</pattern>
+            <replacement>Namibia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="123" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Nauru&apos; med &apos;Nauru&apos;</description>
+            <pattern>\bNauru\b</pattern>
+            <replacement>Nauru</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="124" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Nepal&apos; med &apos;Nepal&apos;</description>
+            <pattern>\bNepal\b</pattern>
+            <replacement>Nepal</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="125" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Netherlands&apos; med &apos;Nederland&apos;</description>
+            <pattern>\bNetherlands\b</pattern>
+            <replacement>Nederland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="126" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;New Zealand&apos; med &apos;New Zealand&apos;</description>
+            <pattern>\bNew Zealand\b</pattern>
+            <replacement>New Zealand</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="127" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Nicaragua&apos; med &apos;Nicaragua&apos;</description>
+            <pattern>\bNicaragua\b</pattern>
+            <replacement>Nicaragua</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="128" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Niger&apos; med &apos;Niger&apos;</description>
+            <pattern>\bNiger\b</pattern>
+            <replacement>Niger</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="129" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Nigeria&apos; med &apos;Nigeria&apos;</description>
+            <pattern>\bNigeria\b</pattern>
+            <replacement>Nigeria</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="130" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Niue&apos; med &apos;Niue&apos;</description>
+            <pattern>\bNiue\b</pattern>
+            <replacement>Niue</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="131" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;North Macedonia&apos; med &apos;Nord-Makedonia&apos;</description>
+            <pattern>\bNorth Macedonia\b</pattern>
+            <replacement>Nord-Makedonia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="132" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Norway&apos; med &apos;Norge&apos;</description>
+            <pattern>\bNorway\b</pattern>
+            <replacement>Norge</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="133" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Oman&apos; med &apos;Oman&apos;</description>
+            <pattern>\bOman\b</pattern>
+            <replacement>Oman</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="134" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Pakistan&apos; med &apos;Pakistan&apos;</description>
+            <pattern>\bPakistan\b</pattern>
+            <replacement>Pakistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="135" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Palau&apos; med &apos;Palau&apos;</description>
+            <pattern>\bPalau\b</pattern>
+            <replacement>Palau</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="136" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Palestinian Territory, Occupied&apos; med &apos;Palestina&apos;</description>
+            <pattern>\bPalestinian Territory, Occupied\b</pattern>
+            <replacement>Palestina</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="137" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Panama&apos; med &apos;Panama&apos;</description>
+            <pattern>\bPanama\b</pattern>
+            <replacement>Panama</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="138" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Panama&apos; med &apos;Panama&apos;</description>
+            <pattern>\bPanama\b</pattern>
+            <replacement>Panama</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="139" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Papua New Guinea&apos; med &apos;Papua Ny-Guinea&apos;</description>
+            <pattern>\bPapua New Guinea\b</pattern>
+            <replacement>Papua Ny-Guinea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="140" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Paraguay&apos; med &apos;Paraguay&apos;</description>
+            <pattern>\bParaguay\b</pattern>
+            <replacement>Paraguay</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="141" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Peru&apos; med &apos;Peru&apos;</description>
+            <pattern>\bPeru\b</pattern>
+            <replacement>Peru</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="142" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Philippines&apos; med &apos;Filippinene&apos;</description>
+            <pattern>\bPhilippines\b</pattern>
+            <replacement>Filippinene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="143" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Poland&apos; med &apos;Polen&apos;</description>
+            <pattern>\bPoland\b</pattern>
+            <replacement>Polen</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="144" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Portugal&apos; med &apos;Portugal&apos;</description>
+            <pattern>\bPortugal\b</pattern>
+            <replacement>Portugal</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="145" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Qatar&apos; med &apos;Qatar&apos;</description>
+            <pattern>\bQatar\b</pattern>
+            <replacement>Qatar</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="146" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Romania&apos; med &apos;Romania&apos;</description>
+            <pattern>\bRomania\b</pattern>
+            <replacement>Romania</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="147" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Russian Federation&apos; med &apos;Russland&apos;</description>
+            <pattern>\bRussian Federation\b</pattern>
+            <replacement>Russland</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="148" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Rwanda&apos; med &apos;Rwanda&apos;</description>
+            <pattern>\bRwanda\b</pattern>
+            <replacement>Rwanda</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="149" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Saint Kitts and Nevis&apos; med &apos;Saint Kitts og Nevis&apos;</description>
+            <pattern>\bSaint Kitts and Nevis\b</pattern>
+            <replacement>Saint Kitts og Nevis</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="150" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Saint Lucia&apos; med &apos;Saint Lucia&apos;</description>
+            <pattern>\bSaint Lucia\b</pattern>
+            <replacement>Saint Lucia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="151" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Saint Vincent and the Grenadines&apos; med &apos;Saint Vincent og Grenadinene&apos;</description>
+            <pattern>\bSaint Vincent and the Grenadines\b</pattern>
+            <replacement>Saint Vincent og Grenadinene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="152" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Samoa&apos; med &apos;Samoa&apos;</description>
+            <pattern>\bSamoa\b</pattern>
+            <replacement>Samoa</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="153" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;San Marino&apos; med &apos;San Marino&apos;</description>
+            <pattern>\bSan Marino\b</pattern>
+            <replacement>San Marino</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="154" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Saudi Arabia&apos; med &apos;Saudi-Arabia&apos;</description>
+            <pattern>\bSaudi Arabia\b</pattern>
+            <replacement>Saudi-Arabia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="155" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Senegal&apos; med &apos;Senegal&apos;</description>
+            <pattern>\bSenegal\b</pattern>
+            <replacement>Senegal</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="156" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Serbia&apos; med &apos;Serbia&apos;</description>
+            <pattern>\bSerbia\b</pattern>
+            <replacement>Serbia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="157" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Seychelles&apos; med &apos;Seychellene&apos;</description>
+            <pattern>\bSeychelles\b</pattern>
+            <replacement>Seychellene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="158" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Sierra Leone&apos; med &apos;Sierra Leone&apos;</description>
+            <pattern>\bSierra Leone\b</pattern>
+            <replacement>Sierra Leone</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="159" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Singapore&apos; med &apos;Singapore&apos;</description>
+            <pattern>\bSingapore\b</pattern>
+            <replacement>Singapore</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="160" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Slovakia&apos; med &apos;Slovakia&apos;</description>
+            <pattern>\bSlovakia\b</pattern>
+            <replacement>Slovakia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="161" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Slovenia&apos; med &apos;Slovenia&apos;</description>
+            <pattern>\bSlovenia\b</pattern>
+            <replacement>Slovenia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="162" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Solomon Islands&apos; med &apos;Salomonøyene&apos;</description>
+            <pattern>\bSolomon Islands\b</pattern>
+            <replacement>Salomonøyene</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="163" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Somalia&apos; med &apos;Somalia&apos;</description>
+            <pattern>\bSomalia\b</pattern>
+            <replacement>Somalia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="164" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;South Africa&apos; med &apos;Sør-Afrika&apos;</description>
+            <pattern>\bSouth Africa\b</pattern>
+            <replacement>Sør-Afrika</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="165" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;South Sudan&apos; med &apos;Sør-Sudan&apos;</description>
+            <pattern>\bSouth Sudan\b</pattern>
+            <replacement>Sør-Sudan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="166" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Spain&apos; med &apos;Spania&apos;</description>
+            <pattern>\bSpain\b</pattern>
+            <replacement>Spania</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="167" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Sri Lanka&apos; med &apos;Sri Lanka&apos;</description>
+            <pattern>\bSri Lanka\b</pattern>
+            <replacement>Sri Lanka</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="168" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Sudan&apos; med &apos;Sudan&apos;</description>
+            <pattern>\bSudan\b</pattern>
+            <replacement>Sudan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="169" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Suriname&apos; med &apos;Surinam&apos;</description>
+            <pattern>\bSuriname\b</pattern>
+            <replacement>Surinam</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="170" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Sweden&apos; med &apos;Sverige&apos;</description>
+            <pattern>\bSweden\b</pattern>
+            <replacement>Sverige</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="171" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Switzerland&apos; med &apos;Sveits&apos;</description>
+            <pattern>\bSwitzerland\b</pattern>
+            <replacement>Sveits</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="172" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Syrian Arab Republic&apos; med &apos;Syria&apos;</description>
+            <pattern>\bSyrian Arab Republic\b</pattern>
+            <replacement>Syria</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="173" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;São Tomé and Príncipe&apos; med &apos;São Tomé og Príncipe&apos;</description>
+            <pattern>\bSão Tomé and Príncipe\b</pattern>
+            <replacement>São Tomé og Príncipe</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="174" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Taiwan, Province of China&apos; med &apos;Taiwan&apos;</description>
+            <pattern>\bTaiwan, Province of China\b</pattern>
+            <replacement>Taiwan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="175" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Tajikistan&apos; med &apos;Tadsjikistan&apos;</description>
+            <pattern>\bTajikistan\b</pattern>
+            <replacement>Tadsjikistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="176" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Tanzania, United Republic of&apos; med &apos;Tanzania&apos;</description>
+            <pattern>\bTanzania, United Republic of\b</pattern>
+            <replacement>Tanzania</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="177" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Thailand&apos; med &apos;Thailand&apos;</description>
+            <pattern>\bThailand\b</pattern>
+            <replacement>Thailand</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="178" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Togo&apos; med &apos;Togo&apos;</description>
+            <pattern>\bTogo\b</pattern>
+            <replacement>Togo</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="179" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Tonga&apos; med &apos;Tonga&apos;</description>
+            <pattern>\bTonga\b</pattern>
+            <replacement>Tonga</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="180" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Trinidad and Tobago&apos; med &apos;Trinidad og Tobago&apos;</description>
+            <pattern>\bTrinidad and Tobago\b</pattern>
+            <replacement>Trinidad og Tobago</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="181" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Tunisia&apos; med &apos;Tunisia&apos;</description>
+            <pattern>\bTunisia\b</pattern>
+            <replacement>Tunisia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="182" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Turkey&apos; med &apos;Tyrkia&apos;</description>
+            <pattern>\bTurkey\b</pattern>
+            <replacement>Tyrkia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="183" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Turkmenistan&apos; med &apos;Turkmenistan&apos;</description>
+            <pattern>\bTurkmenistan\b</pattern>
+            <replacement>Turkmenistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="184" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Tuvalu&apos; med &apos;Tuvalu&apos;</description>
+            <pattern>\bTuvalu\b</pattern>
+            <replacement>Tuvalu</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="185" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Uganda&apos; med &apos;Uganda&apos;</description>
+            <pattern>\bUganda\b</pattern>
+            <replacement>Uganda</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="186" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Ukraine&apos; med &apos;Ukraina&apos;</description>
+            <pattern>\bUkraine\b</pattern>
+            <replacement>Ukraina</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="187" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;United Arab Emirates&apos; med &apos;De forente arabiske emirater&apos;</description>
+            <pattern>\bUnited Arab Emirates\b</pattern>
+            <replacement>De forente arabiske emirater</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="188" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;United Kingdom&apos; med &apos;Storbritannia&apos;</description>
+            <pattern>\bUnited Kingdom\b</pattern>
+            <replacement>Storbritannia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="189" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;United States&apos; med &apos;USA&apos;</description>
+            <pattern>\bUnited States\b</pattern>
+            <replacement>USA</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="190" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Uruguay&apos; med &apos;Uruguay&apos;</description>
+            <pattern>\bUruguay\b</pattern>
+            <replacement>Uruguay</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="191" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Uzbekistan&apos; med &apos;Usbekistan&apos;</description>
+            <pattern>\bUzbekistan\b</pattern>
+            <replacement>Usbekistan</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="192" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Vanuatu&apos; med &apos;Vanuatu&apos;</description>
+            <pattern>\bVanuatu\b</pattern>
+            <replacement>Vanuatu</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="193" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Vanuatu&apos; med &apos;Vanuatu&apos;</description>
+            <pattern>\bVanuatu\b</pattern>
+            <replacement>Vanuatu</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="194" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Vatican City State&apos; med &apos;Vatikanstaten&apos;</description>
+            <pattern>\bVatican City State\b</pattern>
+            <replacement>Vatikanstaten</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="195" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Venezuela&apos; med &apos;Venezuela&apos;</description>
+            <pattern>\bVenezuela\b</pattern>
+            <replacement>Venezuela</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="196" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Viet Nam&apos; med &apos;Vietnam&apos;</description>
+            <pattern>\bViet Nam\b</pattern>
+            <replacement>Vietnam</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="197" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Yemen&apos; med &apos;Jemen&apos;</description>
+            <pattern>\bYemen\b</pattern>
+            <replacement>Jemen</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="198" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Zambia&apos; med &apos;Zambia&apos;</description>
+            <pattern>\bZambia\b</pattern>
+            <replacement>Zambia</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="199" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Zimbabwe&apos; med &apos;Zimbabwe&apos;</description>
+            <pattern>\bZimbabwe\b</pattern>
+            <replacement>Zimbabwe</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="200" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Côte d&apos;Ivoire&apos; med &apos;Elfenbenskysten&apos;</description>
+            <pattern>\bCôte d\&apos;Ivoire\b</pattern>
+            <replacement>Elfenbenskysten</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="201" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Korea, Democratic People&apos;s Republic of&apos; med &apos;Nord-Korea&apos;</description>
+            <pattern>\bKorea, Democratic People\&apos;s Republic of\b</pattern>
+            <replacement>Nord-Korea</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="202" enabled="true">
+            <name></name>
+            <description>Erstatter &apos;Lao People&apos;s Democratic Republic&apos; med &apos;Laos&apos;</description>
+            <pattern>\bLao People\&apos;s Democratic Republic\b</pattern>
+            <replacement>Laos</replacement>
+            <category>Landsnavn (EN→NB)</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+    </checks>
+</qa_profile>

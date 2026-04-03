@@ -1,0 +1,565 @@
+/*
+ * 🎮 RETRO MODE - Norton Commander / Turbo Pascal Theme
+ * Activated with Cmd+R (secret easter egg)
+ *
+ * Color scheme:
+ * - Background: #0000AA (classic DOS blue)
+ * - Text: #FFFF55 (bright yellow) and #FFFFFF (white)
+ * - Highlights: #00FFFF (cyan)
+ * - Selected: #000000 on #FFFFFF (inverted)
+ */
+
+.retro-mode {
+  --retro-blue: #0000AA;
+  --retro-cyan: #00FFFF;
+  --retro-yellow: #FFFF55;
+  --retro-white: #FFFFFF;
+  --retro-black: #000000;
+  --retro-green: #00FF00;
+  --retro-red: #FF5555;
+  --retro-magenta: #FF00FF;
+
+  /* Override all theme colors */
+  --primary-color: var(--retro-cyan);
+  --secondary-color: var(--retro-yellow);
+  --error-color: var(--retro-red);
+  --success-color: var(--retro-green);
+  --bg-color: var(--retro-blue);
+  --card-bg: var(--retro-blue);
+  --border-color: var(--retro-cyan);
+  --text-color: var(--retro-white);
+  --text-secondary: var(--retro-yellow);
+  --text-tertiary: var(--retro-cyan);
+  --header-bg: var(--retro-cyan);
+  --header-border: var(--retro-white);
+}
+
+/* Override body and root styles */
+.retro-mode body {
+  font-family: 'Courier New', 'Perfect DOS VGA 437', monospace !important;
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-white) !important;
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+}
+
+.retro-mode * {
+  font-family: 'Courier New', 'Perfect DOS VGA 437', monospace !important;
+  box-sizing: border-box !important;
+}
+
+/* Remove all modern effects */
+.retro-mode * {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* App container */
+.retro-mode .app {
+  background-color: var(--retro-blue) !important;
+}
+
+/* ═══════════════════════════════════════
+   HEADER BAR (Cyan bar at top)
+   ═══════════════════════════════════════ */
+.retro-mode .header {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  padding: 0.25rem 1rem !important;
+  border-bottom: 2px solid var(--retro-white) !important;
+  min-height: auto !important;
+}
+
+.retro-mode .header h1 {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: var(--retro-black) !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.retro-mode .header h1::before {
+  content: "╔═══ ";
+  color: var(--retro-black);
+}
+
+.retro-mode .header h1::after {
+  content: " ═══╗";
+  color: var(--retro-black);
+}
+
+/* Header buttons */
+.retro-mode .header-btn,
+.retro-mode .theme-toggle-btn,
+.retro-mode .hidden-chars-btn,
+.retro-mode .library-btn,
+.retro-mode .qa-profiles-btn,
+.retro-mode .qa-checks-btn,
+.retro-mode .special-chars-btn,
+.retro-mode .help-btn,
+.retro-mode .settings-btn,
+.retro-mode .open-btn,
+.retro-mode .save-btn,
+.retro-mode .discard-btn {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-yellow) !important;
+  border: 2px solid var(--retro-white) !important;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+}
+
+.retro-mode .header-btn:hover,
+.retro-mode button:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+/* ═══════════════════════════════════════
+   FILE INFO BAR
+   ═══════════════════════════════════════ */
+.retro-mode .file-info {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-yellow) !important;
+  border-bottom: 1px solid var(--retro-cyan) !important;
+  padding: 0.25rem 1rem !important;
+  font-size: 0.9rem !important;
+}
+
+.retro-mode .file-info strong {
+  color: var(--retro-white) !important;
+}
+
+/* ═══════════════════════════════════════
+   STATS PANEL (Box-drawing chars)
+   ═══════════════════════════════════════ */
+.retro-mode .stats {
+  background-color: var(--retro-blue) !important;
+  border: 2px solid var(--retro-cyan) !important;
+  padding: 0.5rem !important;
+  margin: 0.5rem !important;
+  position: relative !important;
+}
+
+.retro-mode .stats::before {
+  content: "╔═══════════════════════════════════════════════╗";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  color: var(--retro-cyan);
+  font-size: 0.8rem;
+}
+
+.retro-mode .stat-label {
+  color: var(--retro-cyan) !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.retro-mode .stat-value {
+  color: var(--retro-yellow) !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+}
+
+/* ═══════════════════════════════════════
+   TABLE (Norton Commander style)
+   ═══════════════════════════════════════ */
+.retro-mode .table-container {
+  background-color: var(--retro-blue) !important;
+  border: 2px double var(--retro-cyan) !important;
+  margin: 0.5rem !important;
+}
+
+.retro-mode .trans-units-table {
+  border-collapse: collapse !important;
+}
+
+.retro-mode .trans-units-table thead {
+  background-color: var(--retro-cyan) !important;
+  border-bottom: 2px solid var(--retro-white) !important;
+}
+
+.retro-mode .trans-units-table th {
+  color: var(--retro-black) !important;
+  font-weight: 700 !important;
+  padding: 0.25rem 0.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  text-align: left !important;
+  border-right: 1px solid var(--retro-black) !important;
+}
+
+.retro-mode .trans-units-table th:last-child {
+  border-right: none !important;
+}
+
+.retro-mode .trans-units-table tbody tr {
+  border-bottom: 1px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .trans-units-table tbody tr:hover {
+  background-color: #0000CC !important;
+}
+
+.retro-mode .trans-units-table td {
+  color: var(--retro-white) !important;
+  padding: 0.25rem 0.5rem !important;
+  border-right: 1px solid var(--retro-cyan) !important;
+  vertical-align: top !important;
+}
+
+.retro-mode .trans-units-table td:first-child {
+  color: var(--retro-yellow) !important;
+  font-weight: 700 !important;
+  text-align: right !important;
+  background-color: #000088 !important;
+}
+
+.retro-mode .trans-units-table td:last-child {
+  border-right: none !important;
+}
+
+/* Selected row - classic monochrome terminal (green on black) */
+.retro-mode .selected-row,
+.retro-mode .selected-row:hover {
+  background-color: var(--retro-black) !important;
+  border: 2px solid var(--retro-green) !important;
+}
+
+.retro-mode .selected-row td {
+  color: var(--retro-green) !important;
+  background-color: var(--retro-black) !important;
+  font-weight: 700 !important;
+}
+
+.retro-mode .selected-row td:first-child {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+}
+
+/* Edited row - green highlight */
+.retro-mode .edited-row,
+.retro-mode .edited-row:hover {
+  background-color: #006600 !important;
+}
+
+.retro-mode .edited-row td {
+  color: var(--retro-green) !important;
+}
+
+/* ICU error row - red highlight */
+.retro-mode .icu-error-row,
+.retro-mode .icu-error-row:hover {
+  background-color: #660000 !important;
+  border-left: 3px solid var(--retro-red) !important;
+}
+
+.retro-mode .icu-error-row td {
+  color: var(--retro-red) !important;
+}
+
+/* ═══════════════════════════════════════
+   SEARCH PANEL
+   ═══════════════════════════════════════ */
+.retro-mode .search-panel {
+  background-color: var(--retro-blue) !important;
+  border: 2px solid var(--retro-cyan) !important;
+  padding: 0.5rem !important;
+  margin: 0.5rem !important;
+}
+
+.retro-mode .search-input,
+.retro-mode .jump-input {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+  border: 2px inset var(--retro-cyan) !important;
+  padding: 0.25rem !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.retro-mode .search-input:focus,
+.retro-mode .jump-input:focus {
+  outline: 2px solid var(--retro-yellow) !important;
+  outline-offset: 0 !important;
+}
+
+.retro-mode .search-btn,
+.retro-mode .replace-btn,
+.retro-mode .clear-btn,
+.retro-mode .jump-btn {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-yellow) !important;
+  border: 2px outset var(--retro-white) !important;
+  padding: 0.25rem 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+}
+
+.retro-mode .search-btn:hover,
+.retro-mode .replace-btn:hover,
+.retro-mode .clear-btn:hover,
+.retro-mode .jump-btn:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+.retro-mode .checkbox-label,
+.retro-mode .radio-label {
+  color: var(--retro-white) !important;
+}
+
+/* ═══════════════════════════════════════
+   MODALS & DIALOGS
+   ═══════════════════════════════════════ */
+.retro-mode .library-modal-overlay,
+.retro-mode .special-chars-menu {
+  background-color: rgba(0, 0, 170, 0.9) !important;
+}
+
+.retro-mode .library-modal,
+.retro-mode .qa-modal {
+  background-color: var(--retro-blue) !important;
+  border: 4px double var(--retro-white) !important;
+}
+
+.retro-mode .library-header,
+.retro-mode .editor-header {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  border-bottom: 2px solid var(--retro-white) !important;
+}
+
+.retro-mode .library-header h2,
+.retro-mode .editor-header h3 {
+  color: var(--retro-black) !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+
+.retro-mode .close-library-btn,
+.retro-mode .close-menu-btn {
+  background-color: var(--retro-red) !important;
+  color: var(--retro-white) !important;
+  border: 2px solid var(--retro-white) !important;
+  font-weight: 700 !important;
+}
+
+.retro-mode .library-content,
+.retro-mode .qa-content {
+  background-color: var(--retro-blue) !important;
+}
+
+/* ═══════════════════════════════════════
+   FORM ELEMENTS
+   ═══════════════════════════════════════ */
+.retro-mode input[type="text"],
+.retro-mode input[type="number"],
+.retro-mode select,
+.retro-mode textarea {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+  border: 2px inset var(--retro-cyan) !important;
+  padding: 0.25rem !important;
+}
+
+.retro-mode input[type="text"]:focus,
+.retro-mode input[type="number"]:focus,
+.retro-mode select:focus,
+.retro-mode textarea:focus {
+  outline: 2px solid var(--retro-yellow) !important;
+  outline-offset: 0 !important;
+}
+
+/* ═══════════════════════════════════════
+   SEGMENT EDITOR (Source/Target boxes)
+   ═══════════════════════════════════════ */
+.retro-mode .editor-panel {
+  background-color: var(--retro-blue) !important;
+  border: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .editor-source,
+.retro-mode .editor-target {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+  border: 2px solid var(--retro-cyan) !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+.retro-mode .editor-label {
+  color: var(--retro-cyan) !important;
+  background-color: transparent !important;
+}
+
+.retro-mode .editor-target:focus {
+  outline: 2px solid var(--retro-yellow) !important;
+  outline-offset: 0 !important;
+  border-color: var(--retro-yellow) !important;
+}
+
+/* Metadata section under editor */
+.retro-mode .editor-metadata {
+  background-color: var(--retro-blue) !important;
+  border-top: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .editor-metadata h4 {
+  color: var(--retro-cyan) !important;
+}
+
+.retro-mode .metadata-label {
+  color: var(--retro-cyan) !important;
+}
+
+.retro-mode .metadata-value {
+  color: var(--retro-yellow) !important;
+}
+
+/* ═══════════════════════════════════════
+   F-KEY BAR AT BOTTOM
+   ═══════════════════════════════════════ */
+.retro-mode .content::after {
+  content: "F2-Save F3-Find F5-Repl F7-QA F9-Stats F10-Help ESC-Menu";
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--retro-cyan);
+  color: var(--retro-black);
+  padding: 0.25rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  border-top: 2px solid var(--retro-white);
+  z-index: 9999;
+}
+
+/* ═══════════════════════════════════════
+   SEARCH HIGHLIGHTING
+   ═══════════════════════════════════════ */
+.retro-mode .search-highlight {
+  background-color: var(--retro-magenta) !important;
+  color: var(--retro-white) !important;
+  font-weight: 700 !important;
+  padding: 0 !important;
+}
+
+/* ═══════════════════════════════════════
+   WELCOME SCREEN
+   ═══════════════════════════════════════ */
+.retro-mode .welcome {
+  color: var(--retro-yellow) !important;
+}
+
+.retro-mode .welcome p {
+  color: var(--retro-white) !important;
+  font-size: 1.2rem !important;
+}
+
+.retro-mode .welcome::before {
+  content: "╔═══════════════════════════════════════════════════════╗\A║                                                       ║\A║    ██╗  ██╗██╗     ██╗███████╗███████╗               ║\A║    ╚██╗██╔╝██║     ██║██╔════╝██╔════╝               ║\A║     ╚███╔╝ ██║     ██║█████╗  █████╗                 ║\A║     ██╔██╗ ██║     ██║██╔══╝  ██╔══╝                 ║\A║    ██╔╝ ██╗███████╗██║██║     ██║                    ║\A║    ╚═╝  ╚═╝╚══════╝╚═╝╚═╝     ╚═╝                    ║\A║                                                       ║\A║         ██████╗ ███████╗ ██████╗ ███████╗██╗  ██╗   ║\A║         ██╔══██╗██╔════╝██╔════╝ ██╔════╝╚██╗██╔╝   ║\A║         ██████╔╝█████╗  ██║  ███╗█████╗   ╚███╔╝    ║\A║         ██╔══██╗██╔══╝  ██║   ██║██╔══╝   ██╔██╗    ║\A║         ██║  ██║███████╗╚██████╔╝███████╗██╔╝ ██╗   ║\A║         ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝   ║\A║                                                       ║\A║              ████████╗ ██████╗  ██████╗ ██╗          ║\A║              ╚══██╔══╝██╔═══██╗██╔═══██╗██║          ║\A║                 ██║   ██║   ██║██║   ██║██║          ║\A║                 ██║   ██║   ██║██║   ██║██║          ║\A║                 ██║   ╚██████╔╝╚██████╔╝███████╗     ║\A║                 ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝     ║\A║                                                       ║\A╚═══════════════════════════════════════════════════════╝\A\A";
+  white-space: pre;
+  color: var(--retro-cyan);
+  font-size: 0.65rem;
+  line-height: 1;
+  display: block;
+  margin-bottom: 2rem;
+  font-family: monospace;
+}
+
+/* ═══════════════════════════════════════
+   MISC OVERRIDES
+   ═══════════════════════════════════════ */
+.retro-mode .xml-tag {
+  color: var(--retro-cyan) !important;
+  opacity: 1 !important;
+}
+
+.retro-mode .error {
+  background-color: var(--retro-red) !important;
+  color: var(--retro-white) !important;
+  border-left: 4px solid var(--retro-yellow) !important;
+}
+
+/* Scrollbars */
+.retro-mode ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background-color: var(--retro-blue);
+}
+
+.retro-mode ::-webkit-scrollbar-track {
+  background-color: var(--retro-blue);
+  border: 1px solid var(--retro-cyan);
+}
+
+.retro-mode ::-webkit-scrollbar-thumb {
+  background-color: var(--retro-cyan);
+  border: 2px solid var(--retro-blue);
+}
+
+.retro-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--retro-yellow);
+}
+
+/* Cursor */
+.retro-mode * {
+  cursor: default !important;
+}
+
+.retro-mode button,
+.retro-mode a,
+.retro-mode input,
+.retro-mode select,
+.retro-mode textarea {
+  cursor: pointer !important;
+}
+
+/* ═══════════════════════════════════════
+   RETRO MODE ACTIVATED INDICATOR
+   ═══════════════════════════════════════ */
+.retro-mode-badge {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--retro-black);
+  color: var(--retro-green);
+  border: 4px double var(--retro-cyan);
+  padding: 2rem 4rem;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  z-index: 99999;
+  animation: retroFlash 2s ease-out forwards;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+@keyframes retroFlash {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

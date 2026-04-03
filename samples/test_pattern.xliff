@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en-US" target-language="nb-NO" datatype="plaintext" original="sample.txt">
+    <body>
+      <trans-unit id="1">
+        <source>Hello world!</source>
+        <target>Hallo verden!</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>This is a <g id="1">formatted</g> text with tags.</source>
+        <target>Dette er en <g id="1">formatert</g> tekst med tagger.</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>Please enter your email address: user@example.com</source>
+        <target>Vennligst skriv inn e-postadressen din: bruker@eksempel.no</target>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>The date format is MM/DD/YYYY or DD.MM.YYYY</source>
+        <target>Datoformatet er DD.MM.ÅÅÅÅ eller MM/DD/ÅÅÅÅ</target>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>Price: $99.99 USD</source>
+        <target>Pris: $99.99 USD</target>
+      </trans-unit>
+      <trans-unit id="6">
+        <source>Click <x id="link"/>here<x id="link_end"/> to continue.</source>
+        <target>Klikk <x id="link"/>her<x id="link_end"/> for å fortsette.</target>
+      </trans-unit>
+      <trans-unit id="7">
+        <source>Multiple    spaces    should    be    normalized.</source>
+        <target>Flere mellomrom bør normaliseres.</target></trans-unit>
+      <trans-unit id="8">
+        <source>Common typo: teh quick brown fox</source>
+        <target>Vanlig skrivefeil: den raske brune reven</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

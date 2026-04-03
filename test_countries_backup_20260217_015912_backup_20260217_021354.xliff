@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="no" datatype="plaintext" original="countries.txt">
+    <body>
+      <trans-unit id="1">
+        <source>Norway</source>
+        <target>Norway</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>Sweden</source>
+        <target>Sweden</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>Denmark</source>
+        <target>Denmark</target>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>Finland</source>
+        <target>Finland</target>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>Iceland</source>
+        <target>Iceland</target>
+      </trans-unit>
+      <trans-unit id="6">
+        <source>Germany</source>
+        <target>Germany</target>
+      </trans-unit>
+      <trans-unit id="7">
+        <source>France</source>
+        <target>France</target>
+      </trans-unit>
+      <trans-unit id="8">
+        <source>Spain</source>
+        <target>Spain</target>
+      </trans-unit>
+      <trans-unit id="9">
+        <source>Italy</source>
+        <target>Italy</target>
+      </trans-unit>
+      <trans-unit id="10">
+        <source>United Kingdom</source>
+        <target>United Kingdom</target>
+      </trans-unit>
+      <trans-unit id="11">
+        <source>Poland</source>
+        <target>Poland</target>
+      </trans-unit>
+      <trans-unit id="12">
+        <source>Netherlands</source>
+        <target>Netherlands</target>
+      </trans-unit>
+      <trans-unit id="13">
+        <source>Belgium</source>
+        <target>Belgium</target>
+      </trans-unit>
+      <trans-unit id="14">
+        <source>Austria</source>
+        <target>Austria</target>
+      </trans-unit>
+      <trans-unit id="15">
+        <source>Switzerland</source>
+        <target>Switzerland</target>
+      </trans-unit>
+      <trans-unit id="16">
+        <source>Portugal</source>
+        <target>Portugal</target>
+      </trans-unit>
+      <trans-unit id="17">
+        <source>Greece</source>
+        <target>Greece</target>
+      </trans-unit>
+      <trans-unit id="18">
+        <source>Czech Republic</source>
+        <target>Czech Republic</target>
+      </trans-unit>
+      <trans-unit id="19">
+        <source>Hungary</source>
+        <target>Hungary</target>
+      </trans-unit>
+      <trans-unit id="20">
+        <source>Romania</source>
+        <target>Romania</target>
+      </trans-unit>
+      <trans-unit id="21">
+        <source>Bulgaria</source>
+        <target>Bulgaria</target>
+      </trans-unit>
+      <trans-unit id="22">
+        <source>Croatia</source>
+        <target>Croatia</target>
+      </trans-unit>
+      <trans-unit id="23">
+        <source>Slovakia</source>
+        <target>Slovakia</target>
+      </trans-unit>
+      <trans-unit id="24">
+        <source>Slovenia</source>
+        <target>Slovenia</target>
+      </trans-unit>
+      <trans-unit id="25">
+        <source>Lithuania</source>
+        <target>Lithuania</target>
+      </trans-unit>
+      <trans-unit id="26">
+        <source>Latvia</source>
+        <target>Latvia</target>
+      </trans-unit>
+      <trans-unit id="27">
+        <source>Estonia</source>
+        <target>Estonia</target>
+      </trans-unit>
+      <trans-unit id="28">
+        <source>Ireland</source>
+        <target>Ireland</target>
+      </trans-unit>
+      <trans-unit id="29">
+        <source>Luxembourg</source>
+        <target>Luxembourg</target>
+      </trans-unit>
+      <trans-unit id="30">
+        <source>Malta</source>
+        <target>Malta</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

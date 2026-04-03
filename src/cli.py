@@ -1,0 +1,1170 @@
+#!/usr/bin/env python3
+"""
+Command-line interface for XLIFF Regex Tool.
+Provides testing interface for the backend functionality.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+from typing import Optional
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+from parsers.xliff_parser import XLIFFParser
+from parsers.tmx_parser import TMXParser
+from parsers.xbench_parser import XbenchParser
+from regex_engine.regex_processor import RegexProcessor
+from backup.backup_manager import BackupManager
+from patterns.pattern_library import PatternLibrary, Pattern
+from validators.icu_validator import ICUValidator
+from qa.qa_profile import QAProfileManager, QAProfile
+import json
+
+
+def get_parser(file_path: str, target_lang: str = None):
+    """Return the appropriate parser based on file extension."""
+    if file_path.lower().endswith('.tmx'):
+        return TMXParser(file_path, target_lang=target_lang)
+    return XLIFFParser(file_path)
+
+
+def tmx_languages_command(args):
+    """Return available languages in a TMX file as JSON."""
+    parser = TMXParser(args.file)
+    if not parser.parse():
+        print(json.dumps({"error": "Failed to parse TMX file"}))
+        return 1
+    output = {
+        "srclang": parser.srclang,
+        "languages": parser.get_available_languages()
+    }
+    print(json.dumps(output))
+    return 0
+
+
+def find_command(args):
+    """Execute find operation."""
+    print(f"Searching in: {args.file}")
+    print(f"Pattern: {args.pattern}")
+    print()
+
+    # Parse XLIFF
+    parser = XLIFFParser(args.file)
+    if not parser.parse():
+        print("Failed to parse XLIFF file")
+        return 1
+
+    # Create regex processor
+    regex_proc = RegexProcessor()
+
+    # Validate pattern
+    is_valid, error = regex_proc.validate_pattern(args.pattern)
+    if not is_valid:
+        print(f"Invalid regex pattern: {error}")
+        return 1
+
+    # Search in translation units
+    matches_found = 0
+    flags = 0 if args.case_sensitive else regex_proc.regex_module.IGNORECASE
+
+    for tu in parser.get_trans_units():
+        # Search in target
+        if args.target or (not args.source and not args.target):
+            target_text = tu.get_target_text()
+            if target_text:
+                exclude = getattr(args, 'exclude', None)
+                matches = regex_proc.find_in_text(
+                    target_text, args.pattern, flags=flags, ignore_tags=not args.include_tags,
+                    exclude_pattern=exclude
+                )
+
+                if matches:
+                    print(f"[TU: {tu.id}] TARGET:")
+                    print(f"  {target_text}")
+                    for start, end, matched in matches:
+                        print(f"  → Match: '{matched}' (pos {start}-{end})")
+                        matches_found += 1
+                    print()
+
+        # Search in source
+        if args.source:
+            source_text = tu.get_source_text()
+            exclude = getattr(args, 'exclude', None)
+            matches = regex_proc.find_in_text(
+                source_text, args.pattern, flags=flags, ignore_tags=not args.include_tags,
+                exclude_pattern=exclude
+            )
+
+            if matches:
+                print(f"[TU: {tu.id}] SOURCE:")
+                print(f"  {source_text}")
+                for start, end, matched in matches:
+                    print(f"  → Match: '{matched}' (pos {start}-{end})")
+                    matches_found += 1
+                print()
+
+    print(f"\nTotal matches found: {matches_found}")
+
+    # Offer to save pattern if matches found and --save flag is set
+    if matches_found > 0 and hasattr(args, 'save') and args.save:
+        print("\n" + "─" * 60)
+        print("Save this search to pattern library?")
+        name = input("Pattern name (or press Enter to skip): ").strip()
+
+        if name:
+            library = PatternLibrary()
+            library.load_custom_patterns()
+
+            description = input("Description (optional): ").strip()
+            category = input("Category (default: Custom): ").strip() or "Custom"
+
+            new_pattern = Pattern(
+                name=name,
+                pattern=args.pattern,
+                replacement="",
+                description=description,
+                category=category,
+                case_sensitive=args.case_sensitive,
+                enabled=True,
+                tags=["saved-from-find", "search-only"]
+            )
+
+            if library.add_pattern(new_pattern):
+                if library.save_custom_patterns():
+                    print(f"✓ Pattern '{name}' saved to library!")
+                else:
+                    print("✗ Failed to save pattern")
+            else:
+                print("✗ Pattern with that name already exists")
+
+    return 0
+
+
+def batch_find_command(args):
+    """Execute batch find operation using a QA profile."""
+    if args.json:
+        # JSON output mode for GUI integration
+        try:
+            # Load QA profile
+            profile = QAProfileManager.load_from_xml(args.profile)
+
+            # Parse XLIFF
+            parser = XLIFFParser(args.file)
+            if not parser.parse():
+                print(json.dumps({"error": "Failed to parse XLIFF file"}))
+                return 1
+
+            # Create regex processor
+            regex_proc = RegexProcessor()
+
+            # Get enabled checks from profile
+            enabled_checks = QAProfileManager.get_enabled_checks(profile)
+
+            # Collect all matches
+            all_results = []
+
+            for check in enabled_checks:
+                # Validate pattern
+                is_valid, error = regex_proc.validate_pattern(check.pattern)
+                if not is_valid:
+                    continue  # Skip invalid patterns
+
+                flags = 0 if check.case_sensitive else regex_proc.regex_module.IGNORECASE
+
+                for tu in parser.get_trans_units():
+                    # Search in target (default)
+                    target_text = tu.get_target_text()
+                    if target_text:
+                        matches = regex_proc.find_in_text(
+                            target_text,
+                            check.pattern,
+                            flags=flags,
+                            ignore_tags=True,
+                            exclude_pattern=check.exclude_pattern
+                        )
+
+                        for start, end, matched in matches:
+                            # Calculate the actual replacement value for preview
+                            replacement_preview = check.replacement
+                            if check.replacement:
+                                # Convert $1, $2 to \1, \2 for Python regex
+                                import re
+                                converted_replacement = re.sub(r'\$(\d+)', r'\\\1', check.replacement)
+                                # Apply replacement to the matched text to get preview
+                                try:
+                                    replacement_preview = regex_proc.regex_module.sub(
+                                        check.pattern,
+                                        converted_replacement,
+                                        matched,
+                                        flags=flags
+                                    )
+                                except:
+                                    replacement_preview = check.replacement  # Fallback to template
+
+                            all_results.append({
+                                'tu_id': tu.id,
+                                'check_name': check.name,
+                                'check_order': check.order,
+                                'category': check.category,
+                                'description': check.description,
+                                'source': tu.get_source_text(),
+                                'target': target_text,
+                                'match': matched,
+                                'match_start': start,
+                                'match_end': end,
+                                'pattern': check.pattern,
+                                'replacement': replacement_preview
+                            })
+
+            # Output JSON
+            output = {
+                'profile_name': profile.name,
+                'file': args.file,
+                'total_matches': len(all_results),
+                'matches': all_results
+            }
+            print(json.dumps(output, ensure_ascii=False, indent=2))
+
+        except Exception as e:
+            print(json.dumps({"error": str(e)}))
+            return 1
+    else:
+        # Human-readable output mode
+        print(f"Running QA checks on: {args.file}")
+        print(f"QA Profile: {args.profile}")
+        print()
+
+        # Load QA profile
+        profile = QAProfileManager.load_from_xml(args.profile)
+        print(f"Profile: {profile.name}")
+        print(f"Description: {profile.description}")
+        print()
+
+        # Parse XLIFF
+        parser = XLIFFParser(args.file)
+        if not parser.parse():
+            print("Failed to parse XLIFF file")
+            return 1
+
+        # Create regex processor
+        regex_proc = RegexProcessor()
+
+        # Get enabled checks
+        enabled_checks = QAProfileManager.get_enabled_checks(profile)
+        print(f"Running {len(enabled_checks)} enabled checks...")
+        print("─" * 60)
+        print()
+
+        total_matches = 0
+
+        for check in enabled_checks:
+            print(f"[{check.order}] {check.name}")
+            print(f"    Pattern: {check.pattern}")
+            if check.exclude_pattern:
+                print(f"    Exclude: {check.exclude_pattern}")
+
+            # Validate pattern
+            is_valid, error = regex_proc.validate_pattern(check.pattern)
+            if not is_valid:
+                print(f"    ✗ Invalid pattern: {error}")
+                print()
+                continue
+
+            flags = 0 if check.case_sensitive else regex_proc.regex_module.IGNORECASE
+            check_matches = 0
+
+            for tu in parser.get_trans_units():
+                target_text = tu.get_target_text()
+                if target_text:
+                    matches = regex_proc.find_in_text(
+                        target_text,
+                        check.pattern,
+                        flags=flags,
+                        ignore_tags=True,
+                        exclude_pattern=check.exclude_pattern
+                    )
+
+                    if matches:
+                        for start, end, matched in matches:
+                            print(f"    [TU {tu.id}] '{matched}' (pos {start}-{end})")
+                            check_matches += 1
+                            total_matches += 1
+
+            if check_matches > 0:
+                print(f"    ✓ Found {check_matches} match(es)")
+            else:
+                print(f"    ○ No matches")
+            print()
+
+        print("─" * 60)
+        print(f"Total matches found: {total_matches}")
+
+    return 0
+
+
+def batch_replace_command(args):
+    """Execute batch replace operation using a QA profile."""
+    print(f"Running batch replacements on: {args.file}")
+    print(f"QA Profile: {args.profile}")
+    print()
+
+    # Load QA profile
+    profile = QAProfileManager.load_from_xml(args.profile)
+    print(f"Profile: {profile.name}")
+    print(f"Description: {profile.description}")
+    print()
+
+    # Create backup
+    if not args.no_backup:
+        backup_mgr = BackupManager()
+        backup_path = backup_mgr.create_backup(args.file)
+        if backup_path:
+            print(f"Backup created: {backup_path}\n")
+        else:
+            print("Warning: Backup failed\n")
+
+    # Parse XLIFF
+    parser = XLIFFParser(args.file)
+    if not parser.parse():
+        print("Failed to parse XLIFF file")
+        return 1
+
+    # Create regex processor
+    regex_proc = RegexProcessor()
+
+    # Get enabled checks that have replacements
+    enabled_checks = [c for c in QAProfileManager.get_enabled_checks(profile) if c.replacement]
+    print(f"Running {len(enabled_checks)} enabled replacements...")
+    print("─" * 60)
+    print()
+
+    total_replacements = 0
+    total_units_modified = 0
+
+    # Track which TUs were modified to avoid duplicate modifications
+    modified_tus = set()
+
+    for check in enabled_checks:
+        print(f"[{check.order}] {check.name}")
+        print(f"    Pattern: {check.pattern}")
+        print(f"    Replacement: {check.replacement}")
+        if check.exclude_pattern:
+            print(f"    Exclude: {check.exclude_pattern}")
+
+        # Validate pattern
+        is_valid, error = regex_proc.validate_pattern(check.pattern)
+        if not is_valid:
+            print(f"    ✗ Invalid pattern: {error}")
+            print()
+            continue
+
+        flags = 0 if check.case_sensitive else regex_proc.regex_module.IGNORECASE
+        check_replacements = 0
+        check_units = 0
+
+        for tu in parser.get_trans_units():
+            target_text = tu.get_target_text()
+            if target_text:
+                new_text, count = regex_proc.replace_in_text(
+                    target_text,
+                    check.pattern,
+                    check.replacement,
+                    flags=flags,
+                    ignore_tags=True,
+                    exclude_pattern=check.exclude_pattern
+                )
+
+                if count > 0:
+                    print(f"    [TU {tu.id}] {count} replacement(s)")
+                    print(f"      Before: {target_text[:60]}...")
+                    print(f"      After:  {new_text[:60]}...")
+
+                    tu.set_target_text(new_text)
+                    check_replacements += count
+                    check_units += 1
+                    modified_tus.add(tu.id)
+
+        if check_replacements > 0:
+            print(f"    ✓ {check_replacements} replacement(s) in {check_units} unit(s)")
+            total_replacements += check_replacements
+        else:
+            print(f"    ○ No replacements")
+        print()
+
+    total_units_modified = len(modified_tus)
+
+    # Save modified file
+    if total_replacements > 0:
+        output_path = args.output if args.output else args.file
+        if parser.save(output_path):
+            print("─" * 60)
+            print("Success!")
+            print(f"Modified units: {total_units_modified}")
+            print(f"Total replacements: {total_replacements}")
+            print(f"Saved to: {output_path}")
+        else:
+            print("Failed to save file")
+            return 1
+    else:
+        print("No replacements made - file unchanged")
+
+    # JSON output for GUI
+    if args.json:
+        result = {
+            'success': total_replacements > 0,
+            'modified_units': total_units_modified,
+            'total_replacements': total_replacements,
+            'output_path': args.output if args.output else args.file
+        }
+        print(json.dumps(result))
+
+    return 0
+
+
+def replace_command(args):
+    """Execute replace operation."""
+    print(f"Processing: {args.file}")
+    print(f"Pattern: {args.pattern}")
+    print(f"Replacement: {args.replacement}")
+    print()
+
+    # Create backup
+    if not args.no_backup:
+        backup_mgr = BackupManager()
+        backup_path = backup_mgr.create_backup(args.file)
+        if backup_path:
+            print(f"Backup created: {backup_path}\n")
+        else:
+            print("Warning: Backup failed\n")
+
+    # Parse XLIFF
+    parser = XLIFFParser(args.file)
+    if not parser.parse():
+        print("Failed to parse XLIFF file")
+        return 1
+
+    # Create regex processor
+    regex_proc = RegexProcessor()
+
+    # Validate pattern
+    is_valid, error = regex_proc.validate_pattern(args.pattern)
+    if not is_valid:
+        print(f"Invalid regex pattern: {error}")
+        return 1
+
+    # Replace in translation units
+    total_replacements = 0
+    modified_units = 0
+    flags = 0 if args.case_sensitive else regex_proc.regex_module.IGNORECASE
+
+    for tu in parser.get_trans_units():
+        # Replace in target (default)
+        if args.target or (not args.source and not args.target):
+            target_text = tu.get_target_text()
+            if target_text:
+                exclude = getattr(args, 'exclude', None)
+                new_text, count = regex_proc.replace_in_text(
+                    target_text,
+                    args.pattern,
+                    args.replacement,
+                    flags=flags,
+                    ignore_tags=not args.include_tags,
+                    max_replacements=args.max_replacements if args.max_replacements > 0 else 0,
+                    exclude_pattern=exclude
+                )
+
+                if count > 0:
+                    print(f"[TU: {tu.id}] TARGET:")
+                    print(f"  Before: {target_text}")
+                    print(f"  After:  {new_text}")
+                    print(f"  Replacements: {count}\n")
+
+                    tu.set_target_text(new_text)
+                    total_replacements += count
+                    modified_units += 1
+
+        # Replace in source (if requested)
+        if args.source:
+            print("Warning: Replacing in source segments is not recommended")
+            # Implementation would go here if needed
+
+    # Save modified file
+    if total_replacements > 0:
+        output_path = args.output if args.output else args.file
+        if parser.save(output_path):
+            print(f"\nSuccess!")
+            print(f"Modified units: {modified_units}")
+            print(f"Total replacements: {total_replacements}")
+            print(f"Saved to: {output_path}")
+
+            # Offer to save pattern if --save flag is set
+            if hasattr(args, 'save') and args.save:
+                print("\n" + "─" * 60)
+                print("Save this replacement pattern to library?")
+                name = input("Pattern name (or press Enter to skip): ").strip()
+
+                if name:
+                    library = PatternLibrary()
+                    library.load_custom_patterns()
+
+                    description = input("Description (optional): ").strip()
+                    category = input("Category (default: Custom): ").strip() or "Custom"
+
+                    new_pattern = Pattern(
+                        name=name,
+                        pattern=args.pattern,
+                        replacement=args.replacement,
+                        description=description,
+                        category=category,
+                        case_sensitive=args.case_sensitive,
+                        enabled=True,
+                        tags=["saved-from-replace"]
+                    )
+
+                    if library.add_pattern(new_pattern):
+                        if library.save_custom_patterns():
+                            print(f"✓ Pattern '{name}' saved to library!")
+                            print(f"  Use it later with: python src/cli.py patterns apply --name \"{name}\" --file FILE")
+                        else:
+                            print("✗ Failed to save pattern")
+                    else:
+                        print("✗ Pattern with that name already exists")
+
+        else:
+            print("\nFailed to save file")
+            return 1
+    else:
+        print("\nNo replacements made")
+
+    return 0
+
+
+def stats_command(args):
+    """Show statistics about XLIFF/TMX file."""
+    import json
+
+    target_lang = getattr(args, 'target_lang', None)
+    parser = get_parser(args.file, target_lang)
+    if not parser.parse():
+        if args.json:
+            print(json.dumps({"error": "Failed to parse XLIFF file"}))
+        else:
+            print("Failed to parse XLIFF file")
+        return 1
+
+    stats = parser.get_statistics()
+
+    if args.json:
+        # Output JSON for GUI integration
+        trans_units = []
+        for tu in parser.get_trans_units():
+            # Extract metadata from trans-unit element
+            metadata = {}
+
+            # Common XLIFF metadata attributes
+            if tu.element is not None:
+                # Match quality/percentage from different CAT tools
+                if 'percent' in tu.element.attrib:
+                    metadata['match_percent'] = tu.element.get('percent')
+                if 'match-quality' in tu.element.attrib:
+                    metadata['match_quality'] = tu.element.get('match-quality')
+
+                # Locked/approved status
+                if 'translate' in tu.element.attrib:
+                    metadata['translate'] = tu.element.get('translate')
+                    # translate="no" means the segment is locked/non-translatable
+                    if tu.element.get('translate') == 'no':
+                        metadata['locked'] = 'yes'
+                if 'approved' in tu.element.attrib:
+                    metadata['approved'] = tu.element.get('approved')
+
+                # MemoQ MQXLIFF specific metadata (mq: namespace)
+                # Check for mq: namespace attributes
+                for attr_name, attr_value in tu.element.attrib.items():
+                    # Skip empty values
+                    if not attr_value or attr_value.strip() == '':
+                        continue
+
+                    # MemoQ status
+                    if 'status' in attr_name.lower() and 'mq' in attr_name.lower():
+                        metadata['state'] = attr_value
+                    # MemoQ match percent
+                    elif 'percent' in attr_name.lower() and 'mq' in attr_name.lower():
+                        metadata['match_percent'] = attr_value
+                    # MemoQ last changing user
+                    elif 'lastchanginguser' in attr_name.lower():
+                        metadata['modified_by'] = attr_value
+                    # MemoQ last changed timestamp
+                    elif 'lastchangedtimestamp' in attr_name.lower():
+                        # Only set if it's a valid timestamp (not 0001-01-01)
+                        if not attr_value.startswith('0001'):
+                            metadata['modified_date'] = attr_value.replace('T', ' ').replace('Z', '')
+                    # MemoQ locked status
+                    elif 'locked' in attr_name.lower() and 'mq' in attr_name.lower():
+                        metadata['locked'] = 'yes' if attr_value.lower() in ('true', '1', 'locked') else 'no'
+                    # MemoQ translator commit username
+                    elif 'translatorcommitusername' in attr_name.lower():
+                        metadata['created_by'] = attr_value
+                    # MemoQ translator commit timestamp
+                    elif 'translatorcommittimestamp' in attr_name.lower():
+                        # Only set if it's a valid timestamp (not 0001-01-01)
+                        if not attr_value.startswith('0001'):
+                            metadata['created_date'] = attr_value.replace('T', ' ').replace('Z', '')
+
+                # Phrase MXLIFF specific metadata (m: namespace)
+                # Extract attributes with {Memsource} or {m:} namespace prefix
+                for attr_name, attr_value in tu.element.attrib.items():
+                    # Handle Phrase/Memsource custom attributes
+                    if 'confirmed' in attr_name.lower():
+                        metadata['approved'] = 'yes' if attr_value == '1' else 'no'
+                    elif 'score' in attr_name.lower() and 'gross' not in attr_name.lower():
+                        metadata['match_percent'] = str(int(float(attr_value) * 100))
+                    elif 'locked' in attr_name.lower():
+                        metadata['locked'] = 'yes' if attr_value.lower() in ('true', '1', 'locked') else 'no'
+                    elif 'modified-at' in attr_name.lower():
+                        # Convert timestamp to readable format
+                        from datetime import datetime
+                        try:
+                            timestamp = int(attr_value) / 1000  # Convert from milliseconds
+                            dt = datetime.fromtimestamp(timestamp)
+                            metadata['modified_date'] = dt.strftime('%Y-%m-%d %H:%M:%S')
+                        except:
+                            metadata['modified_date'] = attr_value
+                    elif 'modified-by' in attr_name.lower():
+                        metadata['modified_by'] = attr_value
+                    elif 'created-at' in attr_name.lower():
+                        from datetime import datetime
+                        try:
+                            timestamp = int(attr_value) / 1000
+                            dt = datetime.fromtimestamp(timestamp)
+                            metadata['created_date'] = dt.strftime('%Y-%m-%d %H:%M:%S')
+                        except:
+                            metadata['created_date'] = attr_value
+                    elif 'created-by' in attr_name.lower():
+                        metadata['created_by'] = attr_value
+                    elif 'trans-origin' in attr_name.lower():
+                        metadata['origin'] = attr_value
+
+                # Modified date/user - check target element (standard XLIFF)
+                if tu.target is not None:
+                    if 'changedate' in tu.target.attrib:
+                        metadata['modified_date'] = tu.target.get('changedate')
+                    if 'changeid' in tu.target.attrib:
+                        metadata['modified_by'] = tu.target.get('changeid')
+                    if 'state' in tu.target.attrib:
+                        metadata['state'] = tu.target.get('state')
+
+                # SDLXLIFF specific metadata from <sdl:seg-defs>
+                # Look for sdl:seg-defs element
+                sdl_ns = {'sdl': 'http://sdl.com/FileTypes/SdlXliff/1.0'}
+                seg_defs = tu.element.find('.//sdl:seg-defs', namespaces=sdl_ns)
+                if seg_defs is not None:
+                    # Find first sdl:seg element
+                    seg = seg_defs.find('sdl:seg', namespaces=sdl_ns)
+                    if seg is not None:
+                        # Extract percent, conf (state), origin
+                        if 'percent' in seg.attrib:
+                            metadata['match_percent'] = seg.get('percent')
+                        if 'conf' in seg.attrib:
+                            metadata['state'] = seg.get('conf')
+                        if 'origin' in seg.attrib:
+                            metadata['origin'] = seg.get('origin')
+                        if 'origin-system' in seg.attrib:
+                            origin_system = seg.get('origin-system')
+                            if origin_system:
+                                if 'origin' in metadata:
+                                    metadata['origin'] = f"{metadata['origin']} ({origin_system})"
+                                else:
+                                    metadata['origin'] = origin_system
+
+            # ICU validation
+            source_text = tu.get_source_text()
+            target_text = tu.get_target_text()
+            icu_errors = None
+
+            if ICUValidator.has_icu_syntax(source_text) or ICUValidator.has_icu_syntax(target_text):
+                errors = ICUValidator.validate_segment(source_text, target_text)
+                if errors:
+                    icu_errors = errors
+
+            trans_units.append({
+                "id": tu.id,
+                "source": source_text,
+                "target": target_text,
+                "metadata": metadata if metadata else None,
+                "icu_errors": icu_errors,
+                "tms_metadata": tu.tms_metadata
+            })
+
+        # Filter out empty/structural segments (only tags, no text content)
+        # These are common in SDLXLIFF files
+        filtered_units = []
+        for unit in trans_units:
+            # Check if source has actual text (not just tags like <x id="4"/>)
+            source = unit['source']
+            # Skip if source is empty or only contains inline tags
+            if source and not (source.strip().startswith('<x ') and source.strip().endswith('/>')) and source.strip() not in ['', '<x/>', '<g/>']:
+                filtered_units.append(unit)
+
+        # Use filtered units if they exist, otherwise use all
+        display_units = filtered_units if filtered_units else trans_units
+
+        # Add sequential segment numbers (1, 2, 3...) for display
+        # Keep original ID intact so save/apply-edits can match correctly
+        for idx, unit in enumerate(display_units, start=1):
+            unit['segment_number'] = idx
+
+        # Recalculate stats based on filtered display_units
+        filtered_stats = {
+            'total_units': len(display_units),
+            'translated': sum(1 for u in display_units if u['target'] and u['target'].strip()),
+            'untranslated': sum(1 for u in display_units if not u['target'] or not u['target'].strip())
+        }
+
+        output = {
+            "trans_units": display_units,
+            "stats": filtered_stats
+        }
+        print(json.dumps(output))
+    else:
+        # Human-readable output
+        print(f"XLIFF Statistics for: {args.file}")
+        print(f"{'─' * 50}")
+        print(f"Total translation units: {stats['total_units']}")
+        print(f"Translated: {stats['translated']}")
+        print(f"Untranslated: {stats['untranslated']}")
+
+        if stats['total_units'] > 0:
+            completion = (stats['translated'] / stats['total_units']) * 100
+            print(f"Completion: {completion:.1f}%")
+
+    return 0
+
+
+def xbench_command(args):
+    """Parse Xbench checklist file."""
+    print(f"Parsing Xbench checklist: {args.file}\n")
+
+    parser = XbenchParser(args.file)
+    if not parser.parse():
+        print("Failed to parse Xbench checklist")
+        return 1
+
+    print(f"Checklist: {parser.checklist_name}")
+    print()
+
+    stats = parser.get_statistics()
+    print("Statistics:")
+    print(f"  Total items: {stats['total_items']}")
+    print(f"  Regex items: {stats['regex_items']}")
+    print(f"  Enabled items: {stats['enabled_items']}")
+    print(f"  With replacement: {stats['with_replacement']}")
+    print()
+
+    if args.export:
+        patterns = parser.export_as_patterns()
+        print(f"Exportable regex patterns: {len(patterns)}")
+        print()
+
+        for i, pattern in enumerate(patterns, 1):
+            print(f"{i}. {pattern['name']}")
+            print(f"   Pattern: {pattern['pattern']}")
+            if pattern['replacement']:
+                print(f"   Replacement: {pattern['replacement']}")
+            print(f"   Category: {pattern['category']}")
+            print()
+
+    return 0
+
+
+def backup_command(args):
+    """Manage backups."""
+    backup_mgr = BackupManager()
+
+    if args.action == 'list':
+        backups = backup_mgr.list_backups(args.file)
+        if backups:
+            print(f"Backups for {args.file}:")
+            for backup in backups:
+                info = backup_mgr.get_backup_info(backup)
+                print(f"  - {info['name']} ({info['size']} bytes, {info['modified']})")
+        else:
+            print("No backups found")
+
+    elif args.action == 'restore':
+        if args.backup:
+            success = backup_mgr.restore_backup(args.backup, args.file)
+            if success:
+                print("Backup restored successfully")
+            else:
+                print("Failed to restore backup")
+                return 1
+        else:
+            print("Error: --backup argument required for restore")
+            return 1
+
+    elif args.action == 'cleanup':
+        count = backup_mgr.cleanup_old_backups(args.file, keep_count=args.keep)
+        print(f"Deleted {count} old backups")
+
+    return 0
+
+
+def patterns_command(args):
+    """Manage pattern library."""
+    library = PatternLibrary()
+    library.load_custom_patterns()
+
+    if args.action == 'list':
+        # List patterns with optional filtering
+        patterns = library.list_patterns(
+            category=args.category,
+            tag=args.tag,
+            enabled_only=args.enabled
+        )
+
+        if not patterns:
+            print("No patterns found")
+            return 0
+
+        # Group by category if not filtering by category
+        if not args.category:
+            categories = {}
+            for pattern in patterns:
+                if pattern.category not in categories:
+                    categories[pattern.category] = []
+                categories[pattern.category].append(pattern)
+
+            for category in sorted(categories.keys()):
+                print(f"\n{category}:")
+                print("─" * 60)
+                for pattern in categories[category]:
+                    status = "✓" if pattern.enabled else "○"
+                    print(f"  [{status}] {pattern.name}")
+                    print(f"      Pattern: {pattern.pattern}")
+                    if pattern.replacement:
+                        print(f"      Replacement: {pattern.replacement}")
+                    if pattern.description:
+                        print(f"      {pattern.description}")
+                    if pattern.tags:
+                        print(f"      Tags: {', '.join(pattern.tags)}")
+                    print()
+        else:
+            for pattern in patterns:
+                status = "✓" if pattern.enabled else "○"
+                print(f"[{status}] {pattern.name}")
+                print(f"    Pattern: {pattern.pattern}")
+                if pattern.replacement:
+                    print(f"    Replacement: {pattern.replacement}")
+                if pattern.description:
+                    print(f"    {pattern.description}")
+                print()
+
+    elif args.action == 'search':
+        if not args.query:
+            print("Error: --query required for search")
+            return 1
+
+        results = library.search_patterns(args.query)
+
+        if not results:
+            print(f"No patterns found matching '{args.query}'")
+            return 0
+
+        print(f"Found {len(results)} patterns matching '{args.query}':\n")
+        for pattern in results:
+            status = "✓" if pattern.enabled else "○"
+            print(f"[{status}] {pattern.name} ({pattern.category})")
+            print(f"    Pattern: {pattern.pattern}")
+            if pattern.replacement:
+                print(f"    Replacement: {pattern.replacement}")
+            print()
+
+    elif args.action == 'show':
+        if not args.name:
+            print("Error: --name required for show")
+            return 1
+
+        pattern = library.get_pattern_by_name(args.name)
+        if not pattern:
+            print(f"Pattern '{args.name}' not found")
+            return 1
+
+        print(f"Name: {pattern.name}")
+        print(f"Category: {pattern.category}")
+        print(f"Enabled: {'Yes' if pattern.enabled else 'No'}")
+        print(f"Case Sensitive: {'Yes' if pattern.case_sensitive else 'No'}")
+        print(f"\nPattern:")
+        print(f"  {pattern.pattern}")
+        if pattern.replacement:
+            print(f"\nReplacement:")
+            print(f"  {pattern.replacement}")
+        if pattern.description:
+            print(f"\nDescription:")
+            print(f"  {pattern.description}")
+        if pattern.tags:
+            print(f"\nTags:")
+            print(f"  {', '.join(pattern.tags)}")
+
+    elif args.action == 'categories':
+        categories = library.get_categories()
+        print("Available categories:")
+        for cat in categories:
+            count = len(library.get_patterns_by_category(cat))
+            print(f"  - {cat} ({count} patterns)")
+
+    elif args.action == 'tags':
+        tags = library.get_all_tags()
+        print("Available tags:")
+        for tag in tags:
+            count = len(library.get_patterns_by_tag(tag))
+            print(f"  - {tag} ({count} patterns)")
+
+    elif args.action == 'apply':
+        # Apply a pattern from library to a file
+        if not args.name:
+            print("Error: --name required for apply")
+            return 1
+
+        if not args.file:
+            print("Error: --file required for apply")
+            return 1
+
+        pattern = library.get_pattern_by_name(args.name)
+        if not pattern:
+            print(f"Pattern '{args.name}' not found")
+            return 1
+
+        print(f"Applying pattern: {pattern.name}")
+        print(f"Pattern: {pattern.pattern}")
+        if pattern.replacement:
+            print(f"Replacement: {pattern.replacement}")
+        print()
+
+        # Create a mock args object for replace_command
+        class ReplaceArgs:
+            def __init__(self):
+                self.file = args.file
+                self.pattern = pattern.pattern
+                self.replacement = pattern.replacement
+                self.output = args.output
+                self.source = False
+                self.target = True
+                self.case_sensitive = pattern.case_sensitive
+                self.include_tags = False
+                self.no_backup = args.no_backup
+                self.max_replacements = 0
+
+        return replace_command(ReplaceArgs())
+
+    elif args.action == 'add':
+        # Add custom pattern
+        if not args.name or not args.pattern:
+            print("Error: --name and --pattern required for add")
+            return 1
+
+        new_pattern = Pattern(
+            name=args.name,
+            pattern=args.pattern,
+            replacement=args.replacement or "",
+            description=args.description or "",
+            category=args.category or "Custom",
+            case_sensitive=args.case_sensitive,
+            enabled=True,
+            tags=args.tag or []
+        )
+
+        if library.add_pattern(new_pattern):
+            if library.save_custom_patterns():
+                print(f"Pattern '{args.name}' added successfully")
+            else:
+                print("Failed to save pattern")
+                return 1
+        else:
+            print(f"Failed to add pattern (duplicate name?)")
+            return 1
+
+    elif args.action == 'remove':
+        if not args.name:
+            print("Error: --name required for remove")
+            return 1
+
+        if library.remove_pattern(args.name):
+            if library.save_custom_patterns():
+                print(f"Pattern '{args.name}' removed")
+            else:
+                print("Failed to save changes")
+                return 1
+        else:
+            print(f"Pattern '{args.name}' not found")
+            return 1
+
+    return 0
+
+
+def apply_edits_command(args):
+    """Apply edits from JSON file to XLIFF or TMX."""
+    import json
+
+    # Read edits from JSON file
+    try:
+        with open(args.edits_json, 'r', encoding='utf-8') as f:
+            edits = json.load(f)
+    except Exception as e:
+        print(f"Failed to read edits JSON: {e}")
+        return 1
+
+    # Parse file (XLIFF or TMX)
+    target_lang = getattr(args, 'target_lang', None)
+    parser = get_parser(args.file, target_lang)
+    if not parser.parse():
+        print("Failed to parse file")
+        return 1
+
+    # Create backup
+    backup_mgr = BackupManager()
+    backup_path = backup_mgr.create_backup(args.file)
+    if backup_path:
+        print(f"Backup created: {backup_path}")
+
+    # Apply edits
+    edits_dict = {edit['id']: edit['target'] for edit in edits}
+
+    try:
+        for tu in parser.get_trans_units():
+            if tu.id in edits_dict:
+                tu.set_target_text(edits_dict[tu.id])
+
+        # Save modified XLIFF
+        if parser.save(args.file):
+            print(f"Successfully saved {len(edits_dict)} edits to {args.file}")
+            return 0
+        else:
+            print("Failed to save XLIFF file")
+            return 1
+    except Exception as e:
+        print(f"Error applying edits: {e}")
+        return 1
+
+
+def main():
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description='XLIFF Regex Tool - Find & Replace with regex in XLIFF files'
+    )
+
+    subparsers = parser.add_subparsers(dest='command', help='Commands')
+
+    # Find command
+    find_parser = subparsers.add_parser('find', help='Find pattern in XLIFF file')
+    find_parser.add_argument('file', help='XLIFF file path')
+    find_parser.add_argument('pattern', help='Regex pattern to find')
+    find_parser.add_argument('--source', action='store_true', help='Search in source segments')
+    find_parser.add_argument('--target', action='store_true', help='Search in target segments')
+    find_parser.add_argument('--case-sensitive', action='store_true', help='Case sensitive search')
+    find_parser.add_argument('--include-tags', action='store_true', help='Include XML tags in search')
+    find_parser.add_argument('--exclude', help='Exclude pattern (e.g., "19\\d{2}|20\\d{2}" to skip years)')
+    find_parser.add_argument('--save', action='store_true', help='Offer to save pattern to library after search')
+    find_parser.set_defaults(func=find_command)
+
+    # Batch find command
+    batch_find_parser = subparsers.add_parser('batch-find', help='Run multiple regex checks using a QA profile')
+    batch_find_parser.add_argument('file', help='XLIFF file path')
+    batch_find_parser.add_argument('profile', help='QA profile XML file path')
+    batch_find_parser.add_argument('--json', action='store_true', help='Output as JSON (for GUI integration)')
+    batch_find_parser.set_defaults(func=batch_find_command)
+
+    # Batch replace command
+    batch_replace_parser = subparsers.add_parser('batch-replace', help='Run multiple regex replacements using a QA profile')
+    batch_replace_parser.add_argument('file', help='XLIFF file path')
+    batch_replace_parser.add_argument('profile', help='QA profile XML file path')
+    batch_replace_parser.add_argument('--output', '-o', help='Output file (default: overwrite input)')
+    batch_replace_parser.add_argument('--no-backup', action='store_true', help='Skip backup creation')
+    batch_replace_parser.add_argument('--json', action='store_true', help='Output as JSON (for GUI integration)')
+    batch_replace_parser.set_defaults(func=batch_replace_command)
+
+    # Replace command
+    replace_parser = subparsers.add_parser('replace', help='Replace pattern in XLIFF file')
+    replace_parser.add_argument('file', help='XLIFF file path')
+    replace_parser.add_argument('pattern', help='Regex pattern to find')
+    replace_parser.add_argument('replacement', help='Replacement string')
+    replace_parser.add_argument('--output', '-o', help='Output file (default: overwrite input)')
+    replace_parser.add_argument('--source', action='store_true', help='Replace in source segments')
+    replace_parser.add_argument('--target', action='store_true', help='Replace in target segments')
+    replace_parser.add_argument('--case-sensitive', action='store_true', help='Case sensitive search')
+    replace_parser.add_argument('--include-tags', action='store_true', help='Include XML tags in replacement')
+    replace_parser.add_argument('--no-backup', action='store_true', help='Skip backup creation')
+    replace_parser.add_argument('--max-replacements', type=int, default=0,
+                               help='Maximum replacements per segment (0 = unlimited)')
+    replace_parser.add_argument('--exclude', help='Exclude pattern (e.g., "19\\d{2}|20\\d{2}" to skip years)')
+    replace_parser.add_argument('--save', action='store_true', help='Offer to save pattern to library after replacement')
+    replace_parser.set_defaults(func=replace_command)
+
+    # Stats command
+    stats_parser = subparsers.add_parser('stats', help='Show XLIFF/TMX file statistics')
+    stats_parser.add_argument('file', help='XLIFF or TMX file path')
+    stats_parser.add_argument('--json', action='store_true', help='Output as JSON')
+    stats_parser.add_argument('--target-lang', help='Target language code (for TMX files with multiple languages)')
+    stats_parser.set_defaults(func=stats_command)
+
+    # TMX languages command
+    tmx_languages_parser = subparsers.add_parser('tmx-languages', help='List available languages in a TMX file')
+    tmx_languages_parser.add_argument('file', help='TMX file path')
+    tmx_languages_parser.set_defaults(func=tmx_languages_command)
+
+    # Xbench command
+    xbench_parser = subparsers.add_parser('xbench', help='Parse Xbench checklist file')
+    xbench_parser.add_argument('file', help='Xbench checklist file (.xbckl)')
+    xbench_parser.add_argument('--export', action='store_true', help='Export patterns')
+    xbench_parser.set_defaults(func=xbench_command)
+
+    # Apply-edits command (for GUI integration)
+    apply_edits_parser = subparsers.add_parser('apply-edits', help='Apply edits from JSON file')
+    apply_edits_parser.add_argument('file', help='XLIFF or TMX file path')
+    apply_edits_parser.add_argument('edits_json', help='JSON file with edits')
+    apply_edits_parser.add_argument('--target-lang', help='Target language code (for TMX files with multiple languages)')
+    apply_edits_parser.set_defaults(func=apply_edits_command)
+
+    # Backup command
+    backup_parser = subparsers.add_parser('backup', help='Manage backups')
+    backup_parser.add_argument('action', choices=['list', 'restore', 'cleanup'],
+                              help='Backup action')
+    backup_parser.add_argument('file', help='Original file path')
+    backup_parser.add_argument('--backup', help='Backup file to restore')
+    backup_parser.add_argument('--keep', type=int, default=10,
+                              help='Number of backups to keep (for cleanup)')
+    backup_parser.set_defaults(func=backup_command)
+
+    # Patterns command
+    patterns_parser = subparsers.add_parser('patterns', help='Manage pattern library')
+    patterns_parser.add_argument('action',
+                                choices=['list', 'search', 'show', 'categories', 'tags',
+                                        'apply', 'add', 'remove'],
+                                help='Pattern action')
+    patterns_parser.add_argument('--category', help='Filter by category')
+    patterns_parser.add_argument('--tag', action='append', help='Filter/tag patterns')
+    patterns_parser.add_argument('--enabled', action='store_true', help='Show only enabled patterns')
+    patterns_parser.add_argument('--query', help='Search query')
+    patterns_parser.add_argument('--name', help='Pattern name')
+    patterns_parser.add_argument('--pattern', help='Regex pattern (for add)')
+    patterns_parser.add_argument('--replacement', help='Replacement string (for add)')
+    patterns_parser.add_argument('--description', help='Pattern description (for add)')
+    patterns_parser.add_argument('--case-sensitive', action='store_true', help='Case sensitive (for add)')
+    patterns_parser.add_argument('--file', help='XLIFF file to apply pattern to')
+    patterns_parser.add_argument('--output', '-o', help='Output file (for apply)')
+    patterns_parser.add_argument('--no-backup', action='store_true', help='Skip backup (for apply)')
+    patterns_parser.set_defaults(func=patterns_command)
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        return 1
+
+    return args.func(args)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

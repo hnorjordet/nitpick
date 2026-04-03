@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qa_profile>
+    <metadata>
+        <name>Norwegian QA Checks</name>
+        <description>Standard quality checks for Norwegian translations</description>
+        <language>no</language>
+        <created>2024-12-26</created>
+        <modified>2024-12-26</modified>
+    </metadata>
+
+    <checks>
+        <!-- Check 1: Multiple spaces -->
+        <check order="1" enabled="true">
+            <name>Multiple spaces</name>
+            <description>Find multiple consecutive spaces</description>
+            <pattern>\s{2,}</pattern>
+            <replacement> </replacement>
+            <category>Whitespace</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+
+        <!-- Check 2: Trailing spaces -->
+        <check order="2" enabled="true">
+            <name>Trailing spaces</name>
+            <description>Find trailing spaces at end of segments</description>
+            <pattern>\s+$</pattern>
+            <replacement></replacement>
+            <category>Whitespace</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+
+        <!-- Check 3: Leading spaces -->
+        <check order="3" enabled="true">
+            <name>Leading spaces</name>
+            <description>Find leading spaces at start of segments</description>
+            <pattern>^\s+</pattern>
+            <replacement></replacement>
+            <category>Whitespace</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+
+        <!-- Check 4: Double periods -->
+        <check order="4" enabled="true">
+            <name>Double periods</name>
+            <description>Find double or multiple periods</description>
+            <pattern>\.{2,}</pattern>
+            <replacement>.</replacement>
+            <category>Punctuation</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern>^\.\.\.+$</exclude_pattern> <!-- Exclude intentional ellipsis -->
+        </check>
+
+        <!-- Check 5: Space before punctuation -->
+        <check order="5" enabled="true">
+            <name>Space before punctuation</name>
+            <description>Find spaces before periods, commas, etc.</description>
+            <pattern>\s+([.,!?:;])</pattern>
+            <replacement>$1</replacement>
+            <category>Punctuation</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+
+        <!-- Check 6: Norwegian thousand separator (example with exclude) -->
+        <check order="6" enabled="false">
+            <name>Norwegian thousand separator</name>
+            <description>Add non-breaking space to 4-digit numbers (excluding years)</description>
+            <pattern>\b(\d{1})(\d{3})\b</pattern>
+            <replacement>$1 $2</replacement>
+            <category>Norwegian</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern>^(19|20)\d{2}$</exclude_pattern> <!-- Exclude years 1900-2099 -->
+        </check>
+    </checks>
+</qa_profile>

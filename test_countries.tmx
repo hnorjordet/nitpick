@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tmx version="1.4">
+  <header creationtool="RegExTool" creationtoolversion="1.0" segtype="sentence" adminlang="en" srclang="en" datatype="plaintext"/>
+  <body>
+    <tu tuid="1">
+      <tuv xml:lang="en"><seg>Norway</seg></tuv>
+      <tuv xml:lang="no"><seg>Norge</seg></tuv>
+    </tu>
+    <tu tuid="2">
+      <tuv xml:lang="en"><seg>Sweden</seg></tuv>
+      <tuv xml:lang="no"><seg>Sverige</seg></tuv>
+    </tu>
+    <tu tuid="3">
+      <tuv xml:lang="en"><seg>Denmark</seg></tuv>
+      <tuv xml:lang="no"><seg>Danmark</seg></tuv>
+    </tu>
+    <tu tuid="4">
+      <tuv xml:lang="en"><seg>Finland</seg></tuv>
+      <tuv xml:lang="no"><seg>Finland</seg></tuv>
+    </tu>
+    <tu tuid="5">
+      <tuv xml:lang="en"><seg>Iceland</seg></tuv>
+      <tuv xml:lang="no"><seg>Island</seg></tuv>
+    </tu>
+  </body>
+</tmx>

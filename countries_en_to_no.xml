@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<regex-library>
+  <category name="European Countries EN→NO">
+    <entry>
+      <name>Norway</name>
+      <description>Norway to Norge</description>
+      <pattern>Norway</pattern>
+      <replace>Norge</replace>
+    </entry>
+    <entry>
+      <name>Sweden</name>
+      <description>Sweden to Sverige</description>
+      <pattern>Sweden</pattern>
+      <replace>Sverige</replace>
+    </entry>
+    <entry>
+      <name>Denmark</name>
+      <description>Denmark to Danmark</description>
+      <pattern>Denmark</pattern>
+      <replace>Danmark</replace>
+    </entry>
+    <entry>
+      <name>Finland</name>
+      <description>Finland to Finland</description>
+      <pattern>Finland</pattern>
+      <replace>Finland</replace>
+    </entry>
+    <entry>
+      <name>Iceland</name>
+      <description>Iceland to Island</description>
+      <pattern>Iceland</pattern>
+      <replace>Island</replace>
+    </entry>
+    <entry>
+      <name>Germany</name>
+      <description>Germany to Tyskland</description>
+      <pattern>Germany</pattern>
+      <replace>Tyskland</replace>
+    </entry>
+    <entry>
+      <name>France</name>
+      <description>France to Frankrike</description>
+      <pattern>France</pattern>
+      <replace>Frankrike</replace>
+    </entry>
+    <entry>
+      <name>Spain</name>
+      <description>Spain to Spania</description>
+      <pattern>Spain</pattern>
+      <replace>Spania</replace>
+    </entry>
+    <entry>
+      <name>Italy</name>
+      <description>Italy to Italia</description>
+      <pattern>Italy</pattern>
+      <replace>Italia</replace>
+    </entry>
+    <entry>
+      <name>United Kingdom</name>
+      <description>United Kingdom to Storbritannia</description>
+      <pattern>United Kingdom</pattern>
+      <replace>Storbritannia</replace>
+    </entry>
+    <entry>
+      <name>Poland</name>
+      <description>Poland to Polen</description>
+      <pattern>Poland</pattern>
+      <replace>Polen</replace>
+    </entry>
+    <entry>
+      <name>Netherlands</name>
+      <description>Netherlands to Nederland</description>
+      <pattern>Netherlands</pattern>
+      <replace>Nederland</replace>
+    </entry>
+    <entry>
+      <name>Belgium</name>
+      <description>Belgium to Belgia</description>
+      <pattern>Belgium</pattern>
+      <replace>Belgia</replace>
+    </entry>
+    <entry>
+      <name>Austria</name>
+      <description>Austria to Østerrike</description>
+      <pattern>Austria</pattern>
+      <replace>Østerrike</replace>
+    </entry>
+    <entry>
+      <name>Switzerland</name>
+      <description>Switzerland to Sveits</description>
+      <pattern>Switzerland</pattern>
+      <replace>Sveits</replace>
+    </entry>
+    <entry>
+      <name>Portugal</name>
+      <description>Portugal to Portugal</description>
+      <pattern>Portugal</pattern>
+      <replace>Portugal</replace>
+    </entry>
+    <entry>
+      <name>Greece</name>
+      <description>Greece to Hellas</description>
+      <pattern>Greece</pattern>
+      <replace>Hellas</replace>
+    </entry>
+    <entry>
+      <name>Czech Republic</name>
+      <description>Czech Republic to Tsjekkia</description>
+      <pattern>Czech Republic</pattern>
+      <replace>Tsjekkia</replace>
+    </entry>
+    <entry>
+      <name>Hungary</name>
+      <description>Hungary to Ungarn</description>
+      <pattern>Hungary</pattern>
+      <replace>Ungarn</replace>
+    </entry>
+    <entry>
+      <name>Romania</name>
+      <description>Romania to Romania</description>
+      <pattern>Romania</pattern>
+      <replace>Romania</replace>
+    </entry>
+    <entry>
+      <name>Bulgaria</name>
+      <description>Bulgaria to Bulgaria</description>
+      <pattern>Bulgaria</pattern>
+      <replace>Bulgaria</replace>
+    </entry>
+    <entry>
+      <name>Croatia</name>
+      <description>Croatia to Kroatia</description>
+      <pattern>Croatia</pattern>
+      <replace>Kroatia</replace>
+    </entry>
+    <entry>
+      <name>Slovakia</name>
+      <description>Slovakia to Slovakia</description>
+      <pattern>Slovakia</pattern>
+      <replace>Slovakia</replace>
+    </entry>
+    <entry>
+      <name>Slovenia</name>
+      <description>Slovenia to Slovenia</description>
+      <pattern>Slovenia</pattern>
+      <replace>Slovenia</replace>
+    </entry>
+    <entry>
+      <name>Lithuania</name>
+      <description>Lithuania to Litauen</description>
+      <pattern>Lithuania</pattern>
+      <replace>Litauen</replace>
+    </entry>
+    <entry>
+      <name>Latvia</name>
+      <description>Latvia to Latvia</description>
+      <pattern>Latvia</pattern>
+      <replace>Latvia</replace>
+    </entry>
+    <entry>
+      <name>Estonia</name>
+      <description>Estonia to Estland</description>
+      <pattern>Estonia</pattern>
+      <replace>Estland</replace>
+    </entry>
+    <entry>
+      <name>Ireland</name>
+      <description>Ireland to Irland</description>
+      <pattern>Ireland</pattern>
+      <replace>Irland</replace>
+    </entry>
+    <entry>
+      <name>Luxembourg</name>
+      <description>Luxembourg to Luxemburg</description>
+      <pattern>Luxembourg</pattern>
+      <replace>Luxemburg</replace>
+    </entry>
+    <entry>
+      <name>Malta</name>
+      <description>Malta to Malta</description>
+      <pattern>Malta</pattern>
+      <replace>Malta</replace>
+    </entry>
+  </category>
+</regex-library>

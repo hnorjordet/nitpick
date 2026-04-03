@@ -1,0 +1,48 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Tauri
+gui/src-tauri/target/
+gui/src-tauri/gen/
+
+# Node
+gui/node_modules/
+gui/dist/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Signing keys - NEVER commit these!
+*.key
+*.pem
+
+# Build artifacts
+gui/src-tauri/bin/qa_app_cli
+gui/src-tauri/bin/xliff_cli
+
+# User data
+.qa-app/
+.xliff-regex-tool/
+library.xml
+
+# Logs
+*.log

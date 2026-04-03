@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" target-language="nb-NO" datatype="plaintext" original="numbers.txt">
+    <body>
+      <trans-unit id="1">
+        <source>The price is 1,000 USD</source>
+        <target>Prisen er 1000 USD</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>In the year 2024</source>
+        <target>I året 2024</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>Population: 5,000,000</source>
+        <target>Befolkning: 5000000</target>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>Born in 1995</source>
+        <target>Født i 1995</target>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>Cost: 2500 NOK</source>
+        <target>Kostnad: 2500 NOK</target>
+      </trans-unit>
+      <trans-unit id="6">
+        <source>The year 2000 was special</source>
+        <target>Året 2000 var spesielt</target>
+      </trans-unit>
+      <trans-unit id="7">
+        <source>Amount: 7500</source>
+        <target>Beløp: 7500</target>
+      </trans-unit>
+      <trans-unit id="8">
+        <source>Established in 1850</source>
+        <target>Etablert i 1850</target>
+      </trans-unit>
+      <trans-unit id="9">
+        <source>Phone: 1234 56 78</source>
+        <target>Telefon: 1234 56 78</target>
+      </trans-unit>
+      <trans-unit id="10">
+        <source>The number 9999 is not a year</source>
+        <target>Tallet 9999 er ikke et årstall</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

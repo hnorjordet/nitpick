@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qa_profile>
+    <metadata>
+        <name>Bookings.com</name>
+        <description>Sære ting som Bookings.com bruker</description>
+        <language>No</language>
+        <created>1769385600</created>
+        <modified>1769385600</modified>
+    </metadata>
+
+    <checks>
+        <check order="1" enabled="true">
+            <name>Booking.coms</name>
+            <description>Endrer bookings.coms til bookings.com&apos;s</description>
+            <pattern>/\b([a-z]+)\.coms\b/gm</pattern>
+            <replacement>$1.com&apos;s</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="2" enabled="true">
+            <name>Tre prikker til ellipse</name>
+            <description>Erstatter tre punktumer med ellipsetegnet</description>
+            <pattern>\.\.\.</pattern>
+            <replacement>…</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="3" enabled="true">
+            <name>Ord+mellomrom+tre prikker</name>
+            <description>Erstatter ord… med ord ...</description>
+            <pattern>(\w)\.\.\.</pattern>
+            <replacement>$1 …</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="4" enabled="true">
+            <name>Hardt mellomrom tall+valuta</name>
+            <description>Legger til hardt mellomrom mellom tall og valuta</description>
+            <pattern>(\d+)\s+(kr|NOK|EUR|USD|GBP)</pattern>
+            <replacement>$1 $2</replacement>
+            <category>Harde mellomrom</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="5" enabled="true">
+            <name>Hardt mellomrom tall+temp</name>
+            <description>Legger til hardt mellomrom mellom tall og temperaturenhet (Celsius)</description>
+            <pattern>(\d{1,2})\s*°C</pattern>
+            <replacement>$1 °C</replacement>
+            <category>Harde mellomrom</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="6" enabled="true">
+            <name>Hardt mellomrom etter forkortelser</name>
+            <description>Legger til hardt mellomrom etter vanlige norske forkortelser</description>
+            <pattern>(kl|ca|f\.eks|bl\.a|dvs|mht|osv|etc)\.?\s+</pattern>
+            <replacement>$1. </replacement>
+            <category>Harde mellomrom</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="7" enabled="true">
+            <name>Dobbelt mellomrom</name>
+            <description>Finner to eller flere mellomrom etter hverandre</description>
+            <pattern>\s{2,}</pattern>
+            <replacement></replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="8" enabled="true">
+            <name>Doble ord</name>
+            <description>Finner ord som er skrevet to ganger etter hverandre</description>
+            <pattern>\b(\w+)\s+\1\b</pattern>
+            <replacement>$1</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="9" enabled="true">
+            <name>Rette anførselstegn til guillements</name>
+            <description>Finner tekst innenfor rette engelske anførselstegn og erstatter med norske guillemets</description>
+            <pattern>\&quot;([^\&quot;]+)\&quot;</pattern>
+            <replacement>«$1»</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="10" enabled="true">
+            <name>Gåsetegn til guillements</name>
+            <description>Finner tekst innenfor typografiske anførselstegn og erstatter med norske guillemets</description>
+            <pattern>&quot;([^&quot;]+)&quot;</pattern>
+            <replacement>«$1»</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="11" enabled="true">
+            <name>Enkle anførselstegn til guillements</name>
+            <description>Finner tekst innenfor britiske enkle anførselstegn og erstatter med norske guillemets</description>
+            <pattern>&apos;([^&apos;]+)&apos;</pattern>
+            <replacement>«$1»</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="12" enabled="true">
+            <name>Bindestrek til tankestrek i områder</name>
+            <description>Erstatter bindestrek med tankestrek (en dash) i tallområder</description>
+            <pattern>(\d+)-(\d+)</pattern>
+            <replacement>$1–$2</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="13" enabled="true">
+            <name>Bindestrek til tankestrek i tidsperioder</name>
+            <description>Erstatter bindestrek med tankestrek i tidsperioder</description>
+            <pattern>(\d{2}):(\d{2})-(\d{2}):(\d{2})</pattern>
+            <replacement>$1:$2–$3:$4</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="14" enabled="true">
+            <name>Bindestrek til tankestrek i år</name>
+            <description>Erstatter bindestrek med tankestrek i årsområder</description>
+            <pattern>(\d{4})-(\d{4})</pattern>
+            <replacement>$1–$2</replacement>
+            <category>Tegnsetting</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="15" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter tir. med ti. (SG 3.1.1.)</description>
+            <pattern>\btir\.</pattern>
+            <replacement>ti.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="16" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter man. med ma. (SG 3.1.1.)</description>
+            <pattern>\bman\.</pattern>
+            <replacement>ma.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="17" enabled="true">
+            <name>Nbsp ellipse</name>
+            <description>Erstatter vanlig mellomrom med nbsp før ellipse (SG 3.7.1.)</description>
+            <pattern>…</pattern>
+            <replacement> …</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="18" enabled="true">
+            <name>apostrof etter .com</name>
+            <description>Legger til apostrof-s: {b_companyname} → {b_companyname}´s (SG 4.2)</description>
+            <pattern>\{b_companyname\}(?!\´s)</pattern>
+            <replacement>{b_companyname}´s</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="19" enabled="true">
+            <name>100000 til 100 000</name>
+            <description>Legger til nbsp: 100000 → 100 000 (SG 3.7.1.)</description>
+            <pattern>\b(\d{3})(\d{3})\b</pattern>
+            <replacement>$1 $2</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="20" enabled="true">
+            <name>10000 til 10 000</name>
+            <description>Legger til nbsp: 10000 → 10 000 (SG 3.7.1.)</description>
+            <pattern>\b(\d{2})(\d{3})\b</pattern>
+            <replacement>$1 $2</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="21" enabled="true">
+            <name>nbsp før %</name>
+            <description>Legger til nbsp før %: 23% → 23 % (SG 3.7.1.)</description>
+            <pattern>(\d)%</pattern>
+            <replacement>$1 %</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="22" enabled="true">
+            <name>kr foran tall</name>
+            <description>Flytter kr foran tall (SG 3.2.2.)</description>
+            <pattern>(\d+)\s+kr\b</pattern>
+            <replacement>kr $1</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="23" enabled="true">
+            <name>NOK foran tall</name>
+            <description>Flytter NOK foran tall (SG 3.2.2.)</description>
+            <pattern>(\d+)\s+NOK\b</pattern>
+            <replacement>NOK $1</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="24" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter ons. med on. (SG 3.1.1.)</description>
+            <pattern>\bons\.</pattern>
+            <replacement>on.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="25" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter søn. med sø. (SG 3.1.1.)</description>
+            <pattern>\bsøn\.</pattern>
+            <replacement>sø.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="26" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter lør. med lø. (SG 3.1.1.)</description>
+            <pattern>\blør\.</pattern>
+            <replacement>lø.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="27" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter fre. med fr. (SG 3.1.1.)</description>
+            <pattern>\bfre\.</pattern>
+            <replacement>fr.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="28" enabled="true">
+            <name>Dag</name>
+            <description>Erstatter tor. med to. (SG 3.1.1.)</description>
+            <pattern>\btor\.</pattern>
+            <replacement>to.</replacement>
+            <category>Booking.com</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="29" enabled="true">
+            <name>Nbsp mellom ord og ellipse</name>
+            <description>Hardt mellomrom mellom ord og ellipse</description>
+            <pattern>(\S) (…)</pattern>
+            <replacement>$1 …</replacement>
+            <category>Harde mellomrom</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+        <check order="30" enabled="true">
+            <name>nbsp mellom klausul og tall</name>
+            <description>Finner alle forekomster av klausul xx.xx og erstatter mellomrommet mellom med en nbsp</description>
+            <pattern>/\b(klausul(?:er)?)\s+(\d+)/gm</pattern>
+            <replacement>$1\u00A0$2</replacement>
+            <category>Harde mellomrom</category>
+            <case_sensitive>false</case_sensitive>
+            <exclude_pattern></exclude_pattern>
+        </check>
+    </checks>
+</qa_profile>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="nb" datatype="plaintext">
+    <body>
+      <trans-unit id="1">
+        <source>{count, plural, one {file} other {files}}</source>
+        <target>{count, flertall, one {fil} other {filer}}</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>{items, plural, one {item} other {items}}</source>
+        <target>{items, plural, one {element} annet {elementer}}</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>{gender, select, male {he} female {she} other {they}}</source>
+        <target>{gender, velg, male {han} female {hun} other {de}}</target>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>{count, plural, offset:1 =0 {no one} =1 {you} one {you and one other} other {you and # others}}</source>
+        <target>{count, plural, =0 {ingen} =1 {du} one {du og en annen} other {du og # andre}}</target>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>Regular text without ICU</source>
+        <target>Vanlig tekst uten ICU</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
