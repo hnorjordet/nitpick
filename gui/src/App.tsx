@@ -444,8 +444,14 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   function setSingleFile(path: string, data: XliffData, targetLang: string | null = null) {
     const fileName = path.split('/').pop() || path;
     setFiles([{ fileIndex: 0, filePath: path, fileName, data, targetLang }]);
-    onFileLoaded?.(path);
   }
+
+  // Notify AppShell whenever loaded file changes (covers all code paths)
+  useEffect(() => {
+    if (filePath) {
+      onFileLoaded?.(filePath);
+    }
+  }, [filePath]);
 
   // Load file when external path changes (from Spellcheck panel)
   useEffect(() => {
