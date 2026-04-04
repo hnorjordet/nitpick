@@ -3387,11 +3387,11 @@ a:focus-visible {
   margin-top: 0.5rem;
 }
 
-/* ── Panel switcher (AppShell) ── */
+/* ── Panel switcher (AppShell) — always dark ── */
 .panel-switcher {
   display: flex;
-  background: var(--bg-secondary, #1a1a2e);
-  border-bottom: 2px solid var(--border-color, #333);
+  background: #16213e;
+  border-bottom: 2px solid #2a2a4a;
   padding: 0 8px;
   flex-shrink: 0;
 }
@@ -3401,7 +3401,7 @@ a:focus-visible {
   font-size: 13px;
   font-weight: 600;
   background: transparent;
-  color: var(--text-secondary, #888);
+  color: #888;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
@@ -3410,10 +3410,10 @@ a:focus-visible {
 }
 
 .panel-btn:hover {
-  color: var(--text-color, #eee);
+  color: #ccc;
 }
 
 .panel-btn.active {
-  color: var(--primary-color, #007aff);
-  border-bottom-color: var(--primary-color, #007aff);
+  color: #4da6ff;
+  border-bottom-color: #4da6ff;
 }

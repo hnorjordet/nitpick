@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Settings } from "./SpellcheckPanel";
 
@@ -64,6 +64,36 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
 
   // Ref to track the last selected word for aria-live announcement
   const announcerRef = useRef<HTMLDivElement>(null);
+
+  // Draggable splitter
+  const [leftWidth, setLeftWidth] = useState(520);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(0);
+
+  const onSplitterMouseDown = useCallback((e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = leftWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = ev.clientX - dragStartX.current;
+      const newW = Math.max(280, Math.min(800, dragStartWidth.current + delta));
+      setLeftWidth(newW);
+    };
+    const onMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, [leftWidth]);
 
   function decide(word: string, decision: WordDecision) {
     setDecisions((prev) => ({ ...prev, [word]: decision }));
@@ -210,10 +240,9 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
         {/* Left: word list */}
         <div
           style={{
-            width: 480,
+            width: leftWidth,
             flexShrink: 0,
             overflowY: "auto",
-            borderRight: "1px solid var(--border)",
           }}
         >
           <table
@@ -363,6 +392,22 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
             </tbody>
           </table>
         </div>
+
+        {/* Draggable splitter */}
+        <div
+          onMouseDown={onSplitterMouseDown}
+          style={{
+            width: 5,
+            flexShrink: 0,
+            cursor: "col-resize",
+            background: "var(--border)",
+            transition: "background 0.1s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--border)")}
+          title="Drag to resize"
+          aria-hidden="true"
+        />
 
         {/* Right: context panel */}
         <div
