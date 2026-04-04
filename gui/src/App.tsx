@@ -411,7 +411,12 @@ function extractTags(text: string): Array<{start: number, end: number, tag: stri
   return tags;
 }
 
-function App() {
+interface AppProps {
+  onFileLoaded?: (path: string) => void;
+  externalFilePath?: string;
+}
+
+function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   // Multi-file state
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [displayMode, setDisplayMode] = useState<'perFile' | 'merged'>('perFile');
@@ -439,7 +444,15 @@ function App() {
   function setSingleFile(path: string, data: XliffData, targetLang: string | null = null) {
     const fileName = path.split('/').pop() || path;
     setFiles([{ fileIndex: 0, filePath: path, fileName, data, targetLang }]);
+    onFileLoaded?.(path);
   }
+
+  // Load file when external path changes (from Spellcheck panel)
+  useEffect(() => {
+    if (externalFilePath && externalFilePath !== filePath) {
+      openFileByPath(externalFilePath);
+    }
+  }, [externalFilePath]);
 
   // Build DisplayUnit array with globalId and per-file numbering
   const allDisplayUnits: DisplayUnit[] = useMemo(() => {
@@ -856,18 +869,6 @@ function App() {
     }
   }
 
-  // Check for a pending file written by SpellcheckQA
-  async function checkPendingFile() {
-    try {
-      const pendingPath = await invoke<string | null>("check_pending_file");
-      if (pendingPath) {
-        await openFileByPath(pendingPath);
-      }
-    } catch {
-      // Silently ignore — pending file is optional
-    }
-  }
-
   function handleCellEdit(unitId: string, newValue: string) {
     const newEdits = new Map(editedUnits);
     newEdits.set(unitId, newValue);
@@ -1211,17 +1212,6 @@ function App() {
     const handler = (e: MediaQueryListEvent) => setSystemDark(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  // Check for pending file from SpellcheckQA on startup and window focus
-  useEffect(() => {
-    // Check immediately on mount (app already running when file was requested)
-    checkPendingFile();
-
-    // Also check when window regains focus (app was already open)
-    const handleFocus = () => { checkPendingFile(); };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   // Load TMS settings from localStorage
@@ -4553,4 +4543,5 @@ function App() {
   );
 }
 
+export { App };
 export default App;

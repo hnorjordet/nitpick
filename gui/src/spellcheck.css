@@ -1,0 +1,760 @@
+:root {
+  --bg: #1c1c1e;
+  --surface: #2c2c2e;
+  --surface2: #3a3a3c;
+  --border: #48484a;
+  --accent: #0a84ff;
+  --accent-hover: #409cff;
+  --text: #f2f2f7;
+  --text-secondary: #b8b8bd; /* raised from #aeaeb2 for ≥4.5:1 on --bg */
+  --danger: #ff6961;         /* raised from #ff453a for contrast */
+  --success: #32d74b;
+  --warning: #ffd60a;
+  --highlight: rgba(10, 132, 255, 0.25);
+  --focus-ring: 0 0 0 3px rgba(10, 132, 255, 0.55);
+  --radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Global focus style (WCAG 2.4.7 / 2.4.11) ─────────────────────────── */
+/* Remove the blanket outline:none and use a single visible focus ring */
+*:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Skip link (WCAG 2.4.1) ─────────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 8px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.topbar h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-right: auto;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 4px;
+}
+
+/* role="tablist" tabs */
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.tab-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Active tab has aria-selected=true; inactive tabs remain reachable */
+.tab-btn[aria-selected="false"]:focus-visible {
+  outline-offset: 2px;
+}
+
+.file-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.file-bar .file-path {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-bar .lang-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.tab-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btn {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:not(:disabled):hover {
+  background: var(--border);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-success {
+  background: var(--success);
+  color: #000;
+}
+
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  /* Ensure native focus ring is visible */
+  outline-offset: 2px;
+}
+
+input[type="text"],
+select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 13px;
+  width: 100%;
+}
+
+/* Removed outline:none — rely on :focus-visible above instead */
+input[type="text"]:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  outline: none; /* replaced by box-shadow so border-color change + ring shows */
+}
+
+textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  outline: none; /* replaced by box-shadow */
+}
+
+label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-body {
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: var(--surface2);
+}
+
+.data-table tr.selected td {
+  background: var(--highlight);
+}
+
+/* Keyboard-focusable rows (WCAG 2.1.1) */
+.data-table tr[tabindex]:focus-visible td {
+  outline: 3px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ── Status / badges ─────────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-error  { background: rgba(255, 105, 97, 0.2); color: var(--danger); }
+.badge-warn   { background: rgba(255, 214, 10, 0.2); color: var(--warning); }
+.badge-ok     { background: rgba(50, 215, 75, 0.2); color: var(--success); }
+.badge-orange { background: rgba(255, 159, 10, 0.2); color: #ff9f0a; }
+.badge-info   { background: rgba(100, 160, 255, 0.2); color: #64a0ff; }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
+
+.empty-state h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+/* ── Spinner — with accessible text hidden off-screen ───────────────────── */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  /* aria-hidden on the element; .sr-only text next to it carries the meaning */
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Screen-reader-only utility (WCAG 1.3.1) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.error-banner {
+  background: rgba(255, 105, 97, 0.15);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+
+/* ── Highlight misspelled word ───────────────────────────────────────────── */
+
+/* <mark> is semantically correct; style for visual contrast + screen-reader clarity */
+.highlight-word {
+  background: rgba(255, 214, 10, 0.40);
+  border-radius: 3px;
+  padding: 0 2px;
+  /* Do not change font-weight/style so it reads naturally aloud */
+}
+
+/* ── Spellcheck tab ──────────────────────────────────────────────────────── */
+
+.spellcheck-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.spellcheck-config {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.config-section {
+  flex: 1;
+  min-width: 180px;
+}
+
+.config-section h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.spellcheck-main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Results split view ──────────────────────────────────────────────────── */
+
+.results-layout {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.results-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.results-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Sidebar list items — keyboard navigable (WCAG 2.1.1) */
+.sidebar-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.sidebar-item:hover { background: var(--surface2); }
+.sidebar-item.selected { background: var(--highlight); }
+
+.sidebar-item:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.sidebar-item .word { font-weight: 600; }
+.sidebar-item .count { color: var(--text-secondary); font-size: 12px; }
+
+/* ── Segment card ────────────────────────────────────────────────────────── */
+
+.segment-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.segment-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.segment-card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segment-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.segment-text {
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.suggestions-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Suggestion chips are now <button> elements (WCAG 2.1.1) */
+.suggestion-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text);
+  transition: background 0.1s, border-color 0.1s;
+  font-family: inherit;
+}
+
+.suggestion-chip:hover,
+.suggestion-chip:focus-visible {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  outline: none; /* ring replaced by background change, meets 1.4.11 */
+}
+
+/* ── Settings page ───────────────────────────────────────────────────────── */
+
+.settings-page {
+  overflow-y: auto;
+  padding: 24px;
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.settings-section {
+  margin-bottom: 28px;
+}
+
+.settings-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.file-list-item .file-name {
+  flex: 1;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Remove button — was bare × with no accessible name; now styled as a button */
+.file-list-item .remove-btn {
+  color: var(--danger);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 1px 5px;
+  line-height: 1;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.file-list-item .remove-btn:hover,
+.file-list-item .remove-btn:focus-visible {
+  background: rgba(255, 105, 97, 0.15);
+  border-color: var(--danger);
+  outline: none;
+}
+
+.warning-text {
+  font-size: 12px;
+  color: var(--warning);
+  margin-top: 4px;
+}
+
+/* ── Combined results: sidebar item type accents ─────────────────────────── */
+
+.sidebar-item--spell  { border-left: 3px solid var(--danger); }
+.sidebar-item--term   { border-left: 3px solid var(--warning); }
+
+.sidebar-item__type-icon {
+  font-size: 12px;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Mode 2: section dividers */
+.sidebar-section-header {
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+}
+
+/* Mode 3: tab strip */
+.sidebar-tab-strip {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-tab-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.sidebar-tab-btn:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+.sidebar-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Violation detail card (yellow box) */
+.term-detail-card {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 214, 10, 0.1);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Collapsible group header in sidebar */
+.sidebar-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  background: var(--surface2);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+}
+.sidebar-group-header:hover { color: var(--text); background: var(--surface2); }
+.sidebar-group-header:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* Ignore button on sidebar items */
+.sidebar-item-ignore-btn {
+  opacity: 0;
+  margin-left: auto;
+  padding: 0 4px;
+  height: 18px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.1s, color 0.1s;
+}
+.sidebar-item:hover .sidebar-item-ignore-btn,
+.sidebar-item.selected .sidebar-item-ignore-btn { opacity: 1; }
+.sidebar-item-ignore-btn:hover { color: var(--danger); }
+.sidebar-item-ignore-btn:focus-visible { opacity: 1; outline: 2px solid var(--accent); }
