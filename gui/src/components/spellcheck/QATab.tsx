@@ -70,11 +70,11 @@ export default function QATab({ fileData, filePath, settings, onRunAll, runningA
         .join(",") || "none";
 
       const [numberResult, qaResult] = await Promise.all([
-        invoke<{ violations: Violation[] }>("run_number_check", {
+        invoke<{ violations: Violation[] }>("sc_run_number_check", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
         }),
-        invoke<{ violations: Violation[] }>("run_qa_checks", {
+        invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
           checks: enabledQaIds,

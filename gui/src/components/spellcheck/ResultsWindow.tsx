@@ -162,7 +162,7 @@ export default function ResultsWindow({ realErrors, filePath, settings, onBack, 
   async function loadSuggestions(word: string) {
     if (!settings.selected_dics.length) return;
     try {
-      const result = await invoke<{ suggestions: string[] }>("get_suggestions", {
+      const result = await invoke<{ suggestions: string[] }>("sc_get_suggestions", {
         word,
         dics: settings.selected_dics,
       });

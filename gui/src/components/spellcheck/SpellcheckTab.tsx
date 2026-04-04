@@ -67,7 +67,7 @@ export default function SpellcheckTab({
     setCombinedMode(false);
     setSpellState("running");
     try {
-      const result = await invoke<{ flagged_words: FlaggedWord[] }>("run_spellcheck", {
+      const result = await invoke<{ flagged_words: FlaggedWord[] }>("sc_run_spellcheck", {
         filePath,
         dics: settings.selected_dics,
         exclusionFiles: exclusionFiles,
@@ -97,7 +97,7 @@ export default function SpellcheckTab({
     setViolations([]);
     setSpellState("running");
     try {
-      const result = await invoke<{ flagged_words: FlaggedWord[] }>("run_spellcheck", {
+      const result = await invoke<{ flagged_words: FlaggedWord[] }>("sc_run_spellcheck", {
         filePath,
         dics: settings.selected_dics,
         exclusionFiles: exclusionFiles,
@@ -132,17 +132,17 @@ export default function SpellcheckTab({
       // Run term check, number check, and QA checks in parallel
       const [termResult, numberResult, qaResult] = await Promise.all([
         hasTermFiles
-          ? invoke<{ violations: Violation[] }>("run_term_check", {
+          ? invoke<{ violations: Violation[] }>("sc_run_term_check", {
               filePath,
               termlists: enabledTermlistPaths,
               checklists: enabledChecklistPaths,
             })
           : Promise.resolve({ violations: [] as Violation[] }),
-        invoke<{ violations: Violation[] }>("run_number_check", {
+        invoke<{ violations: Violation[] }>("sc_run_number_check", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
         }),
-        invoke<{ violations: Violation[] }>("run_qa_checks", {
+        invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
           checks: enabledQaIds,

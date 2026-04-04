@@ -36,7 +36,7 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
   async function loadDics(folder: string) {
     setLoadingDics(true);
     try {
-      const result = await invoke<DicInfo[]>("list_dics", { folder });
+      const result = await invoke<DicInfo[]>("sc_list_dics", { folder });
       setDics(result);
     } catch (e) {
       console.error("Failed to list dics:", e);
@@ -122,8 +122,7 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
   }
 
   return (
-    <div className="tab-content" style={{ overflowY: "auto" }}>
-      <div className="settings-page">
+    <div className="settings-page" style={{ overflowY: "auto", flex: 1 }}>
 
         {/* ── Dictionaries ─────────────────────────────────────────────── */}
         <section className="settings-section" aria-labelledby="sec-dics">
@@ -697,7 +696,6 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
             ))}
           </fieldset>
         </section>
-      </div>
     </div>
   );
 }

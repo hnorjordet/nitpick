@@ -72,7 +72,7 @@ export default function TerminologyTab({ fileData, filePath, settings, onRunAll,
     setSelectedIdx(null);
 
     try {
-      const result = await invoke<{ violations: Violation[] }>("run_term_check", {
+      const result = await invoke<{ violations: Violation[] }>("sc_run_term_check", {
         filePath,
         termlists,
         checklists,

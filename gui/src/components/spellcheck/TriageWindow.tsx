@@ -73,7 +73,7 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
     setSelectedWord(fw);
     setContextsLoading(true);
     try {
-      const result = await invoke<{ segments: SegmentContext[] }>("get_segments_for_word", {
+      const result = await invoke<{ segments: SegmentContext[] }>("sc_get_segments_for_word", {
         filePath,
         word: fw.word,
         dics: settings.selected_dics,
@@ -93,7 +93,7 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
       return;
     }
     try {
-      const result = await invoke<{ word_count: number; word: string }>("add_to_dic", {
+      const result = await invoke<{ word_count: number; word: string }>("sc_add_to_dic", {
         word: fw.word,
         dicPath: dic,
         backup: settings.backup_enabled,

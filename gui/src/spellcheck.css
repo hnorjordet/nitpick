@@ -155,6 +155,10 @@ body {
   flex-direction: column;
 }
 
+.tab-content.tab-content--scrollable {
+  overflow-y: auto;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
 .btn {

@@ -421,7 +421,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
 
         <div id="sc-tabpanel-settings" role="tabpanel" aria-labelledby="sc-tab-settings"
           hidden={activeTab !== "settings"}
-          style={{ display: activeTab === "settings" ? "flex" : "none", flexDirection: "column", flex: 1, overflow: "hidden" }}
+          style={{ display: activeTab === "settings" ? "flex" : "none", flexDirection: "column", flex: 1, overflowY: "auto" }}
           tabIndex={-1}>
           <SettingsPage settings={settings} onSettingsChange={handleSettingsChange} />
         </div>
