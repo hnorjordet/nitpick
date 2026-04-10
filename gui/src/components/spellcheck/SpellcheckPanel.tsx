@@ -292,8 +292,13 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
 
   return (
     <div className="spellcheck-panel">
-      {/* Tab navigation */}
-      <header className="sc-topbar">
+      {/* Top header — matches App's .header bar */}
+      <header className="sc-main-header">
+        <h1 className="sc-main-title">Spellcheck / QA</h1>
+      </header>
+
+      {/* Tab navigation row */}
+      <div className="sc-tabbar">
         <nav aria-label="Spellcheck navigation">
           <div className="tab-nav" role="tablist" aria-label="Spellcheck tabs">
             {TAB_IDS.map((tab) => (
@@ -314,7 +319,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
             ))}
           </div>
         </nav>
-      </header>
+      </div>
 
       {/* File info bar */}
       {activeTab !== "settings" && (

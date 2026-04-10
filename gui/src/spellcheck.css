@@ -79,6 +79,7 @@ body {
   height: 100vh;
 }
 
+/* ── Legacy .topbar (kept for compatibility) ── */
 .topbar {
   display: flex;
   align-items: center;
@@ -94,6 +95,59 @@ body {
   font-weight: 600;
   color: var(--text);
   margin-right: auto;
+}
+
+/* ── Spellcheck main header (matches App's .header) ── */
+.sc-main-header {
+  background-color: var(--header-bg, #1e1e1e);
+  color: var(--text-color, #e3e3e3);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--header-border, #333333);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.sc-main-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color, #e3e3e3);
+  margin: 0;
+}
+
+/* ── Tab bar row beneath the header ── */
+.sc-tabbar {
+  background-color: var(--card-bg, #2c2c2e);
+  border-bottom: 1px solid var(--border-color, #3d3d3d);
+  padding: 0 1rem;
+  flex-shrink: 0;
+}
+
+.sc-tabbar .tab-nav {
+  gap: 0;
+}
+
+.sc-tabbar .tab-btn {
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 16px;
+  font-size: 13px;
+  background: transparent;
+  color: var(--text-secondary, #888);
+  margin-bottom: -1px;
+}
+
+.sc-tabbar .tab-btn:hover {
+  background: transparent;
+  color: var(--text-color, #e3e3e3);
+}
+
+.sc-tabbar .tab-btn.active {
+  background: transparent;
+  color: var(--primary-color, #007aff);
+  border-bottom-color: var(--primary-color, #007aff);
 }
 
 .tab-nav {
