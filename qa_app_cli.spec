@@ -33,6 +33,13 @@ a = Analysis(
         'validators.icu_validator',
         'patterns',
         'patterns.regex_patterns',
+        # Reporting
+        'reporting',
+        'reporting.report_generator',
+        'openpyxl',
+        'openpyxl.styles',
+        'openpyxl.utils',
+        'et_xmlfile',
         # Spellcheck modules
         'spellcheck',
         'spellcheck.spell_engine',

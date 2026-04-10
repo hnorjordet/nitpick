@@ -1242,6 +1242,23 @@ fn sc_save_report(path: String, content: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn sc_save_report_xlsx(
+    file_path: String,
+    output_path: String,
+    spell_errors: String,
+    violations: String,
+    app_handle: tauri::AppHandle,
+) -> Result<Value, String> {
+    sc_invoke_python(&app_handle, vec![
+        "sc-save-report-xlsx",
+        "--file-path", &file_path,
+        "--output-path", &output_path,
+        "--spell-errors", &spell_errors,
+        "--violations", &violations,
+    ])
+}
+
+#[tauri::command]
 fn sc_scan_watch_folder(folder: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
     sc_invoke_python(&app_handle, vec!["sc-scan-watch-folder", "--folder", &folder])
 }
@@ -1512,7 +1529,7 @@ pub fn run() {
             sc_run_spellcheck, sc_get_suggestions, sc_add_to_dic,
             sc_get_segments_for_word, sc_apply_spellcheck_edits,
             sc_run_term_check, sc_run_number_check, sc_run_qa_checks,
-            sc_save_report, sc_scan_watch_folder, sc_merge_files,
+            sc_save_report, sc_save_report_xlsx, sc_scan_watch_folder, sc_merge_files,
             sc_start_folder_watch, sc_stop_folder_watch,
         ])
         .run(tauri::generate_context!())

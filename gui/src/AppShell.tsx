@@ -21,13 +21,13 @@ export default function AppShell() {
           className={`panel-btn${activePanel === "regex" ? " active" : ""}`}
           onClick={() => setActivePanel("regex")}
         >
-          RegEx
+          Search
         </button>
         <button
           className={`panel-btn${activePanel === "spellcheck" ? " active" : ""}`}
           onClick={() => setActivePanel("spellcheck")}
         >
-          Spellcheck &amp; QA
+          Spellcheck / QA
         </button>
       </div>
 

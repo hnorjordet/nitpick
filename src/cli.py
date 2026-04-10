@@ -31,6 +31,7 @@ from qachecks.number_checker import check_numbers
 from qachecks.qa_checker import run_qa_checks, ALL_QA_CHECKS
 from settings.settings_manager import load as load_settings_obj, save as save_settings_obj, Settings
 from merging.xliff_merger import scan_folder, merge_xliff_files, suggest_output_name
+from reporting.report_generator import generate_xlsx_report
 import json
 from dataclasses import asdict
 
@@ -1343,6 +1344,19 @@ def sc_merge_files_command(args):
     return 0
 
 
+def sc_save_report_xlsx_command(args):
+    spell_errors = json.loads(args.spell_errors) if args.spell_errors else []
+    violations = json.loads(args.violations) if args.violations else []
+    result = generate_xlsx_report(
+        file_path=args.file_path,
+        spell_errors=spell_errors,
+        violations=violations,
+        output_path=args.output_path,
+    )
+    _sc_out({"ok": True, "path": result})
+    return 0
+
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -1523,6 +1537,13 @@ def main():
     p.add_argument('--files', required=True)
     p.add_argument('--output', default="")
     p.set_defaults(func=sc_merge_files_command)
+
+    p = subparsers.add_parser('sc-save-report-xlsx')
+    p.add_argument('--file-path', required=True)
+    p.add_argument('--output-path', required=True)
+    p.add_argument('--spell-errors', default="[]")
+    p.add_argument('--violations', default="[]")
+    p.set_defaults(func=sc_save_report_xlsx_command)
 
     args = parser.parse_args()
 

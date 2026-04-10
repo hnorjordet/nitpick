@@ -77,7 +77,8 @@ a:focus-visible {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   width: 100%;
 }
 
@@ -333,7 +334,7 @@ a:focus-visible {
 }
 
 .content.editor-open {
-  padding-bottom: 48vh;
+  padding-bottom: 1rem;
 }
 
 .stats {
@@ -1054,10 +1055,8 @@ a:focus-visible {
 
 /* Editor Panel */
 .editor-panel {
-  position: fixed;
+  position: sticky;
   bottom: 0;
-  left: 0;
-  right: 0;
   z-index: 100;
   background-color: var(--card-bg);
   border-top: 2px solid var(--border-color);
@@ -3398,7 +3397,7 @@ a:focus-visible {
 
 .panel-btn {
   padding: 8px 20px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   background: transparent;
   color: #888;

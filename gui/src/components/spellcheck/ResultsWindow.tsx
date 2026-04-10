@@ -112,6 +112,10 @@ export default function ResultsWindow({ realErrors, filePath, settings, onBack, 
   const [violSaving, setViolSaving] = useState(false);
   const [violSaveResult, setViolSaveResult] = useState("");
 
+  // Sort state for violations sidebar
+  type SortMode = "default" | "segment" | "type";
+  const [sortMode, setSortMode] = useState<SortMode>("default");
+
   // Auto-select first item
   useEffect(() => {
     if (realErrors.length > 0) {
@@ -210,7 +214,7 @@ export default function ResultsWindow({ realErrors, filePath, settings, onBack, 
     setViolSaveResult("");
     try {
       const result = await invoke<{ ok: boolean; backup_path: string }>(
-        "apply_spellcheck_edits",
+        "sc_apply_spellcheck_edits",
         { filePath, edits: JSON.stringify([{ id: segId, target: newTarget }]) }
       );
       setViolSaveResult(`Saved${result.backup_path ? ` · Backup: ${result.backup_path}` : ""}`);
@@ -251,7 +255,7 @@ export default function ResultsWindow({ realErrors, filePath, settings, onBack, 
       }
 
       const result = await invoke<{ ok: boolean; backup_path: string }>(
-        "apply_spellcheck_edits",
+        "sc_apply_spellcheck_edits",
         { filePath, edits: JSON.stringify(editList) }
       );
       setSaveResult(
@@ -409,22 +413,40 @@ ${violSection}
 </html>`;
   }
 
-  async function exportReport(format: "csv" | "html") {
+  async function exportReport(format: "csv" | "html" | "xlsx") {
     const baseName = filePath.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "report";
-    const isHtml = format === "html";
-    const defaultPath = `${baseName}-qa-report.${isHtml ? "html" : "csv"}`;
-    const path = await saveDialog({
-      defaultPath,
-      filters: isHtml
-        ? [{ name: "HTML", extensions: ["html"] }]
-        : [{ name: "CSV", extensions: ["csv"] }],
-    });
+    const ext = format === "html" ? "html" : format === "xlsx" ? "xlsx" : "csv";
+    const defaultPath = `${baseName}-qa-report.${ext}`;
+
+    const filterMap = {
+      html: [{ name: "HTML", extensions: ["html"] }],
+      csv:  [{ name: "CSV",  extensions: ["csv"]  }],
+      xlsx: [{ name: "Excel", extensions: ["xlsx"] }],
+    };
+    const path = await saveDialog({ defaultPath, filters: filterMap[format] });
     if (!path) return;
 
     setExporting(true);
     try {
-      const content = isHtml ? buildHtmlReport() : buildCsvReport();
-      await invoke("sc_save_report", { path, content });
+      if (format === "xlsx") {
+        const spellPayload = JSON.stringify(
+          realErrors.map(fw => ({
+            word: fw.word,
+            count: fw.count,
+            segment_ids: fw.segment_ids,
+          }))
+        );
+        const violPayload = JSON.stringify(violations ?? []);
+        await invoke("sc_save_report_xlsx", {
+          filePath,
+          outputPath: path,
+          spellErrors: spellPayload,
+          violations: violPayload,
+        });
+      } else {
+        const content = format === "html" ? buildHtmlReport() : buildCsvReport();
+        await invoke("sc_save_report", { path, content });
+      }
       setSaveResult(`Report exported to ${path.split("/").pop()}`);
     } catch (e) {
       setError(String(e));
@@ -560,10 +582,22 @@ ${violSection}
 
     // Filter ignored items
     const visibleSpell = realErrors.filter(fw => !ignoredItems.has(`spell:${fw.word}`));
-    const visibleViol = (violations ?? []).filter(v => {
+    let visibleViol = (violations ?? []).filter(v => {
       const id = `viol:${v.segment_id}:${v.violation_type}:${v.source_term}`;
       return !ignoredItems.has(id) && !ignoredTypes.has(v.violation_type);
     });
+
+    // Apply sort
+    if (sortMode === "segment") {
+      visibleViol = [...visibleViol].sort((a, b) => {
+        const n = (id: string) => parseInt(id.replace(/\D/g, ""), 10) || 0;
+        return n(a.segment_id) - n(b.segment_id);
+      });
+    } else if (sortMode === "type") {
+      visibleViol = [...visibleViol].sort((a, b) =>
+        a.violation_type.localeCompare(b.violation_type)
+      );
+    }
 
     // Collapsible groups for combined mode
     const spellGroup = visibleSpell;
@@ -593,6 +627,23 @@ ${violSection}
       <>
         {renderIgnoredCounter()}
         <div role="listbox" aria-labelledby="errors-list-heading" aria-label="Select an item to review">
+          {/* Flat sorted list when sortMode === "segment" */}
+          {sortMode === "segment" ? (
+            <>
+              {spellGroup.length > 0 && (
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {spellGroup.map((fw) => renderSpellSidebarItem(fw))}
+                </ul>
+              )}
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {visibleViol.map((v) => {
+                  const idx = violOriginalIndices.get(v) ?? 0;
+                  return renderTermSidebarItem(v, idx);
+                })}
+              </ul>
+            </>
+          ) : (
+          <>
           {/* Spell group */}
           {(spellGroup.length > 0 || realErrors.length > 0) && (
             <>
@@ -645,6 +696,8 @@ ${violSection}
                 </ul>
               )}
             </>
+          )}
+          </>
           )}
         </div>
       </>
@@ -912,6 +965,24 @@ ${violSection}
           <span style={{ fontSize: 12, fontWeight: 600 }} id="errors-list-heading">
             {isCombined ? `RESULTS (${totalCount})` : `ERRORS (${realErrors.length})`}
           </span>
+          {isCombined && (
+            <div style={{ display: "flex", gap: 3, marginLeft: 8 }}>
+              <button
+                className={`btn btn-ghost btn-sm${sortMode === "default" ? " active" : ""}`}
+                style={{ fontSize: 10, padding: "2px 6px" }}
+                onClick={() => setSortMode("default")}
+                title="Group by type (default)"
+                aria-pressed={sortMode === "default"}
+              >Type</button>
+              <button
+                className={`btn btn-ghost btn-sm${sortMode === "segment" ? " active" : ""}`}
+                style={{ fontSize: 10, padding: "2px 6px" }}
+                onClick={() => setSortMode("segment")}
+                title="Sort by segment number"
+                aria-pressed={sortMode === "segment"}
+              >#Seg</button>
+            </div>
+          )}
           <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
             <button
               className="btn btn-secondary btn-sm"
@@ -932,6 +1003,16 @@ ${violSection}
               title="Export as HTML report"
             >
               HTML
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => exportReport("xlsx")}
+              disabled={exporting}
+              aria-busy={exporting}
+              aria-label="Export QA report as Excel"
+              title="Export as Excel (.xlsx)"
+            >
+              Excel
             </button>
             <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Back to triage">
               &larr; Back
