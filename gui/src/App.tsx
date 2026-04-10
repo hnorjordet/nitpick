@@ -1339,6 +1339,12 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
     });
   }, [darkMode, showHiddenChars]);
 
+  // Propagate dark-mode class to <body> so sibling panels (SpellcheckPanel)
+  // also inherit the CSS variable overrides defined under .dark-mode
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode);
+  }, [darkMode]);
+
   // Preserve scroll position when opening/closing editor
   useEffect(() => {
     // The actual scrolling element is .content, not #table-container
