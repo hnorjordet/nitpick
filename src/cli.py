@@ -1360,7 +1360,7 @@ def sc_save_report_xlsx_command(args):
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description='QA-App CLI - XLIFF RegEx & Spellcheck QA Tool'
+        description='Nitpick CLI - XLIFF RegEx & Spellcheck QA Tool'
     )
 
     subparsers = parser.add_subparsers(dest='command', help='Commands')

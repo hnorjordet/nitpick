@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "QA-App",
+  "productName": "Nitpick",
   "version": "0.1.0",
-  "identifier": "com.havardnorjordet.qa-app",
+  "identifier": "com.havardnorjordet.nitpick",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "QA-App",
+        "title": "Nitpick",
         "width": 1400,
         "height": 900,
         "minWidth": 1200,

@@ -2624,7 +2624,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
       )}
       <header className="header">
         <div className="header-left">
-          <h1>XLIFF Regex Tool</h1>
+          <h1>Nitpick</h1>
         </div>
         <div className="header-right">
           <button
@@ -2890,14 +2890,14 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
         <div className="library-modal-overlay" onClick={() => setShowAboutModal(false)} role="presentation">
           <div ref={aboutModalRef} className="library-modal about-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
             <div className="library-header">
-              <h2 id="about-modal-title">About XLIFF Regex Tool</h2>
+              <h2 id="about-modal-title">About Nitpick</h2>
               <button onClick={() => setShowAboutModal(false)} className="close-library-btn" aria-label="Close about dialog">
                 ✕
               </button>
             </div>
             <div className="about-content">
               <div className="about-logo">
-                <h1>XLIFF Regex Tool</h1>
+                <h1>Nitpick</h1>
               </div>
               <div className="about-info">
                 <p className="version">Version 0.5.1</p>

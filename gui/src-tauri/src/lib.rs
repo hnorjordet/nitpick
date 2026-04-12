@@ -1334,7 +1334,7 @@ pub fn run() {
                 .accelerator("CmdOrCtrl+S")
                 .build(app)?;
 
-            let about_item = MenuItemBuilder::with_id("about", "About QA-App")
+            let about_item = MenuItemBuilder::with_id("about", "About Nitpick")
                 .build(app)?;
 
             let settings_item = MenuItemBuilder::with_id("settings", "Settings...")

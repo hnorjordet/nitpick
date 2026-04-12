@@ -41,7 +41,7 @@ gui/src-tauri/bin/qa_app_cli
 gui/src-tauri/bin/xliff_cli
 
 # User data
-.qa-app/
+.nitpick/
 .xliff-regex-tool/
 library.xml
 

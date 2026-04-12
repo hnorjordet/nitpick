@@ -1,6 +1,6 @@
 """
-Settings manager for SpellcheckQA.
-Persists user preferences to ~/.spellcheck-qa/settings.json.
+Settings manager for Nitpick.
+Persists user preferences to ~/.nitpick/settings.json.
 """
 
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List
 
 
-SETTINGS_DIR = Path.home() / ".qa-app"
+SETTINGS_DIR = Path.home() / ".nitpick"
 SETTINGS_PATH = SETTINGS_DIR / "settings.json"
 
 
