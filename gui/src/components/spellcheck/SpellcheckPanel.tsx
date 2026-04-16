@@ -294,7 +294,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
     <div className="spellcheck-panel">
       {/* Top header — matches App's .header bar */}
       <header className="sc-main-header">
-        <h1 className="sc-main-title">Spellcheck / QA</h1>
+        <h1 className="sc-main-title">Nitpick Spellcheck / QA</h1>
       </header>
 
       {/* Tab navigation row */}

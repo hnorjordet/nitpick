@@ -1345,6 +1345,13 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
 
+  // Propagate retro-mode and hacker-mode to <body> so SpellcheckPanel
+  // (which is a sibling outside .app) also gets styled
+  useEffect(() => {
+    document.body.classList.toggle('retro-mode', retroMode);
+    document.body.classList.toggle('hacker-mode', hackerMode);
+  }, [retroMode, hackerMode]);
+
   // Preserve scroll position when opening/closing editor
   useEffect(() => {
     // The actual scrolling element is .content, not #table-container
@@ -2624,7 +2631,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
       )}
       <header className="header">
         <div className="header-left">
-          <h1>Nitpick</h1>
+          <h1>Nitpick Search</h1>
         </div>
         <div className="header-right">
           <button

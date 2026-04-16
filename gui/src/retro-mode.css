@@ -525,6 +525,355 @@
 }
 
 /* ═══════════════════════════════════════
+   SPELLCHECK / QA PANEL
+   ═══════════════════════════════════════ */
+
+/* Main spellcheck container */
+.retro-mode .spellcheck-panel {
+  background-color: var(--retro-blue) !important;
+}
+
+/* Header bar */
+.retro-mode .sc-main-header {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  padding: 0.25rem 1rem !important;
+  border-bottom: 2px solid var(--retro-white) !important;
+  min-height: auto !important;
+}
+
+.retro-mode .sc-main-title {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: var(--retro-black) !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.retro-mode .sc-main-title::before {
+  content: "╔═══ ";
+  color: var(--retro-black);
+}
+
+.retro-mode .sc-main-title::after {
+  content: " ═══╗";
+  color: var(--retro-black);
+}
+
+/* Tab bar */
+.retro-mode .sc-tabbar {
+  background-color: var(--retro-blue) !important;
+  border-bottom: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .tab-btn {
+  color: var(--retro-yellow) !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.retro-mode .tab-btn.active {
+  color: var(--retro-black) !important;
+  background-color: var(--retro-cyan) !important;
+  border-bottom: 2px solid var(--retro-white) !important;
+}
+
+.retro-mode .tab-btn:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+/* File bar */
+.retro-mode .file-bar {
+  background-color: var(--retro-blue) !important;
+  border-bottom: 1px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .file-path {
+  color: var(--retro-yellow) !important;
+}
+
+.retro-mode .lang-badge {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  border: 1px solid var(--retro-white) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+/* Results layout */
+.retro-mode .results-layout {
+  background-color: var(--retro-blue) !important;
+}
+
+.retro-mode .results-sidebar {
+  background-color: var(--retro-blue) !important;
+  border-right: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .results-main {
+  background-color: var(--retro-blue) !important;
+}
+
+/* Sidebar items */
+.retro-mode .sidebar-item {
+  color: var(--retro-white) !important;
+  border-bottom: 1px solid var(--retro-cyan) !important;
+  background-color: var(--retro-blue) !important;
+}
+
+.retro-mode .sidebar-item.selected {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+  border: 2px solid var(--retro-green) !important;
+}
+
+.retro-mode .sidebar-item:hover:not(.selected) {
+  background-color: #0000CC !important;
+}
+
+.retro-mode .sidebar-item__type-icon {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+.retro-mode .sidebar-item--term .sidebar-item__type-icon {
+  background-color: var(--retro-yellow) !important;
+  color: var(--retro-black) !important;
+}
+
+.retro-mode .word {
+  color: var(--retro-white) !important;
+}
+
+.retro-mode .count {
+  color: var(--retro-cyan) !important;
+}
+
+.retro-mode .sidebar-group-header {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.retro-mode .sidebar-item-ignore-btn {
+  color: var(--retro-yellow) !important;
+  border: 1px solid var(--retro-yellow) !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+}
+
+/* Segment cards */
+.retro-mode .segment-card {
+  background-color: var(--retro-blue) !important;
+  border: 2px solid var(--retro-cyan) !important;
+  border-radius: 0 !important;
+}
+
+.retro-mode .segment-card-header {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--retro-white) !important;
+}
+
+.retro-mode .segment-card-body {
+  background-color: var(--retro-blue) !important;
+}
+
+.retro-mode .segment-label {
+  color: var(--retro-cyan) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 1px !important;
+}
+
+.retro-mode .segment-text {
+  color: var(--retro-white) !important;
+  background-color: var(--retro-black) !important;
+  border: 1px solid var(--retro-cyan) !important;
+  padding: 0.25rem !important;
+}
+
+.retro-mode .segment-edit-textarea {
+  background-color: var(--retro-black) !important;
+  color: var(--retro-green) !important;
+  border: 2px inset var(--retro-cyan) !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Highlight */
+.retro-mode .highlight-word {
+  background-color: var(--retro-magenta) !important;
+  color: var(--retro-white) !important;
+  font-weight: 700 !important;
+}
+
+/* Suggestion chips */
+.retro-mode .suggestions-row {
+  gap: 0 !important;
+}
+
+.retro-mode .suggestion-chip {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-yellow) !important;
+  border: 2px outset var(--retro-white) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+.retro-mode .suggestion-chip:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+/* Term detail card */
+.retro-mode .term-detail-card {
+  background-color: var(--retro-blue) !important;
+  border: 2px double var(--retro-yellow) !important;
+  border-radius: 0 !important;
+}
+
+/* Error banner */
+.retro-mode .error-banner {
+  background-color: var(--retro-red) !important;
+  color: var(--retro-white) !important;
+  border-left: 4px solid var(--retro-yellow) !important;
+  border-radius: 0 !important;
+}
+
+/* Empty state */
+.retro-mode .empty-state {
+  color: var(--retro-yellow) !important;
+}
+
+/* Triage / TriageWindow */
+.retro-mode .triage-layout {
+  background-color: var(--retro-blue) !important;
+}
+
+.retro-mode .triage-wordlist {
+  background-color: var(--retro-blue) !important;
+  border-right: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .triage-context {
+  background-color: var(--retro-blue) !important;
+}
+
+.retro-mode .triage-splitter {
+  background-color: var(--retro-cyan) !important;
+  width: 6px !important;
+}
+
+.retro-mode .triage-splitter:hover {
+  background-color: var(--retro-yellow) !important;
+}
+
+/* Settings page */
+.retro-mode .settings-page {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-white) !important;
+}
+
+.retro-mode .settings-section {
+  border-bottom: 1px solid var(--retro-cyan) !important;
+  color: var(--retro-cyan) !important;
+}
+
+.retro-mode .settings-row {
+  border-bottom: 1px dotted var(--retro-cyan) !important;
+}
+
+.retro-mode .checkbox-row {
+  color: var(--retro-white) !important;
+}
+
+.retro-mode .checkbox-row input[type="checkbox"] {
+  accent-color: var(--retro-yellow) !important;
+}
+
+/* Buttons */
+.retro-mode .btn {
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.retro-mode .btn-primary {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  border: 2px outset var(--retro-white) !important;
+}
+
+.retro-mode .btn-primary:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+.retro-mode .btn-secondary {
+  background-color: var(--retro-blue) !important;
+  color: var(--retro-yellow) !important;
+  border: 2px outset var(--retro-white) !important;
+}
+
+.retro-mode .btn-secondary:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+.retro-mode .btn-ghost {
+  background-color: transparent !important;
+  color: var(--retro-cyan) !important;
+  border: 1px dashed var(--retro-cyan) !important;
+}
+
+.retro-mode .btn-ghost.active {
+  background-color: var(--retro-cyan) !important;
+  color: var(--retro-black) !important;
+  border: 1px solid var(--retro-white) !important;
+}
+
+.retro-mode .btn-ghost:hover {
+  background-color: var(--retro-white) !important;
+  color: var(--retro-black) !important;
+}
+
+/* Panel switcher */
+.retro-mode .panel-switcher {
+  background-color: var(--retro-blue) !important;
+  border-bottom: 2px solid var(--retro-cyan) !important;
+}
+
+.retro-mode .panel-btn {
+  color: var(--retro-yellow) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.retro-mode .panel-btn.active {
+  color: var(--retro-black) !important;
+  background-color: var(--retro-cyan) !important;
+}
+
+.retro-mode .panel-btn:hover {
+  color: var(--retro-black) !important;
+  background-color: var(--retro-white) !important;
+}
+
+/* ═══════════════════════════════════════
    RETRO MODE ACTIVATED INDICATOR
    ═══════════════════════════════════════ */
 .retro-mode-badge {

@@ -521,6 +521,355 @@
 }
 
 /* ═══════════════════════════════════════
+   SPELLCHECK / QA PANEL
+   ═══════════════════════════════════════ */
+
+/* Main spellcheck container */
+.hacker-mode .spellcheck-panel {
+  background-color: var(--hacker-black) !important;
+}
+
+/* Header bar */
+.hacker-mode .sc-main-header {
+  background-color: var(--hacker-green-dark) !important;
+  color: var(--hacker-black) !important;
+  padding: 0.25rem 1rem !important;
+  border-bottom: 2px solid var(--hacker-green) !important;
+  min-height: auto !important;
+}
+
+.hacker-mode .sc-main-title {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: var(--hacker-black) !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+.hacker-mode .sc-main-title::before {
+  content: "╔═══ ";
+  color: var(--hacker-black);
+}
+
+.hacker-mode .sc-main-title::after {
+  content: " ═══╗";
+  color: var(--hacker-black);
+}
+
+/* Tab bar */
+.hacker-mode .sc-tabbar {
+  background-color: var(--hacker-black) !important;
+  border-bottom: 2px solid var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .tab-btn {
+  color: var(--hacker-green) !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.hacker-mode .tab-btn.active {
+  color: var(--hacker-black) !important;
+  background-color: var(--hacker-green-dark) !important;
+  border-bottom: 2px solid var(--hacker-green) !important;
+}
+
+.hacker-mode .tab-btn:hover {
+  background-color: var(--hacker-green) !important;
+  color: var(--hacker-black) !important;
+}
+
+/* File bar */
+.hacker-mode .file-bar {
+  background-color: var(--hacker-black) !important;
+  border-bottom: 1px solid var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .file-path {
+  color: var(--hacker-green) !important;
+}
+
+.hacker-mode .lang-badge {
+  background-color: var(--hacker-green-dark) !important;
+  color: var(--hacker-black) !important;
+  border: 1px solid var(--hacker-green) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+/* Results layout */
+.hacker-mode .results-layout {
+  background-color: var(--hacker-black) !important;
+}
+
+.hacker-mode .results-sidebar {
+  background-color: var(--hacker-black) !important;
+  border-right: 2px solid var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .results-main {
+  background-color: var(--hacker-black) !important;
+}
+
+/* Sidebar items */
+.hacker-mode .sidebar-item {
+  color: var(--hacker-green) !important;
+  border-bottom: 1px solid var(--hacker-green-darker) !important;
+  background-color: var(--hacker-black) !important;
+}
+
+.hacker-mode .sidebar-item.selected {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  border: 2px solid var(--hacker-green-bright) !important;
+}
+
+.hacker-mode .sidebar-item:hover:not(.selected) {
+  background-color: #001100 !important;
+}
+
+.hacker-mode .sidebar-item__type-icon {
+  background-color: var(--hacker-green-dark) !important;
+  color: var(--hacker-black) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+.hacker-mode .sidebar-item--term .sidebar-item__type-icon {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+}
+
+.hacker-mode .word {
+  color: var(--hacker-green) !important;
+}
+
+.hacker-mode .count {
+  color: var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .sidebar-group-header {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.hacker-mode .sidebar-item-ignore-btn {
+  color: var(--hacker-green-dark) !important;
+  border: 1px solid var(--hacker-green-dark) !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+}
+
+/* Segment cards */
+.hacker-mode .segment-card {
+  background-color: var(--hacker-black) !important;
+  border: 2px solid var(--hacker-green-dark) !important;
+  border-radius: 0 !important;
+}
+
+.hacker-mode .segment-card-header {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .segment-card-body {
+  background-color: var(--hacker-black) !important;
+}
+
+.hacker-mode .segment-label {
+  color: var(--hacker-green-dark) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 1px !important;
+}
+
+.hacker-mode .segment-text {
+  color: var(--hacker-green) !important;
+  background-color: #001100 !important;
+  border: 1px solid var(--hacker-green-darker) !important;
+  padding: 0.25rem !important;
+}
+
+.hacker-mode .segment-edit-textarea {
+  background-color: var(--hacker-black) !important;
+  color: var(--hacker-green) !important;
+  border: 2px inset var(--hacker-green-dark) !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Highlight */
+.hacker-mode .highlight-word {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  font-weight: 700 !important;
+}
+
+/* Suggestion chips */
+.hacker-mode .suggestions-row {
+  gap: 0 !important;
+}
+
+.hacker-mode .suggestion-chip {
+  background-color: var(--hacker-black) !important;
+  color: var(--hacker-green) !important;
+  border: 2px outset var(--hacker-green-dark) !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+}
+
+.hacker-mode .suggestion-chip:hover {
+  background-color: var(--hacker-green) !important;
+  color: var(--hacker-black) !important;
+}
+
+/* Term detail card */
+.hacker-mode .term-detail-card {
+  background-color: var(--hacker-black) !important;
+  border: 2px double var(--hacker-green) !important;
+  border-radius: 0 !important;
+}
+
+/* Error banner */
+.hacker-mode .error-banner {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  border-left: 4px solid var(--hacker-green) !important;
+  border-radius: 0 !important;
+}
+
+/* Empty state */
+.hacker-mode .empty-state {
+  color: var(--hacker-green-dark) !important;
+}
+
+/* Triage / TriageWindow */
+.hacker-mode .triage-layout {
+  background-color: var(--hacker-black) !important;
+}
+
+.hacker-mode .triage-wordlist {
+  background-color: var(--hacker-black) !important;
+  border-right: 2px solid var(--hacker-green-darker) !important;
+}
+
+.hacker-mode .triage-context {
+  background-color: var(--hacker-black) !important;
+}
+
+.hacker-mode .triage-splitter {
+  background-color: var(--hacker-green-darker) !important;
+  width: 6px !important;
+}
+
+.hacker-mode .triage-splitter:hover {
+  background-color: var(--hacker-green) !important;
+}
+
+/* Settings page */
+.hacker-mode .settings-page {
+  background-color: var(--hacker-black) !important;
+  color: var(--hacker-green) !important;
+}
+
+.hacker-mode .settings-section {
+  border-bottom: 1px solid var(--hacker-green-darker) !important;
+  color: var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .settings-row {
+  border-bottom: 1px dotted var(--hacker-green-darker) !important;
+}
+
+.hacker-mode .checkbox-row {
+  color: var(--hacker-green) !important;
+}
+
+.hacker-mode .checkbox-row input[type="checkbox"] {
+  accent-color: var(--hacker-green) !important;
+}
+
+/* Buttons */
+.hacker-mode .btn {
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.hacker-mode .btn-primary {
+  background-color: var(--hacker-green-dark) !important;
+  color: var(--hacker-black) !important;
+  border: 2px outset var(--hacker-green) !important;
+}
+
+.hacker-mode .btn-primary:hover {
+  background-color: var(--hacker-green) !important;
+  color: var(--hacker-black) !important;
+}
+
+.hacker-mode .btn-secondary {
+  background-color: var(--hacker-black) !important;
+  color: var(--hacker-green) !important;
+  border: 2px outset var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .btn-secondary:hover {
+  background-color: var(--hacker-green) !important;
+  color: var(--hacker-black) !important;
+}
+
+.hacker-mode .btn-ghost {
+  background-color: transparent !important;
+  color: var(--hacker-green-dark) !important;
+  border: 1px dashed var(--hacker-green-darker) !important;
+}
+
+.hacker-mode .btn-ghost.active {
+  background-color: var(--hacker-green-darker) !important;
+  color: var(--hacker-green-bright) !important;
+  border: 1px solid var(--hacker-green) !important;
+}
+
+.hacker-mode .btn-ghost:hover {
+  background-color: var(--hacker-green) !important;
+  color: var(--hacker-black) !important;
+}
+
+/* Panel switcher */
+.hacker-mode .panel-switcher {
+  background-color: var(--hacker-black) !important;
+  border-bottom: 2px solid var(--hacker-green-darker) !important;
+}
+
+.hacker-mode .panel-btn {
+  color: var(--hacker-green) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.hacker-mode .panel-btn.active {
+  color: var(--hacker-black) !important;
+  background-color: var(--hacker-green-dark) !important;
+}
+
+.hacker-mode .panel-btn:hover {
+  color: var(--hacker-black) !important;
+  background-color: var(--hacker-green) !important;
+}
+
+/* ═══════════════════════════════════════
    HACKER MODE ACTIVATED INDICATOR
    ═══════════════════════════════════════ */
 .hacker-mode-badge {
