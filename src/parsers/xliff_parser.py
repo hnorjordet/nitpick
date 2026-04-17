@@ -21,6 +21,7 @@ class TransUnit:
     tms_metadata: Optional[Dict[str, str]] = None  # TMS integration metadata
     file_name: str = ""  # Value of <file original=""> attribute
     is_locked: bool = False  # Segment is locked/read-only in CAT tool
+    match_percent: Optional[int] = None  # TM match percentage (0-102), None if unknown
 
     def get_source_text(self) -> str:
         """Extract text content from source, preserving inline tags."""
@@ -217,6 +218,61 @@ class XLIFFParser:
             return False
 
     @staticmethod
+    def _extract_match_percent(element: etree._Element) -> Optional[int]:
+        """
+        Extract TM match percentage from trans-unit attributes.
+        Supports standard XLIFF 1.2, SDLXLIFF, MQXLIFF, and Phrase MXLIFF formats.
+        Returns an integer 0-102 or None if not found.
+        """
+        SDL_NS = "http://sdl.com/FileTypes/SdlXliff/1.0"
+
+        # Standard XLIFF 1.2: percent attribute on trans-unit
+        if 'percent' in element.attrib:
+            try:
+                return int(element.get('percent'))
+            except (ValueError, TypeError):
+                pass
+
+        # Standard: match-quality attribute
+        if 'match-quality' in element.attrib:
+            try:
+                return int(element.get('match-quality'))
+            except (ValueError, TypeError):
+                pass
+
+        for attr_name, attr_value in element.attrib.items():
+            if not attr_value or not attr_value.strip():
+                continue
+            attr_lower = attr_name.lower()
+
+            # MemoQ MQXLIFF: mq:percent attribute
+            if 'percent' in attr_lower and 'mq' in attr_lower:
+                try:
+                    return int(attr_value)
+                except (ValueError, TypeError):
+                    pass
+
+            # Phrase MXLIFF: m:score is a 0.0-1.0 float (gross-score excluded)
+            if 'score' in attr_lower and 'gross' not in attr_lower:
+                try:
+                    return int(float(attr_value) * 100)
+                except (ValueError, TypeError):
+                    pass
+
+        # SDLXLIFF: <sdl:seg-defs><sdl:seg percent="...">
+        sdl_ns = {'sdl': SDL_NS}
+        seg_defs = element.find('.//sdl:seg-defs', namespaces=sdl_ns)
+        if seg_defs is not None:
+            seg = seg_defs.find('sdl:seg', namespaces=sdl_ns)
+            if seg is not None and 'percent' in seg.attrib:
+                try:
+                    return int(seg.get('percent'))
+                except (ValueError, TypeError):
+                    pass
+
+        return None
+
+    @staticmethod
     def _is_tu_locked(element: etree._Element, namespace: str) -> bool:
         """Detect whether a trans-unit is locked/read-only in any supported variant."""
         SDL_NS = "http://sdl.com/FileTypes/SdlXliff/1.0"
@@ -251,6 +307,7 @@ class XLIFFParser:
         try:
             tu_id = element.get('id', '')
             is_locked = self._is_tu_locked(element, namespace)
+            match_percent = self._extract_match_percent(element)
 
             # Extract TMS metadata from trans-unit attributes
             tms_metadata = {}
@@ -329,6 +386,7 @@ class XLIFFParser:
                             tms_metadata=tms_data,
                             file_name=file_name,
                             is_locked=is_locked,
+                            match_percent=match_percent,
                         ))
 
                     return trans_units
@@ -352,6 +410,7 @@ class XLIFFParser:
                 tms_metadata=tms_data,
                 file_name=file_name,
                 is_locked=is_locked,
+                match_percent=match_percent,
             )]
 
         except Exception as e:

@@ -73,6 +73,7 @@ export default function SpellcheckTab({
         exclusionFiles: exclusionFiles,
         skipLocked: settings.skip_locked ?? true,
         compoundCheck: settings.compound_check ?? true,
+        skip100Match: settings.skip_100_match ?? true,
       });
       setFlaggedWords(result.flagged_words);
       setSpellState("triage");
@@ -103,6 +104,7 @@ export default function SpellcheckTab({
         exclusionFiles: exclusionFiles,
         skipLocked: settings.skip_locked ?? true,
         compoundCheck: settings.compound_check ?? true,
+        skip100Match: settings.skip_100_match ?? true,
       });
       setFlaggedWords(result.flagged_words);
       setSpellState("triage");
@@ -136,15 +138,19 @@ export default function SpellcheckTab({
               filePath,
               termlists: enabledTermlistPaths,
               checklists: enabledChecklistPaths,
+              skipLocked: settings.skip_locked ?? true,
+              skip100Match: settings.skip_100_match ?? true,
             })
           : Promise.resolve({ violations: [] as Violation[] }),
         invoke<{ violations: Violation[] }>("sc_run_number_check", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
+          skip100Match: settings.skip_100_match ?? true,
         }),
         invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
+          skip100Match: settings.skip_100_match ?? true,
           checks: enabledQaIds,
         }),
       ]);

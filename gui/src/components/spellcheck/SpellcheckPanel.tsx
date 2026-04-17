@@ -53,6 +53,7 @@ export interface Settings {
   strict_lang_match: boolean;
   results_display_mode: ResultsDisplayMode;
   skip_locked: boolean;
+  skip_100_match: boolean;
   compound_check: boolean;
   watch_folder_enabled: boolean;
   watch_folder: string;
@@ -118,6 +119,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
     strict_lang_match: false,
     results_display_mode: 1,
     skip_locked: true,
+    skip_100_match: true,
     compound_check: true,
     watch_folder_enabled: false,
     watch_folder: "",
@@ -140,6 +142,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
           ...s,
           results_display_mode: s.results_display_mode ?? 1,
           skip_locked: s.skip_locked ?? true,
+          skip_100_match: s.skip_100_match ?? true,
           compound_check: s.compound_check ?? true,
           watch_folder_enabled: s.watch_folder_enabled ?? false,
           watch_folder: s.watch_folder ?? "",

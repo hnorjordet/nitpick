@@ -73,10 +73,12 @@ export default function QATab({ fileData, filePath, settings, onRunAll, runningA
         invoke<{ violations: Violation[] }>("sc_run_number_check", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
+          skip100Match: settings.skip_100_match ?? true,
         }),
         invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
           filePath,
           skipLocked: settings.skip_locked ?? true,
+          skip100Match: settings.skip_100_match ?? true,
           checks: enabledQaIds,
         }),
       ]);

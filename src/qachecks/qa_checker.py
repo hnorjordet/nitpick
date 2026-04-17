@@ -195,11 +195,13 @@ def _check_camelcase_mismatch(seg) -> List[Violation]:
 
 # ─── Cross-segment checks ───────────────────────────────────────────────────
 
-def _check_inconsistent_same_source(segments, skip_locked: bool) -> List[Violation]:
+def _check_inconsistent_same_source(segments, skip_locked: bool, skip_100_match: bool = True) -> List[Violation]:
     """Flag segments where the same source text has different translations."""
     groups = defaultdict(list)
     for seg in segments:
         if skip_locked and seg.is_locked:
+            continue
+        if skip_100_match and (getattr(seg, 'match_percent', None) or 0) >= 100:
             continue
         s = seg.source_plain.strip()
         t = seg.target_plain.strip()
@@ -221,11 +223,13 @@ def _check_inconsistent_same_source(segments, skip_locked: bool) -> List[Violati
     return violations
 
 
-def _check_inconsistent_same_target(segments, skip_locked: bool) -> List[Violation]:
+def _check_inconsistent_same_target(segments, skip_locked: bool, skip_100_match: bool = True) -> List[Violation]:
     """Flag segments where the same target text maps to different sources."""
     groups = defaultdict(list)
     for seg in segments:
         if skip_locked and seg.is_locked:
+            continue
+        if skip_100_match and (getattr(seg, 'match_percent', None) or 0) >= 100:
             continue
         s = seg.source_plain.strip()
         t = seg.target_plain.strip()
@@ -267,6 +271,7 @@ def run_qa_checks(
     segments,
     enabled_checks: Dict[str, bool],
     skip_locked: bool = True,
+    skip_100_match: bool = True,
 ) -> List[Violation]:
     """
     Run enabled QA checks on all segments.
@@ -286,6 +291,8 @@ def run_qa_checks(
     for seg in segments:
         if skip_locked and seg.is_locked:
             continue
+        if skip_100_match and (getattr(seg, 'match_percent', None) or 0) >= 100:
+            continue
         # Untranslated check runs on all segments; other checks need both texts
         for check_id, fn in active_per_seg:
             if check_id != "untranslated" and not seg.target_plain.strip():
@@ -294,9 +301,9 @@ def run_qa_checks(
 
     # Cross-segment checks
     if enabled_checks.get("inconsistent_source", False):
-        violations.extend(_check_inconsistent_same_source(segments, skip_locked))
+        violations.extend(_check_inconsistent_same_source(segments, skip_locked, skip_100_match))
 
     if enabled_checks.get("inconsistent_target", False):
-        violations.extend(_check_inconsistent_same_target(segments, skip_locked))
+        violations.extend(_check_inconsistent_same_target(segments, skip_locked, skip_100_match))
 
     return violations

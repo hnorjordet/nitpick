@@ -1131,6 +1131,7 @@ def sc_save_settings_command(args):
             backup_enabled=data.get("backup_enabled", True),
             strict_lang_match=data.get("strict_lang_match", False),
             skip_locked=data.get("skip_locked", True),
+            skip_100_match=data.get("skip_100_match", True),
             compound_check=data.get("compound_check", True),
             watch_folder_enabled=data.get("watch_folder_enabled", False),
             watch_folder=data.get("watch_folder", ""),
@@ -1158,8 +1159,10 @@ def sc_run_spellcheck_command(args):
     exclusion_set = build_exclusion_set(excl_paths)
     skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
     compound_check = (args.compound_check.lower() != "false") if args.compound_check else True
+    skip_100_match = (args.skip_100_match.lower() != "false") if args.skip_100_match else True
     flagged = run_spellcheck(segments, dicts, exclusion_set,
-                             skip_locked=skip_locked, compound_check=compound_check)
+                             skip_locked=skip_locked, compound_check=compound_check,
+                             skip_100_match=skip_100_match)
     _sc_out({
         "flagged_words": [
             {"word": fw.word, "count": fw.count, "segment_ids": fw.segment_ids}
@@ -1265,7 +1268,10 @@ def sc_run_term_check_command(args):
             path = path.strip()
             if path:
                 check_rules.extend(load_checklist(path))
-    violations = check_segments(segments, term_entries, check_rules)
+    skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
+    skip_100_match = (args.skip_100_match.lower() != "false") if args.skip_100_match else True
+    violations = check_segments(segments, term_entries, check_rules,
+                                skip_locked=skip_locked, skip_100_match=skip_100_match)
     _sc_out({
         "violations": [
             {
@@ -1286,7 +1292,8 @@ def sc_run_number_check_command(args):
         _sc_err(f"Failed to parse: {args.file}")
         return 1
     skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
-    violations = check_numbers(segments, skip_locked=skip_locked)
+    skip_100_match = (args.skip_100_match.lower() != "false") if args.skip_100_match else True
+    violations = check_numbers(segments, skip_locked=skip_locked, skip_100_match=skip_100_match)
     _sc_out({
         "violations": [
             {
@@ -1307,6 +1314,7 @@ def sc_run_qa_checks_command(args):
         _sc_err(f"Failed to parse: {args.file}")
         return 1
     skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
+    skip_100_match = (args.skip_100_match.lower() != "false") if args.skip_100_match else True
     if args.checks == "all" or not args.checks:
         enabled = {k: True for k in ALL_QA_CHECKS}
     elif args.checks == "none":
@@ -1314,7 +1322,7 @@ def sc_run_qa_checks_command(args):
     else:
         check_ids = {c.strip() for c in args.checks.split(",")}
         enabled = {k: (k in check_ids) for k in ALL_QA_CHECKS}
-    violations = run_qa_checks(segments, enabled, skip_locked=skip_locked)
+    violations = run_qa_checks(segments, enabled, skip_locked=skip_locked, skip_100_match=skip_100_match)
     _sc_out({
         "violations": [
             {
@@ -1488,6 +1496,7 @@ def main():
     p.add_argument('--exclusion-files', default="")
     p.add_argument('--skip-locked', default="true")
     p.add_argument('--compound-check', default="true")
+    p.add_argument('--skip-100-match', default="true")
     p.set_defaults(func=sc_run_spellcheck_command)
 
     p = subparsers.add_parser('sc-get-suggestions')
@@ -1516,16 +1525,20 @@ def main():
     p.add_argument('--file', required=True)
     p.add_argument('--termlists', default="")
     p.add_argument('--checklists', default="")
+    p.add_argument('--skip-locked', default="true")
+    p.add_argument('--skip-100-match', default="true")
     p.set_defaults(func=sc_run_term_check_command)
 
     p = subparsers.add_parser('sc-run-number-check')
     p.add_argument('--file', required=True)
     p.add_argument('--skip-locked', default="true")
+    p.add_argument('--skip-100-match', default="true")
     p.set_defaults(func=sc_run_number_check_command)
 
     p = subparsers.add_parser('sc-run-qa-checks')
     p.add_argument('--file', required=True)
     p.add_argument('--skip-locked', default="true")
+    p.add_argument('--skip-100-match', default="true")
     p.add_argument('--checks', default="all")
     p.set_defaults(func=sc_run_qa_checks_command)
 

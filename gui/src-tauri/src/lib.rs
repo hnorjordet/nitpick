@@ -1163,12 +1163,14 @@ fn sc_run_spellcheck(
     exclusion_files: Vec<String>,
     skip_locked: bool,
     compound_check: bool,
+    skip_100_match: bool,
     app_handle: tauri::AppHandle,
 ) -> Result<Value, String> {
     let dics_str = dics.join(",");
     let excl_str = exclusion_files.join(",");
     let skip_locked_str = if skip_locked { "true" } else { "false" };
     let compound_check_str = if compound_check { "true" } else { "false" };
+    let skip_100_match_str = if skip_100_match { "true" } else { "false" };
     let mut args = vec!["sc-run-spellcheck", "--file", file_path.as_str(), "--dics", dics_str.as_str()];
     if !excl_str.is_empty() {
         args.push("--exclusion-files");
@@ -1178,6 +1180,8 @@ fn sc_run_spellcheck(
     args.push(skip_locked_str);
     args.push("--compound-check");
     args.push(compound_check_str);
+    args.push("--skip-100-match");
+    args.push(skip_100_match_str);
     sc_invoke_python(&app_handle, args)
 }
 
@@ -1209,9 +1213,11 @@ fn sc_apply_spellcheck_edits(file_path: String, edits: String, app_handle: tauri
 }
 
 #[tauri::command]
-fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<String>, app_handle: tauri::AppHandle) -> Result<Value, String> {
+fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<String>, skip_locked: bool, skip_100_match: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
     let tl_str = termlists.join(",");
     let cl_str = checklists.join(",");
+    let skip_locked_str = if skip_locked { "true" } else { "false" };
+    let skip_100_match_str = if skip_100_match { "true" } else { "false" };
     let mut args = vec!["sc-run-term-check", "--file", file_path.as_str()];
     if !tl_str.is_empty() {
         args.push("--termlists");
@@ -1221,19 +1227,25 @@ fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<
         args.push("--checklists");
         args.push(cl_str.as_str());
     }
+    args.push("--skip-locked");
+    args.push(skip_locked_str);
+    args.push("--skip-100-match");
+    args.push(skip_100_match_str);
     sc_invoke_python(&app_handle, args)
 }
 
 #[tauri::command]
-fn sc_run_number_check(file_path: String, skip_locked: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
+fn sc_run_number_check(file_path: String, skip_locked: bool, skip_100_match: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
     let skip_locked_str = if skip_locked { "true" } else { "false" };
-    sc_invoke_python(&app_handle, vec!["sc-run-number-check", "--file", &file_path, "--skip-locked", skip_locked_str])
+    let skip_100_match_str = if skip_100_match { "true" } else { "false" };
+    sc_invoke_python(&app_handle, vec!["sc-run-number-check", "--file", &file_path, "--skip-locked", skip_locked_str, "--skip-100-match", skip_100_match_str])
 }
 
 #[tauri::command]
-fn sc_run_qa_checks(file_path: String, skip_locked: bool, checks: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
+fn sc_run_qa_checks(file_path: String, skip_locked: bool, skip_100_match: bool, checks: String, app_handle: tauri::AppHandle) -> Result<Value, String> {
     let skip_locked_str = if skip_locked { "true" } else { "false" };
-    sc_invoke_python(&app_handle, vec!["sc-run-qa-checks", "--file", &file_path, "--skip-locked", skip_locked_str, "--checks", &checks])
+    let skip_100_match_str = if skip_100_match { "true" } else { "false" };
+    sc_invoke_python(&app_handle, vec!["sc-run-qa-checks", "--file", &file_path, "--skip-locked", skip_locked_str, "--skip-100-match", skip_100_match_str, "--checks", &checks])
 }
 
 #[tauri::command]

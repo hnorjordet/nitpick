@@ -53,6 +53,8 @@ def check_segments(
     segments,
     term_entries: List[TermEntry],
     check_rules: List[CheckRule],
+    skip_locked: bool = True,
+    skip_100_match: bool = True,
 ) -> List[Violation]:
     """
     Check all segments against term entries and checklist rules.
@@ -65,6 +67,10 @@ def check_segments(
         target = seg.target_plain
 
         if not target:
+            continue
+        if skip_locked and getattr(seg, 'is_locked', False):
+            continue
+        if skip_100_match and (getattr(seg, 'match_percent', None) or 0) >= 100:
             continue
 
         # ── Termlist checks ───────────────────────────────────────────────

@@ -454,6 +454,18 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
           <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4, marginBottom: 10 }}>
             Segments marked as locked in Phrase, memoQ, or Trados are excluded from spellcheck.
           </p>
+          <label className="checkbox-row" htmlFor="skip-100-match">
+            <input
+              id="skip-100-match"
+              type="checkbox"
+              checked={settings.skip_100_match ?? true}
+              onChange={(e) => update({ skip_100_match: e.target.checked })}
+            />
+            <span>Skip 100% TM matches</span>
+          </label>
+          <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4, marginBottom: 10 }}>
+            Segments with a 100% translation memory match are excluded from all checks.
+          </p>
           <label className="checkbox-row" htmlFor="compound-check">
             <input
               id="compound-check"

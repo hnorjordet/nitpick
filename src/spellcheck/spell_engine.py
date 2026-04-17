@@ -232,6 +232,7 @@ def run_spellcheck(
     exclusion_set: Set[str],
     skip_locked: bool = True,
     compound_check: bool = True,
+    skip_100_match: bool = True,
 ) -> List[FlaggedWord]:
     """
     Run spellcheck over a list of Segment objects.
@@ -239,6 +240,7 @@ def run_spellcheck(
     skip_locked: skip segments marked as locked/read-only in the XLIFF.
     compound_check: accept words whose parts are all valid dictionary words
                     (Norwegian compound-word heuristic).
+    skip_100_match: skip segments with a TM match percentage of 100 or above.
 
     Returns flagged words sorted by occurrence count (descending).
     """
@@ -287,6 +289,9 @@ def run_spellcheck(
             continue
         # Skip locked/read-only segments if requested
         if skip_locked and seg.is_locked:
+            continue
+        # Skip 100% TM matches if requested
+        if skip_100_match and (seg.match_percent or 0) >= 100:
             continue
 
         source_words: Set[str] = set(tokenize(seg.source_plain))

@@ -43,6 +43,7 @@ class Settings:
     backup_enabled: bool = True
     strict_lang_match: bool = False
     skip_locked: bool = True        # Skip locked/read-only segments during spellcheck
+    skip_100_match: bool = True     # Skip 100%-TM-match segments during all checks
     compound_check: bool = True     # Accept valid compound words (Norwegian heuristic)
     watch_folder_enabled: bool = False  # Auto-load files dropped into a watched folder
     watch_folder: str = ""              # Path to folder to watch
@@ -64,6 +65,7 @@ def load() -> Settings:
         s.backup_enabled = data.get("backup_enabled", True)
         s.strict_lang_match = data.get("strict_lang_match", False)
         s.skip_locked = data.get("skip_locked", True)
+        s.skip_100_match = data.get("skip_100_match", True)
         s.compound_check = data.get("compound_check", True)
         s.watch_folder_enabled = data.get("watch_folder_enabled", False)
         s.watch_folder = data.get("watch_folder", "")

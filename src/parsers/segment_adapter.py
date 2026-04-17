@@ -20,6 +20,7 @@ class Segment:
     target_element: object  # lxml element reference for write-back
     parent_element: object  # trans-unit element reference
     is_locked: bool = False
+    match_percent: object = None  # Optional[int] — TM match %, None if unknown
 
 
 def trans_units_to_segments(trans_units, default_file_name: str = "") -> List[Segment]:
@@ -36,5 +37,6 @@ def trans_units_to_segments(trans_units, default_file_name: str = "") -> List[Se
             target_element=tu.target,
             parent_element=tu.element,
             is_locked=tu.is_locked,
+            match_percent=tu.match_percent,
         ))
     return segments

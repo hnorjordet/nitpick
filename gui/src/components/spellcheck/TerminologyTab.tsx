@@ -76,6 +76,8 @@ export default function TerminologyTab({ fileData, filePath, settings, onRunAll,
         filePath,
         termlists,
         checklists,
+        skipLocked: settings.skip_locked ?? true,
+        skip100Match: settings.skip_100_match ?? true,
       });
       setViolations(result.violations);
       setRan(true);

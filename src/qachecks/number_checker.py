@@ -280,7 +280,7 @@ def _check_unpaired_symbols(
 
 # ─── Main checker ─────────────────────────────────────────────────────────────
 
-def check_numbers(segments, skip_locked: bool = True) -> List[Violation]:
+def check_numbers(segments, skip_locked: bool = True, skip_100_match: bool = True) -> List[Violation]:
     """
     Check all segments for number/placeholder/tag mismatches.
     Returns a list of Violation objects (reuses the Violation dataclass
@@ -295,6 +295,8 @@ def check_numbers(segments, skip_locked: bool = True) -> List[Violation]:
         if not target or not source:
             continue
         if skip_locked and seg.is_locked:
+            continue
+        if skip_100_match and (getattr(seg, 'match_percent', None) or 0) >= 100:
             continue
 
         # ── Number check ──────────────────────────────────────────────
