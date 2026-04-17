@@ -1360,6 +1360,7 @@ def sc_save_report_xlsx_command(args):
         spell_errors=spell_errors,
         violations=violations,
         output_path=args.output_path,
+        app_version=getattr(args, "app_version", "") or "",
     )
     _sc_out({"ok": True, "path": result})
     return 0
@@ -1556,6 +1557,7 @@ def main():
     p.add_argument('--output-path', required=True)
     p.add_argument('--spell-errors', default="[]")
     p.add_argument('--violations', default="[]")
+    p.add_argument('--app-version', default="")
     p.set_defaults(func=sc_save_report_xlsx_command)
 
     args = parser.parse_args()

@@ -1267,6 +1267,7 @@ fn sc_save_report_xlsx(
         "--output-path", &output_path,
         "--spell-errors", &spell_errors,
         "--violations", &violations,
+        "--app-version", env!("CARGO_PKG_VERSION"),
     ])
 }
 

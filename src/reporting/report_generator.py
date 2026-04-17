@@ -73,11 +73,13 @@ def _cell_style(ws, row: int, col: int,
     return cell
 
 
-def _section_header(ws, row: int, label: str, count: int, ncols: int):
+def _section_header(ws, row: int, label: str, count: int, ncols: int,
+                    subtitle: str = ""):
     ws.merge_cells(start_row=row, start_column=1,
                    end_row=row, end_column=ncols)
+    suffix = f"  —  from {subtitle}" if subtitle else ""
     cell = ws.cell(row=row, column=1,
-                   value=f"  {label}  —  {count} issue{'s' if count != 1 else ''}")
+                   value=f"  {label}{suffix}  —  {count} issue{'s' if count != 1 else ''}")
     cell.font = Font(bold=True, color="FFFFFF", size=11)
     cell.fill = _SECTION_FILL
     cell.alignment = Alignment(horizontal="left", vertical="center",
@@ -90,6 +92,7 @@ def generate_xlsx_report(
     spell_errors: list,   # list of {"word": str, "count": int, "segment_ids": list[str]}
     violations: list,     # list of Violation dicts
     output_path: str,
+    app_version: str = "",
 ) -> str:
     """
     Build an Xbench-style Excel QA report and write it to output_path.
@@ -101,10 +104,10 @@ def generate_xlsx_report(
 
     file_name = Path(file_path).name
     generated = datetime.now().strftime("%Y-%m-%d %H:%M")
-    ncols = 6   # Seg #, File, Type, Source, Target, Description
+    ncols = 8   # Seg #, File, Match %, Type, Source, Target, Description, Corrected
 
     # ── Column widths ─────────────────────────────────────────────────────────
-    col_widths = [9, 28, 20, 40, 40, 35]
+    col_widths = [9, 28, 9, 20, 40, 40, 35, 14]
     for i, w in enumerate(col_widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
@@ -112,7 +115,8 @@ def generate_xlsx_report(
 
     # ── Title block ───────────────────────────────────────────────────────────
     ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=ncols)
-    title_cell = ws.cell(row=row, column=1, value="QA Report")
+    title = f"Nitpick QA Report — v{app_version}" if app_version else "Nitpick QA Report"
+    title_cell = ws.cell(row=row, column=1, value=title)
     title_cell.font = Font(bold=True, size=16, color="FFFFFF")
     title_cell.fill = _HEADER_FILL
     title_cell.alignment = Alignment(horizontal="left", vertical="center",
@@ -158,7 +162,7 @@ def generate_xlsx_report(
     row += 1  # blank
 
     # ── Column headers ────────────────────────────────────────────────────────
-    headers = ["Seg #", "File", "Type", "Source", "Target", "Description"]
+    headers = ["Seg #", "File", "Match %", "Type", "Source", "Target", "Description", "Corrected"]
     for col_i, hdr in enumerate(headers, 1):
         _cell_style(ws, row, col_i, hdr, bold=True,
                     fill=_HEADER_FILL, font_color="FFFFFF",
@@ -177,12 +181,14 @@ def generate_xlsx_report(
             word = entry.get("word", "")
             count = entry.get("count", 0)
             seg_ids = ", ".join(str(s) for s in entry.get("segment_ids", []))
-            _cell_style(ws, row, 1, seg_ids,   fill=fill)
-            _cell_style(ws, row, 2, file_name, fill=fill)
-            _cell_style(ws, row, 3, "Spelling", fill=fill)
-            _cell_style(ws, row, 4, word,       fill=fill)
-            _cell_style(ws, row, 5, "",         fill=fill)
-            _cell_style(ws, row, 6, f"Flagged {count}×", fill=fill)
+            _cell_style(ws, row, 1, seg_ids,           fill=fill)
+            _cell_style(ws, row, 2, file_name,         fill=fill)
+            _cell_style(ws, row, 3, "",                fill=fill)  # no match% for spell
+            _cell_style(ws, row, 4, "Spelling",        fill=fill)
+            _cell_style(ws, row, 5, word,              fill=fill)
+            _cell_style(ws, row, 6, "",                fill=fill)
+            _cell_style(ws, row, 7, f"Flagged {count}×", fill=fill)
+            _cell_style(ws, row, 8, "",                fill=fill)  # Corrected (editable)
             row += 1
 
     # ── Violations by source group ────────────────────────────────────────────
@@ -190,11 +196,21 @@ def generate_xlsx_report(
         return [v for v in violations
                 if v.get("check_source", "qa") in source_keys]
 
+    def _group_subtitle(source_keys):
+        """Return a filename subtitle for termlist/checklist groups."""
+        for v in violations:
+            if v.get("check_source") in source_keys:
+                # source_file is populated by term_checker when available
+                sf = v.get("source_file", "")
+                if sf:
+                    return Path(sf).name
+        return ""
+
     groups = [
-        ("termlist",             ["termlist"]),
-        ("checklist",            ["checklist"]),
-        ("number",               ["number"]),
-        ("qa",                   ["qa"]),
+        ("termlist",  ["termlist"]),
+        ("checklist", ["checklist"]),
+        ("number",    ["number"]),
+        ("qa",        ["qa"]),
     ]
 
     for group_key, source_keys in groups:
@@ -202,7 +218,8 @@ def generate_xlsx_report(
         if not grp:
             continue
         label = _SECTION_TYPES.get(group_key, group_key.title())
-        _section_header(ws, row, label, len(grp), ncols)
+        subtitle = _group_subtitle(source_keys) if group_key in ("termlist", "checklist") else ""
+        _section_header(ws, row, label, len(grp), ncols, subtitle=subtitle)
         row += 1
 
         for alt_i, v in enumerate(grp):
@@ -210,12 +227,16 @@ def generate_xlsx_report(
             fill = _ERROR_FILL if severity == "error" else (
                    _WARN_FILL if severity == "warning" else _ALT_FILL
                    if alt_i % 2 == 0 else _WHITE_FILL)
+            match_pct = v.get("match_percent")
             _cell_style(ws, row, 1, v.get("segment_id", ""),    fill=fill)
             _cell_style(ws, row, 2, v.get("file_name", ""),     fill=fill)
-            _cell_style(ws, row, 3, v.get("violation_type", "").replace("_", " ").title(), fill=fill)
-            _cell_style(ws, row, 4, v.get("source_text", ""),   fill=fill)
-            _cell_style(ws, row, 5, v.get("target_text", ""),   fill=fill)
-            _cell_style(ws, row, 6, v.get("description", ""),   fill=fill)
+            _cell_style(ws, row, 3, match_pct,                  fill=fill, halign="center")
+            _cell_style(ws, row, 4, v.get("violation_type", "").replace("_", " ").title(), fill=fill)
+            _cell_style(ws, row, 5, v.get("source_text", ""),   fill=fill)
+            _cell_style(ws, row, 6, v.get("target_text", ""),   fill=fill)
+            _cell_style(ws, row, 7, v.get("description", ""),   fill=fill)
+            corrected_cell = _cell_style(ws, row, 8, "",        fill=_WHITE_FILL)
+            corrected_cell.protection = corrected_cell.protection  # stays unlocked
             row += 1
 
     # ── Freeze panes below header ─────────────────────────────────────────────

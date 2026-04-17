@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { FileData, Settings, Violation } from "./SpellcheckPanel";
+import ExportBar from "./ExportBar";
 
 interface Props {
   fileData: FileData | null;
@@ -225,6 +226,9 @@ export default function QATab({ fileData, filePath, settings, onRunAll, runningA
             "QA checks only"
           )}
         </button>
+        {ran && violations.length > 0 && (
+          <ExportBar filePath={filePath} spellErrors={[]} violations={violations} />
+        )}
       </div>
 
       {/* Error banner */}
