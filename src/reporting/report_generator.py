@@ -235,8 +235,7 @@ def generate_xlsx_report(
             _cell_style(ws, row, 5, v.get("source_text", ""),   fill=fill)
             _cell_style(ws, row, 6, v.get("target_text", ""),   fill=fill)
             _cell_style(ws, row, 7, v.get("description", ""),   fill=fill)
-            corrected_cell = _cell_style(ws, row, 8, "",        fill=_WHITE_FILL)
-            corrected_cell.protection = corrected_cell.protection  # stays unlocked
+            _cell_style(ws, row, 8, "",        fill=_WHITE_FILL)
             row += 1
 
     # ── Freeze panes below header ─────────────────────────────────────────────
