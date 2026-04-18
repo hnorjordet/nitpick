@@ -2910,8 +2910,9 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
               <div className="about-info">
                 <p className="version">Version 0.5.1</p>
                 <p className="description">
-                  A powerful Find & Replace tool for XLIFF translation files with regex support,
-                  batch check profiles, and batch processing capabilities.
+                  A complete QA tool for translators working with XLIFF files.
+                  Combines advanced regex search &amp; replace, spellcheck, terminology verification,
+                  and automated QA checks in one place.
                 </p>
                 <p className="copyright">
                   © 2026 Håvard Nørjordet
