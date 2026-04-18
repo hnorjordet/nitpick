@@ -43,8 +43,8 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
   const needsDics = runSpell && settings.selected_dics.length === 0;
 
   async function handleRun() {
-    if (!filePath || !fileData) { setError("Ingen fil lastet. Åpne en XLIFF-fil først."); return; }
-    if (needsDics) { setError("Ingen ordbøker valgt. Velg ordbøker i Settings."); return; }
+    if (!filePath || !fileData) { setError("No file loaded. Open an XLIFF file first."); return; }
+    if (needsDics) { setError("No dictionaries selected. Configure dictionaries in Settings."); return; }
 
     setError("");
     setViolations([]);
@@ -173,9 +173,9 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         <div className="empty-state" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
           <h2 style={{ fontSize: 15, marginTop: 12, marginBottom: 6, color: "var(--text-secondary)" }}>
-            Kjører sjekker…
+            Running checks…
           </h2>
-          <p>Terminologi, tall og formatering sjekkes.</p>
+          <p>Running terminology, number, and formatting checks.</p>
         </div>
       </div>
     );
@@ -207,27 +207,27 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         {/* Which checks to run */}
         <section style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 10 }}>
-            Sjekker
+            Checks
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <label className="checkbox-row">
               <input type="checkbox" checked={runSpell} onChange={e => setRunSpell(e.target.checked)} />
-              <span>Stavekontroll</span>
+              <span>Spellcheck</span>
               {settings.selected_dics.length === 0 && runSpell && (
-                <span style={{ fontSize: 11, color: "var(--danger)", marginLeft: 8 }}>— ingen ordbøker valgt</span>
+                <span style={{ fontSize: 11, color: "var(--danger)", marginLeft: 8 }}>— no dictionaries selected</span>
               )}
             </label>
             <label className="checkbox-row">
               <input type="checkbox" checked={runTerm} onChange={e => setRunTerm(e.target.checked)} />
-              <span>Terminologi ({enabledTermlists.length} termlist{enabledTermlists.length !== 1 ? "er" : ""})</span>
+              <span>Terminology ({enabledTermlists.length} termlist{enabledTermlists.length !== 1 ? "s" : ""})</span>
             </label>
             <label className="checkbox-row">
               <input type="checkbox" checked={runChecklist} onChange={e => setRunChecklist(e.target.checked)} />
-              <span>Sjekkliste ({enabledChecklists.length} fil{enabledChecklists.length !== 1 ? "er" : ""})</span>
+              <span>Checklists ({enabledChecklists.length} file{enabledChecklists.length !== 1 ? "s" : ""})</span>
             </label>
             <label className="checkbox-row">
               <input type="checkbox" checked={runQA} onChange={e => setRunQA(e.target.checked)} />
-              <span>QA-sjekker ({Object.values(settings.qa_checks ?? {}).filter(Boolean).length} aktive)</span>
+              <span>QA checks ({Object.values(settings.qa_checks ?? {}).filter(Boolean).length} active)</span>
             </label>
           </div>
         </section>
@@ -235,7 +235,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         {/* Segment filtering */}
         <section style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 10 }}>
-            Segmentfilter
+            Segment filter
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <label className="checkbox-row">
@@ -244,7 +244,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
                 checked={settings.skip_locked ?? true}
                 onChange={e => onSettingsChange({ ...settings, skip_locked: e.target.checked })}
               />
-              <span>Hopp over låste segmenter</span>
+              <span>Skip locked / read-only segments</span>
             </label>
             <label className="checkbox-row">
               <input
@@ -252,7 +252,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
                 checked={settings.skip_100_match ?? true}
                 onChange={e => onSettingsChange({ ...settings, skip_100_match: e.target.checked })}
               />
-              <span>Hopp over 100%-TM-treff</span>
+              <span>Skip 100% TM matches</span>
             </label>
           </div>
         </section>
@@ -261,11 +261,11 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         {fileData && (
           <section style={{ marginBottom: 24 }}>
             <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
-              Fil
+              File
             </h2>
             <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              {filePath.split("/").pop()} &nbsp;·&nbsp; {fileData.stats.total_segments} segmenter
-              {fileData.stats.untranslated > 0 && ` (${fileData.stats.untranslated} uoversatt)`}
+              {filePath.split("/").pop()} &nbsp;·&nbsp; {fileData.stats.total_segments} segments
+              {fileData.stats.untranslated > 0 && ` (${fileData.stats.untranslated} untranslated)`}
             </div>
           </section>
         )}
@@ -288,16 +288,16 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
           {isRunning ? (
             <>
               <span className="spinner" aria-hidden="true" style={{ marginRight: 8 }} />
-              Kjører stavekontroll…
+              Running spellcheck…
             </>
           ) : (
-            "Kjør valgte sjekker"
+            "Run selected checks"
           )}
         </button>
 
         {!fileData && (
           <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 10, textAlign: "center" }}>
-            Åpne en XLIFF-fil for å starte.
+            Open an XLIFF file to get started.
           </p>
         )}
       </div>
