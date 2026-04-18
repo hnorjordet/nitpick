@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { open as openDialog, save, ask, message } from '@tauri-apps/plugin-dialog';
 import { listen, emit } from '@tauri-apps/api/event';
@@ -2892,8 +2893,8 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
         </div>
       )}
 
-      {/* About Modal */}
-      {showAboutModal && (
+      {/* About Modal — rendered via portal so it floats above all panels */}
+      {showAboutModal && createPortal(
         <div className="library-modal-overlay" onClick={() => setShowAboutModal(false)} role="presentation">
           <div ref={aboutModalRef} className="library-modal about-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="about-modal-title">
             <div className="library-header">
@@ -2922,7 +2923,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Update Available Dialog */}
       {updateAvailable && (
