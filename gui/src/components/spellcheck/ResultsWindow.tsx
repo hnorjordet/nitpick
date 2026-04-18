@@ -984,7 +984,7 @@ ${violSection}
               >#Seg</button>
             </div>
           )}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexShrink: 0 }}>
             <button
               className="btn btn-secondary btn-sm"
               onClick={() => exportReport("csv")}
@@ -1015,12 +1015,9 @@ ${violSection}
             >
               Excel
             </button>
-            <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Back to triage">
-              &larr; Back
-            </button>
-            {onNewRun && (
-              <button className="btn btn-secondary btn-sm" onClick={onNewRun} aria-label="New run">
-                New run
+            {!onNewRun && (
+              <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Back to triage">
+                &larr; Back
               </button>
             )}
           </div>
