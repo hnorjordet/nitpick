@@ -270,6 +270,28 @@ class XLIFFParser:
                 except (ValueError, TypeError):
                     pass
 
+        # XTM / standard XLIFF: match-quality on first <alt-trans> child
+        # Value may be "100%" (with percent sign) or plain "100"
+        alt_trans = element.find('alt-trans')
+        if alt_trans is None:
+            # Try with any namespace prefix
+            alt_trans = element.find('.//{urn:oasis:names:tc:xliff:document:1.2}alt-trans')
+        if alt_trans is not None and 'match-quality' in alt_trans.attrib:
+            raw = alt_trans.get('match-quality', '').rstrip('%')
+            try:
+                return int(float(raw))
+            except (ValueError, TypeError):
+                pass
+
+        # XTM fallback: state-qualifier="exact-match" on <target> → treat as 100%
+        target = element.find('target')
+        if target is None:
+            target = element.find('.//{urn:oasis:names:tc:xliff:document:1.2}target')
+        if target is not None:
+            sq = target.get('state-qualifier', '')
+            if 'exact-match' in sq or 'leveraged-tm' in sq:
+                return 100
+
         return None
 
     @staticmethod

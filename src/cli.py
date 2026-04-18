@@ -692,6 +692,23 @@ def stats_command(args):
                                 else:
                                     metadata['origin'] = origin_system
 
+                # XTM / standard XLIFF: match-quality on first <alt-trans>
+                if 'match_percent' not in metadata or not metadata['match_percent']:
+                    alt_trans = tu.element.find('alt-trans')
+                    if alt_trans is not None and 'match-quality' in alt_trans.attrib:
+                        raw = alt_trans.get('match-quality', '').rstrip('%')
+                        try:
+                            metadata['match_percent'] = str(int(float(raw)))
+                        except (ValueError, TypeError):
+                            pass
+
+                # XTM fallback: state-qualifier on <target> → 100%
+                if 'match_percent' not in metadata or not metadata['match_percent']:
+                    if tu.target is not None:
+                        sq = tu.target.get('state-qualifier', '')
+                        if 'exact-match' in sq or 'leveraged-tm' in sq:
+                            metadata['match_percent'] = '100'
+
             # ICU validation
             source_text = tu.get_source_text()
             target_text = tu.get_target_text()
