@@ -1280,6 +1280,7 @@ def sc_run_term_check_command(args):
                 "target_term": v.target_term, "description": v.description,
                 "source_text": v.source_text, "target_text": v.target_text,
                 "check_source": v.check_source,
+                "match_percent": getattr(v, 'match_percent', None),
             } for v in violations
         ]
     })
@@ -1302,6 +1303,7 @@ def sc_run_number_check_command(args):
                 "target_term": v.target_term, "description": v.description,
                 "source_text": v.source_text, "target_text": v.target_text,
                 "check_source": v.check_source,
+                "match_percent": getattr(v, 'match_percent', None),
             } for v in violations
         ]
     })
@@ -1331,6 +1333,7 @@ def sc_run_qa_checks_command(args):
                 "target_term": v.target_term, "description": v.description,
                 "source_text": v.source_text, "target_text": v.target_text,
                 "check_source": v.check_source,
+                "match_percent": getattr(v, 'match_percent', None),
             } for v in violations
         ]
     })

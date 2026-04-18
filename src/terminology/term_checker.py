@@ -22,6 +22,8 @@ class Violation:
     source_text: str       # full source segment for context
     target_text: str       # full target segment for context
     check_source: str = "termlist"  # "termlist" | "checklist" | "number" | "qa"
+    match_percent: object = None    # Optional[int] — TM match % from source segment
+    source_file: str = ""           # originating termlist/checklist filename
 
 
 # Normalise all quote variants to a canonical form before matching,
@@ -91,6 +93,7 @@ def check_segments(
                                 source_text=source,
                                 target_text=target,
                                 check_source="termlist",
+                                match_percent=getattr(seg, 'match_percent', None),
                             )
                         )
 
@@ -109,6 +112,7 @@ def check_segments(
                                 source_text=source,
                                 target_text=target,
                                 check_source="termlist",
+                                match_percent=getattr(seg, 'match_percent', None),
                             )
                         )
 
@@ -155,6 +159,7 @@ def check_segments(
                                 source_text=source,
                                 target_text=target,
                                 check_source="checklist",
+                                match_percent=getattr(seg, 'match_percent', None),
                             )
                         )
 
@@ -189,6 +194,7 @@ def check_segments(
                                 source_text=source,
                                 target_text=target,
                                 check_source="checklist",
+                                match_percent=getattr(seg, 'match_percent', None),
                             )
                         )
 

@@ -74,6 +74,7 @@ def _v(seg, vtype: str, source_term: str, target_term, description: str) -> Viol
         source_text=seg.source_plain,
         target_text=seg.target_plain,
         check_source="qa",
+        match_percent=getattr(seg, 'match_percent', None),
     )
 
 

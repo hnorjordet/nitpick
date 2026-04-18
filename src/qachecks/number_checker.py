@@ -164,6 +164,7 @@ def _check_unpaired_symbols(
     file_name: str,
     source: str,
     target: str,
+    match_percent=None,
 ) -> List[Violation]:
     """
     Check source and target for unpaired bracket/quote symbols.
@@ -195,6 +196,7 @@ def _check_unpaired_symbols(
                 source_text=source,
                 target_text=target,
                 check_source="number",
+                match_percent=match_percent,
             ))
         else:
             # Target is internally balanced — check count matches source
@@ -241,6 +243,7 @@ def _check_unpaired_symbols(
                 source_text=source,
                 target_text=target,
                 check_source="number",
+                match_percent=match_percent,
             ))
 
     # ── Quote count balance (locale-neutral) ───────────────────────────
@@ -342,6 +345,7 @@ def check_numbers(segments, skip_locked: bool = True, skip_100_match: bool = Tru
                     source_text=source,
                     target_text=target,
                     check_source="number",
+                    match_percent=getattr(seg, 'match_percent', None),
                 )
             )
 
@@ -371,12 +375,14 @@ def check_numbers(segments, skip_locked: bool = True, skip_100_match: bool = Tru
                     source_text=source,
                     target_text=target,
                     check_source="number",
+                    match_percent=getattr(seg, 'match_percent', None),
                 )
             )
 
         # ── Unpaired symbol check ──────────────────────────────────────
         violations.extend(
-            _check_unpaired_symbols(seg.id, seg.file_name, source, target)
+            _check_unpaired_symbols(seg.id, seg.file_name, source, target,
+                                    match_percent=getattr(seg, 'match_percent', None))
         )
 
     return violations
