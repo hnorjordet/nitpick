@@ -12,15 +12,9 @@ interface Props {
   onSettingsChange: (s: Settings) => void;
 }
 
-type RunState =
-  | "idle"
-  | "running_spell"
-  | "triage"
-  | "running_checks"
-  | "results";
+type RunState = "idle" | "running_spell" | "triage" | "running_checks" | "results";
 
 export default function ChecksTab({ fileData, filePath, settings, onSettingsChange }: Props) {
-  // Which checks to run
   const [runSpell, setRunSpell] = useState(true);
   const [runTerm, setRunTerm] = useState(true);
   const [runChecklist, setRunChecklist] = useState(true);
@@ -28,23 +22,18 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
 
   const [state, setState] = useState<RunState>("idle");
   const [error, setError] = useState("");
-
-  // Spellcheck triage state
   const [flaggedWords, setFlaggedWords] = useState<FlaggedWord[]>([]);
   const [realErrors, setRealErrors] = useState<FlaggedWord[]>([]);
-
-  // Final results
   const [violations, setViolations] = useState<Violation[]>([]);
 
   const enabledTermlists = settings.termlists.filter((t) => t.enabled).map((t) => t.path);
   const enabledChecklists = settings.checklists.filter((c) => c.enabled).map((c) => c.path);
-
   const anyCheckSelected = runSpell || runTerm || runChecklist || runQA;
-  const needsDics = runSpell && settings.selected_dics.length === 0;
+  const isRunning = state === "running_spell" || state === "running_checks";
 
   async function handleRun() {
     if (!filePath || !fileData) { setError("No file loaded. Open an XLIFF file first."); return; }
-    if (needsDics) { setError("No dictionaries selected. Configure dictionaries in Settings."); return; }
+    if (runSpell && settings.selected_dics.length === 0) { setError("No dictionaries selected. Configure dictionaries in Settings."); return; }
 
     setError("");
     setViolations([]);
@@ -52,14 +41,12 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
     setRealErrors([]);
 
     if (runSpell) {
-      // Spellcheck first — needs triage
       setState("running_spell");
       try {
-        const exclusionFiles = [...enabledTermlists, ...enabledChecklists];
         const result = await invoke<{ flagged_words: FlaggedWord[] }>("sc_run_spellcheck", {
           filePath,
           dics: settings.selected_dics,
-          exclusionFiles,
+          exclusionFiles: [...enabledTermlists, ...enabledChecklists],
           skipLocked: settings.skip_locked ?? true,
           skip100Match: settings.skip_100_match ?? true,
           compoundCheck: settings.compound_check ?? true,
@@ -71,7 +58,6 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         setState("idle");
       }
     } else {
-      // Skip spellcheck — go straight to other checks
       await runOtherChecks([]);
     }
   }
@@ -79,11 +65,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
   async function runOtherChecks(confirmedErrors: FlaggedWord[]) {
     setRealErrors(confirmedErrors);
 
-    const hasTermWork = (runTerm && enabledTermlists.length > 0) ||
-                        (runChecklist && enabledChecklists.length > 0);
-
     if (!runTerm && !runChecklist && !runQA) {
-      // Spell-only
       setState("results");
       return;
     }
@@ -95,53 +77,32 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
 
       const termlistPaths = runTerm ? enabledTermlists : [];
       const checklistPaths = runChecklist ? enabledChecklists : [];
+      const hasTermFiles = termlistPaths.length > 0 || checklistPaths.length > 0;
 
-      const promises: Promise<{ violations: Violation[] }>[] = [];
+      const [termResult, numberResult, qaResult] = await Promise.all([
+        hasTermFiles
+          ? invoke<{ violations: Violation[] }>("sc_run_term_check", {
+              filePath, termlists: termlistPaths, checklists: checklistPaths,
+              skipLocked: settings.skip_locked ?? true, skip100Match: settings.skip_100_match ?? true,
+            })
+          : Promise.resolve({ violations: [] as Violation[] }),
+        invoke<{ violations: Violation[] }>("sc_run_number_check", {
+          filePath, skipLocked: settings.skip_locked ?? true, skip100Match: settings.skip_100_match ?? true,
+        }),
+        runQA
+          ? invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
+              filePath, skipLocked: settings.skip_locked ?? true, skip100Match: settings.skip_100_match ?? true,
+              checks: enabledQaIds,
+            })
+          : Promise.resolve({ violations: [] as Violation[] }),
+      ]);
 
-      if (hasTermWork && (termlistPaths.length > 0 || checklistPaths.length > 0)) {
-        promises.push(invoke<{ violations: Violation[] }>("sc_run_term_check", {
-          filePath,
-          termlists: termlistPaths,
-          checklists: checklistPaths,
-          skipLocked: settings.skip_locked ?? true,
-          skip100Match: settings.skip_100_match ?? true,
-        }));
-      } else {
-        promises.push(Promise.resolve({ violations: [] }));
-      }
-
-      promises.push(invoke<{ violations: Violation[] }>("sc_run_number_check", {
-        filePath,
-        skipLocked: settings.skip_locked ?? true,
-        skip100Match: settings.skip_100_match ?? true,
-      }));
-
-      if (runQA) {
-        promises.push(invoke<{ violations: Violation[] }>("sc_run_qa_checks", {
-          filePath,
-          skipLocked: settings.skip_locked ?? true,
-          skip100Match: settings.skip_100_match ?? true,
-          checks: enabledQaIds,
-        }));
-      } else {
-        promises.push(Promise.resolve({ violations: [] }));
-      }
-
-      const [termResult, numberResult, qaResult] = await Promise.all(promises);
       setViolations([...termResult.violations, ...numberResult.violations, ...qaResult.violations]);
       setState("results");
     } catch (e) {
       setError(String(e));
       setState(confirmedErrors.length > 0 ? "results" : "idle");
     }
-  }
-
-  function handleTriageDone(confirmed: FlaggedWord[]) {
-    runOtherChecks(confirmed);
-  }
-
-  function handleBack() {
-    setState("triage");
   }
 
   function handleReset() {
@@ -152,24 +113,21 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
     setViolations([]);
   }
 
-  // ── Triage screen ────────────────────────────────────────────────────────────
-  if (state === "triage") {
-    return (
-      <div className="spellcheck-main">
+  // Right panel content
+  function renderRight() {
+    if (state === "triage") {
+      return (
         <TriageWindow
           flaggedWords={flaggedWords}
           filePath={filePath}
           settings={settings}
-          onDone={handleTriageDone}
+          onDone={(confirmed) => runOtherChecks(confirmed)}
         />
-      </div>
-    );
-  }
+      );
+    }
 
-  // ── Running checks after triage ──────────────────────────────────────────────
-  if (state === "running_checks") {
-    return (
-      <div className="spellcheck-main">
+    if (state === "running_checks") {
+      return (
         <div className="empty-state" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
           <h2 style={{ fontSize: 15, marginTop: 12, marginBottom: 6, color: "var(--text-secondary)" }}>
@@ -177,102 +135,119 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
           </h2>
           <p>Running terminology, number, and formatting checks.</p>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // ── Results screen ───────────────────────────────────────────────────────────
-  if (state === "results") {
-    return (
-      <div className="spellcheck-main">
+    if (state === "results") {
+      return (
         <ResultsWindow
           realErrors={realErrors}
           filePath={filePath}
           settings={settings}
-          onBack={handleBack}
+          onBack={() => setState("triage")}
           violations={violations}
           onNewRun={handleReset}
         />
+      );
+    }
+
+    // idle / running_spell
+    return (
+      <div className="empty-state" role="status" aria-live="polite">
+        {state === "running_spell" ? (
+          <>
+            <span className="spinner" aria-hidden="true" />
+            <h2 style={{ fontSize: 15, marginTop: 12, marginBottom: 6, color: "var(--text-secondary)" }}>
+              Running spellcheck…
+            </h2>
+          </>
+        ) : (
+          <>
+            <h2 style={{ fontSize: 15, marginBottom: 6, color: "var(--text-secondary)" }}>
+              Ready
+            </h2>
+            <p>
+              {!fileData
+                ? "Open an XLIFF file, then click Run."
+                : `${fileData.stats.total_segments} segments loaded. Select checks and click Run.`}
+            </p>
+          </>
+        )}
       </div>
     );
   }
 
-  // ── Idle / running_spell ─────────────────────────────────────────────────────
-  const isRunning = state === "running_spell";
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "auto" }}>
-      <div style={{ padding: "20px 24px", maxWidth: 620 }}>
+    <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
 
-        {/* Which checks to run */}
-        <section style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 10 }}>
+      {/* ── Left sidebar: controls ─────────────────────────────────────────── */}
+      <div style={{
+        width: 220, flexShrink: 0, borderRight: "1px solid var(--border)",
+        overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 16,
+      }}>
+
+        {/* Checks */}
+        <section>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
             Checks
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label className="checkbox-row">
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input type="checkbox" checked={runSpell} onChange={e => setRunSpell(e.target.checked)} />
               <span>Spellcheck</span>
-              {settings.selected_dics.length === 0 && runSpell && (
-                <span style={{ fontSize: 11, color: "var(--danger)", marginLeft: 8 }}>— no dictionaries selected</span>
-              )}
             </label>
-            <label className="checkbox-row">
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input type="checkbox" checked={runTerm} onChange={e => setRunTerm(e.target.checked)} />
-              <span>Terminology ({enabledTermlists.length} termlist{enabledTermlists.length !== 1 ? "s" : ""})</span>
+              <span>Terminology</span>
             </label>
-            <label className="checkbox-row">
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input type="checkbox" checked={runChecklist} onChange={e => setRunChecklist(e.target.checked)} />
-              <span>Checklists ({enabledChecklists.length} file{enabledChecklists.length !== 1 ? "s" : ""})</span>
+              <span>Checklists</span>
             </label>
-            <label className="checkbox-row">
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input type="checkbox" checked={runQA} onChange={e => setRunQA(e.target.checked)} />
-              <span>QA checks ({Object.values(settings.qa_checks ?? {}).filter(Boolean).length} active)</span>
+              <span>QA checks</span>
             </label>
           </div>
         </section>
 
-        {/* Segment filtering */}
-        <section style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 10 }}>
+        {/* Segment filter */}
+        <section>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
             Segment filter
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label className="checkbox-row">
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input
                 type="checkbox"
                 checked={settings.skip_locked ?? true}
                 onChange={e => onSettingsChange({ ...settings, skip_locked: e.target.checked })}
               />
-              <span>Skip locked / read-only segments</span>
+              <span>Skip locked</span>
             </label>
-            <label className="checkbox-row">
+            <label className="checkbox-row" style={{ fontSize: 13 }}>
               <input
                 type="checkbox"
                 checked={settings.skip_100_match ?? true}
                 onChange={e => onSettingsChange({ ...settings, skip_100_match: e.target.checked })}
               />
-              <span>Skip 100% TM matches</span>
+              <span>Skip 100% matches</span>
             </label>
           </div>
         </section>
 
-        {/* File summary */}
+        {/* File info */}
         {fileData && (
-          <section style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
-              File
-            </h2>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              {filePath.split("/").pop()} &nbsp;·&nbsp; {fileData.stats.total_segments} segments
-              {fileData.stats.untranslated > 0 && ` (${fileData.stats.untranslated} untranslated)`}
-            </div>
-          </section>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+            {filePath.split("/").pop()}<br />
+            {fileData.stats.total_segments} segments
+            {fileData.stats.untranslated > 0 && `, ${fileData.stats.untranslated} untranslated`}
+          </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="error-banner" role="alert" style={{ marginBottom: 16 }}>
+          <div className="error-banner" role="alert" style={{ fontSize: 12 }}>
             {error}
           </div>
         )}
@@ -280,27 +255,33 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         {/* Run button */}
         <button
           className="btn btn-primary"
-          style={{ width: "100%", padding: "10px 0", fontSize: 15 }}
+          style={{ width: "100%" }}
           onClick={handleRun}
           disabled={isRunning || !fileData || !anyCheckSelected}
           aria-busy={isRunning}
         >
           {isRunning ? (
             <>
-              <span className="spinner" aria-hidden="true" style={{ marginRight: 8 }} />
-              Running spellcheck…
+              <span className="spinner" aria-hidden="true" style={{ marginRight: 6 }} />
+              Running…
             </>
           ) : (
-            "Run selected checks"
+            "Run checks"
           )}
         </button>
 
-        {!fileData && (
-          <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 10, textAlign: "center" }}>
-            Open an XLIFF file to get started.
-          </p>
+        {state !== "idle" && !isRunning && (
+          <button className="btn btn-ghost btn-sm" onClick={handleReset} style={{ width: "100%" }}>
+            Reset
+          </button>
         )}
       </div>
+
+      {/* ── Right panel: results / triage / idle ──────────────────────────── */}
+      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {renderRight()}
+      </div>
+
     </div>
   );
 }
