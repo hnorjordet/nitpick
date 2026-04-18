@@ -10,6 +10,7 @@ interface Props {
   settings: Settings;
   onBack: () => void;
   violations?: Violation[];
+  onNewRun?: () => void;
 }
 
 const VIOLATION_LABELS: Record<string, string> = {
@@ -87,7 +88,7 @@ type SidebarItem =
   | { kind: "spell"; fw: FlaggedWord }
   | { kind: "term"; violation: Violation; idx: number };
 
-export default function ResultsWindow({ realErrors, filePath, settings, onBack, violations }: Props) {
+export default function ResultsWindow({ realErrors, filePath, settings, onBack, violations, onNewRun }: Props) {
   const isCombined = violations !== undefined;
 
   // Selection — only one active at a time
@@ -1017,6 +1018,11 @@ ${violSection}
             <button className="btn btn-secondary btn-sm" onClick={onBack} aria-label="Back to triage">
               &larr; Back
             </button>
+            {onNewRun && (
+              <button className="btn btn-secondary btn-sm" onClick={onNewRun} aria-label="New run">
+                New run
+              </button>
+            )}
           </div>
         </div>
         {renderSidebarContent()}

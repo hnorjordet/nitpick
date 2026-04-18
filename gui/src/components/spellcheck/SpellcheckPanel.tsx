@@ -9,6 +9,7 @@ import { listen } from "@tauri-apps/api/event";
 import SpellcheckTab, { SpellcheckState } from "./SpellcheckTab";
 import TerminologyTab from "./TerminologyTab";
 import QATab from "./QATab";
+import ChecksTab from "./ChecksTab";
 import SettingsPage from "./SettingsPage";
 import { FlaggedWord } from "./TriageWindow";
 
@@ -74,16 +75,17 @@ export const DEFAULT_QA_CHECKS: Record<string, boolean> = {
   camelcase_mismatch: true,
 };
 
-export type TabId = "spellcheck" | "terminology" | "qa" | "settings";
+export type TabId = "checks" | "spellcheck" | "terminology" | "qa" | "settings";
 
 const TAB_LABELS: Record<TabId, string> = {
+  checks: "Checks",
   spellcheck: "Spellcheck",
   terminology: "Terminology",
   qa: "QA Checks",
   settings: "Settings",
 };
 
-const TAB_IDS = ["spellcheck", "terminology", "qa", "settings"] as TabId[];
+const TAB_IDS = ["checks", "spellcheck", "terminology", "qa", "settings"] as TabId[];
 
 interface SpellcheckPanelProps {
   filePath: string;
@@ -91,7 +93,7 @@ interface SpellcheckPanelProps {
 }
 
 export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoaded }: SpellcheckPanelProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("spellcheck");
+  const [activeTab, setActiveTab] = useState<TabId>("checks");
   const [filePath, setFilePath] = useState<string>("");
   const [fileData, setFileData] = useState<FileData | null>(null);
   const [loadError, setLoadError] = useState<string>("");
@@ -395,6 +397,14 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
             <div className="error-banner" role="alert">{loadError}</div>
           </div>
         )}
+
+        <div id="sc-tabpanel-checks" role="tabpanel" aria-labelledby="sc-tab-checks"
+          hidden={activeTab !== "checks"}
+          style={{ display: activeTab === "checks" ? "flex" : "none", flexDirection: "column", flex: 1, overflow: "hidden" }}
+          tabIndex={-1}>
+          <ChecksTab fileData={fileData} filePath={filePath} settings={settings}
+            onSettingsChange={handleSettingsChange} />
+        </div>
 
         <div id="sc-tabpanel-spellcheck" role="tabpanel" aria-labelledby="sc-tab-spellcheck"
           hidden={activeTab !== "spellcheck"}
