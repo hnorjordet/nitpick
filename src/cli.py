@@ -1001,26 +1001,48 @@ def sc_get_segments_for_word_command(args):
 def sc_apply_spellcheck_edits_command(args):
     try:
         with open(args.edits_file, "r", encoding="utf-8") as f:
-            edits = json.load(f)
+            edits_list = json.load(f)
     except Exception as e:
         _sc_err(f"Failed to read edits file: {e}")
         return 1
 
-    xliff_path = Path(args.file)
-    xliff_parser = XLIFFParser(str(xliff_path))
+    file_path = Path(args.file)
+    ext = file_path.suffix.lower()
+
+    # ── docx write-back ───────────────────────────────────────────────────────
+    if ext == ".docx":
+        try:
+            from parsers.docx_parser import load_phrase_docx, save_phrase_docx
+            doc = load_phrase_docx(str(file_path))
+        except Exception as e:
+            _sc_err(f"Failed to parse docx: {e}")
+            return 1
+
+        # Convert list-of-dicts to {id: target} map
+        edits_map = {e.get("id", ""): e.get("target", "") for e in edits_list if e.get("id")}
+        try:
+            out_path = save_phrase_docx(doc, edits_map, backup=True)
+        except Exception as e:
+            _sc_err(f"Failed to save docx: {e}")
+            return 1
+
+        _sc_out({"ok": True, "backup_path": out_path + ".bak", "path": out_path})
+        return 0
+
+    # ── XLIFF write-back (original behaviour) ─────────────────────────────────
+    xliff_parser = XLIFFParser(str(file_path))
     if not xliff_parser.parse():
         _sc_err(f"Failed to parse: {args.file}")
         return 1
 
     import shutil
-    backup_path = str(xliff_path) + ".bak"
-    shutil.copy2(xliff_path, backup_path)
+    backup_path = str(file_path) + ".bak"
+    shutil.copy2(file_path, backup_path)
 
-    # Build lookup from segments adapter for write-back
-    segments = trans_units_to_segments(xliff_parser.get_trans_units(), xliff_path.name)
+    segments = trans_units_to_segments(xliff_parser.get_trans_units(), file_path.name)
     seg_map = {s.id: s for s in segments}
 
-    for edit in edits:
+    for edit in edits_list:
         seg_id = edit.get("id", "")
         new_target = edit.get("target", "")
         if seg_id and seg_id in seg_map:
