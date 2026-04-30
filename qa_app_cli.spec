@@ -22,6 +22,7 @@ a = Analysis(
         'parsers.mxliff_parser',
         'parsers.segment_adapter',
         'parsers.termlist_parser',
+        'parsers.docx_parser',
         # RegEx modules
         'regex_engine',
         'regex_engine.regex_processor',

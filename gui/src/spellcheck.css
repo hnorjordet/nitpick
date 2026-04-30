@@ -1,38 +1,4 @@
-/* Light mode (default) */
-:root {
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --surface2: #f0f0f5;
-  --border: #d1d1d6;
-  --accent: #007aff;
-  --accent-hover: #0066cc;
-  --text: #1c1c1e;
-  --text-secondary: #6e6e73;
-  --danger: #ff3b30;
-  --success: #34c759;
-  --warning: #ff9f0a;
-  --highlight: rgba(0, 122, 255, 0.15);
-  --focus-ring: 0 0 0 3px rgba(0, 122, 255, 0.4);
-  --radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-/* Dark mode — applied when App.tsx sets .dark-mode on <body> */
-body.dark-mode {
-  --bg: #1c1c1e;
-  --surface: #2c2c2e;
-  --surface2: #3a3a3c;
-  --border: #48484a;
-  --accent: #0a84ff;
-  --accent-hover: #409cff;
-  --text: #f2f2f7;
-  --text-secondary: #b8b8bd;
-  --danger: #ff6961;
-  --success: #32d74b;
-  --warning: #ffd60a;
-  --highlight: rgba(10, 132, 255, 0.25);
-  --focus-ring: 0 0 0 3px rgba(10, 132, 255, 0.55);
-}
+/* Colours and design tokens are defined in styles/tokens.css — imported once from main.tsx */
 
 * {
   box-sizing: border-box;
@@ -56,9 +22,10 @@ body.dark-mode {
 }
 
 body {
+  font-family: var(--font-family);
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   line-height: 1.5;
   overflow: hidden;
   height: 100vh;
@@ -122,6 +89,7 @@ body {
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
+  gap: 1rem;
   border-bottom: 1px solid var(--header-border);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
@@ -132,6 +100,12 @@ body {
   font-weight: 600;
   color: var(--text-color);
   margin: 0;
+  flex: 1;
+}
+
+.sc-open-btn {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ── Tab bar row beneath the header ── */
@@ -235,75 +209,22 @@ body {
   flex-direction: column;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
+/* ── Buttons, checkbox-row — canonical versions in styles/components.css ─── */
 
-.btn {
-  padding: 6px 14px;
+/* .btn-ghost — only used in Spellcheck/QA panels */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: opacity 0.15s, background 0.15s;
-}
-
-.btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.btn-primary {
-  background: var(--accent);
-  color: white;
-}
-
-.btn-primary:not(:disabled):hover {
-  background: var(--accent-hover);
-}
-
-.btn-secondary {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:not(:disabled):hover {
-  background: var(--border);
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: white;
-}
-
-.btn-success {
-  background: var(--success);
-  color: #000;
-}
-
-.btn-sm {
-  padding: 3px 10px;
+  padding: 4px 10px;
   font-size: 12px;
+  cursor: pointer;
 }
 
-/* ── Forms ───────────────────────────────────────────────────────────────── */
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  cursor: pointer;
-  user-select: none;
-}
-
-.checkbox-row input[type="checkbox"] {
-  accent-color: var(--accent);
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  /* Ensure native focus ring is visible */
-  outline-offset: 2px;
+.btn-ghost:not(:disabled):hover {
+  color: var(--text);
+  background: var(--surface2);
 }
 
 input[type="text"],
@@ -432,32 +353,7 @@ label {
 .badge-orange { background: rgba(255, 159, 10, 0.2); color: #ff9f0a; }
 .badge-info   { background: rgba(100, 160, 255, 0.2); color: #64a0ff; }
 
-.empty-state {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-secondary);
-}
-
-.empty-state h3 {
-  font-size: 15px;
-  margin-bottom: 6px;
-}
-
-/* ── Spinner — with accessible text hidden off-screen ───────────────────── */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  display: inline-block;
-  /* aria-hidden on the element; .sr-only text next to it carries the meaning */
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+/* ── empty-state, spinner, error-banner — canonical in styles/components.css */
 
 /* Screen-reader-only utility (WCAG 1.3.1) */
 .sr-only {
@@ -470,16 +366,6 @@ label {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
-}
-
-.error-banner {
-  background: rgba(255, 105, 97, 0.15);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--danger);
-  margin-bottom: 12px;
 }
 
 /* ── Highlight misspelled word ───────────────────────────────────────────── */
@@ -838,3 +724,334 @@ label {
 .sidebar-item.selected .sidebar-item-ignore-btn { opacity: 1; }
 .sidebar-item-ignore-btn:hover { color: var(--danger); }
 .sidebar-item-ignore-btn:focus-visible { opacity: 1; outline: 2px solid var(--accent); }
+
+/* ── ChecksTab layout ────────────────────────────────────────────────────── */
+
+.checks-tab-layout {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.checks-tab-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checks-tab-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.checks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checks-file-info {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── SettingsPage layout ─────────────────────────────────────────────────── */
+
+.settings-page {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.settings-section-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* Small descriptive paragraph beneath a section title */
+.settings-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  line-height: var(--line-height-normal);
+}
+
+/* Even smaller note below a single control */
+.settings-note {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+  line-height: var(--line-height-normal);
+}
+
+/* Loading spinner container */
+.settings-loading {
+  padding: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Header row above dic list */
+.dic-list-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+  gap: var(--space-3);
+}
+
+.dic-list-header label { margin: 0; }
+
+/* Scrollable dic selection box */
+.dic-list-box {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px var(--space-2);
+}
+
+/* Word count badge inside dic list */
+.dic-word-count {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* QA check group fieldset */
+.qa-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0 0 var(--space-3) 0;
+}
+
+.qa-fieldset:last-child { margin-bottom: 0; }
+
+.qa-group-legend {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+/* Radio option rows (results display mode) */
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: 3px 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-size-base);
+  color: var(--text);
+}
+
+.radio-option input[type="radio"] {
+  margin-top: 2px;
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.radio-option-label {
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+}
+
+.radio-option-desc {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Watching folder indicator */
+.settings-watch-active {
+  font-size: var(--font-size-sm);
+  color: var(--accent);
+  margin-top: var(--space-1);
+}
+
+/* Button row inside a settings row */
+.settings-btn-row {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+/* ── ResultsWindow additions ─────────────────────────────────────────────── */
+
+/* Sidebar toolbar (count label + sort buttons + export buttons) */
+.results-sidebar-toolbar {
+  padding: 10px var(--space-3);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.results-count-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.sort-btn-group {
+  display: flex;
+  gap: 3px;
+  margin-left: var(--space-2);
+}
+
+/* Extra-compact sort buttons */
+.sort-btn {
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  height: 22px !important;
+}
+
+/* Export + Back button cluster (pushed to the right) */
+.results-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Sidebar list (spell errors or violations) */
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ignored counter strip */
+.ignored-counter {
+  padding: 4px var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.ignored-counter__label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* Term sidebar item extras */
+.sidebar-term-word {
+  flex: 1;
+}
+
+.sidebar-term-type {
+  font-weight: var(--font-weight-regular);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-left: var(--space-1);
+}
+
+.sidebar-term-seg {
+  font-size: var(--font-size-xs);
+}
+
+/* Detail panel header row */
+.detail-header-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.detail-word-heading {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.suggestions-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Save button group in detail header */
+.detail-actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Segment ID in header (muted) */
+.segment-card-id {
+  color: var(--text-secondary);
+}
+
+/* Segment edit area row (textarea + chip column) */
+.segment-edit-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Small suggestion chips column */
+.segment-chip-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.suggestion-chip--sm {
+  font-size: var(--font-size-xs) !important;
+}
+
+/* Segment edit textarea (violation detail) */
+.segment-edit-textarea {
+  width: 100%;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  resize: vertical;
+}
+
+/* Violation save confirmation */
+.viol-save-result {
+  font-size: var(--font-size-xs);
+  color: var(--success);
+  margin-top: var(--space-1);
+}
+
+/* Term detail text */
+.term-detail-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.term-detail-target {
+  font-weight: var(--font-weight-regular);
+  color: var(--text-secondary);
+}
+
+/* Success banner (save confirmation) */
+.success-banner {
+  background: rgba(50, 215, 75, 0.1);
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+  padding: 10px var(--space-3);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-3);
+  color: var(--success);
+}

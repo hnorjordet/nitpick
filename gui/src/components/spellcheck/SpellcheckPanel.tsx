@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import SpellcheckTab, { SpellcheckState } from "./SpellcheckTab";
 import TerminologyTab from "./TerminologyTab";
 import QATab from "./QATab";
@@ -159,10 +160,22 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
       .catch((e) => console.error("Failed to load settings:", e));
   }, []);
 
-  // When external file path changes (file opened in RegEx panel), load it
+  // When external file path changes (file opened or closed in RegEx panel), sync state
   useEffect(() => {
     if (externalFilePath && externalFilePath !== filePath) {
+      // New file opened in Search panel — load it here too
       loadFile(externalFilePath);
+    } else if (externalFilePath === "" && filePath !== "") {
+      // File closed in Search panel — clear our state too
+      setFilePath("");
+      setFileData(null);
+      setLoadError("");
+      setLoading(false);
+      setSpellState("idle");
+      setFlaggedWords([]);
+      setRealErrors([]);
+      setCombinedMode(false);
+      setViolations([]);
     }
   }, [externalFilePath]);
 
@@ -268,6 +281,20 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
     }
   }
 
+  async function openFile() {
+    const selected = await openDialog({
+      multiple: false,
+      filters: [{
+        name: "Translation Files",
+        extensions: ["xliff", "xlf", "mxliff", "mqxliff", "sdlxliff", "docx"],
+      }],
+    });
+    if (selected && typeof selected === "string") {
+      loadFile(selected);
+      onFileLoaded?.(selected);
+    }
+  }
+
   function handleTabKeyDown(e: React.KeyboardEvent, currentTab: TabId) {
     const idx = TAB_IDS.indexOf(currentTab);
     if (e.key === "ArrowRight") {
@@ -297,9 +324,20 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
 
   return (
     <div className="spellcheck-panel">
+      {/* Skip link for keyboard users */}
+      <a href="#sc-tab-content" className="skip-link">Skip to tab content</a>
+
       {/* Top header — matches App's .header bar */}
       <header className="sc-main-header">
         <h1 className="sc-main-title">Nitpick Spellcheck / QA</h1>
+        <button
+          className="btn btn-secondary btn-sm sc-open-btn"
+          onClick={openFile}
+          title="Open file (XLIFF, docx)"
+          aria-label="Open translation file"
+        >
+          Open
+        </button>
       </header>
 
       {/* Tab navigation row */}
@@ -371,7 +409,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
             {merging ? "Merging..." : `Merge all ${watchBanner.files.length} & load`}
           </button>
           <button className="btn btn-ghost btn-sm" onClick={() => setWatchBanner(null)}
-            aria-label="Dismiss" style={{ marginLeft: "auto", color: "var(--text-secondary)" }}>X</button>
+            aria-label="Dismiss watch folder notification" style={{ marginLeft: "auto", color: "var(--text-secondary)" }}>✕</button>
         </div>
       )}
 
@@ -386,12 +424,13 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
           </span>
           <button className="btn btn-secondary btn-sm" onClick={loadNextFromQueue}>Load next</button>
           <button className="btn btn-ghost btn-sm" style={{ color: "var(--text-secondary)" }}
-            onClick={() => { setWatchQueue([]); watchQueueRef.current = []; }}>Clear queue</button>
+            onClick={() => { setWatchQueue([]); watchQueueRef.current = []; }}
+            aria-label="Clear file queue">Clear queue</button>
         </div>
       )}
 
       {/* Tab content */}
-      <div className="tab-content">
+      <div className="tab-content" id="sc-tab-content">
         {loadError && activeTab !== "settings" && (
           <div style={{ padding: "12px 16px" }}>
             <div className="error-banner" role="alert">{loadError}</div>

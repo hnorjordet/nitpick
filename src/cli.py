@@ -5,6 +5,7 @@ Provides testing interface for the backend functionality.
 """
 
 import argparse
+import re
 import sys
 from pathlib import Path
 from typing import Optional
@@ -14,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from parsers.xliff_parser import XLIFFParser
 from parsers.tmx_parser import TMXParser
-from parsers.xbench_parser import XbenchParser
 from parsers.segment_adapter import trans_units_to_segments
 from parsers.termlist_parser import load_termlist, load_checklist
 from regex_engine.regex_processor import RegexProcessor
@@ -32,6 +32,7 @@ from qachecks.qa_checker import run_qa_checks, ALL_QA_CHECKS
 from settings.settings_manager import load as load_settings_obj, save as save_settings_obj, Settings
 from merging.xliff_merger import scan_folder, merge_xliff_files, suggest_output_name
 from reporting.report_generator import generate_xlsx_report
+from parsers.docx_parser import parse_phrase_docx, DocxSegment
 import json
 from dataclasses import asdict
 
@@ -773,266 +774,6 @@ def stats_command(args):
     return 0
 
 
-def xbench_command(args):
-    """Parse Xbench checklist file."""
-    print(f"Parsing Xbench checklist: {args.file}\n")
-
-    parser = XbenchParser(args.file)
-    if not parser.parse():
-        print("Failed to parse Xbench checklist")
-        return 1
-
-    print(f"Checklist: {parser.checklist_name}")
-    print()
-
-    stats = parser.get_statistics()
-    print("Statistics:")
-    print(f"  Total items: {stats['total_items']}")
-    print(f"  Regex items: {stats['regex_items']}")
-    print(f"  Enabled items: {stats['enabled_items']}")
-    print(f"  With replacement: {stats['with_replacement']}")
-    print()
-
-    if args.export:
-        patterns = parser.export_as_patterns()
-        print(f"Exportable regex patterns: {len(patterns)}")
-        print()
-
-        for i, pattern in enumerate(patterns, 1):
-            print(f"{i}. {pattern['name']}")
-            print(f"   Pattern: {pattern['pattern']}")
-            if pattern['replacement']:
-                print(f"   Replacement: {pattern['replacement']}")
-            print(f"   Category: {pattern['category']}")
-            print()
-
-    return 0
-
-
-def backup_command(args):
-    """Manage backups."""
-    backup_mgr = BackupManager()
-
-    if args.action == 'list':
-        backups = backup_mgr.list_backups(args.file)
-        if backups:
-            print(f"Backups for {args.file}:")
-            for backup in backups:
-                info = backup_mgr.get_backup_info(backup)
-                print(f"  - {info['name']} ({info['size']} bytes, {info['modified']})")
-        else:
-            print("No backups found")
-
-    elif args.action == 'restore':
-        if args.backup:
-            success = backup_mgr.restore_backup(args.backup, args.file)
-            if success:
-                print("Backup restored successfully")
-            else:
-                print("Failed to restore backup")
-                return 1
-        else:
-            print("Error: --backup argument required for restore")
-            return 1
-
-    elif args.action == 'cleanup':
-        count = backup_mgr.cleanup_old_backups(args.file, keep_count=args.keep)
-        print(f"Deleted {count} old backups")
-
-    return 0
-
-
-def patterns_command(args):
-    """Manage pattern library."""
-    library = PatternLibrary()
-    library.load_custom_patterns()
-
-    if args.action == 'list':
-        # List patterns with optional filtering
-        patterns = library.list_patterns(
-            category=args.category,
-            tag=args.tag,
-            enabled_only=args.enabled
-        )
-
-        if not patterns:
-            print("No patterns found")
-            return 0
-
-        # Group by category if not filtering by category
-        if not args.category:
-            categories = {}
-            for pattern in patterns:
-                if pattern.category not in categories:
-                    categories[pattern.category] = []
-                categories[pattern.category].append(pattern)
-
-            for category in sorted(categories.keys()):
-                print(f"\n{category}:")
-                print("─" * 60)
-                for pattern in categories[category]:
-                    status = "✓" if pattern.enabled else "○"
-                    print(f"  [{status}] {pattern.name}")
-                    print(f"      Pattern: {pattern.pattern}")
-                    if pattern.replacement:
-                        print(f"      Replacement: {pattern.replacement}")
-                    if pattern.description:
-                        print(f"      {pattern.description}")
-                    if pattern.tags:
-                        print(f"      Tags: {', '.join(pattern.tags)}")
-                    print()
-        else:
-            for pattern in patterns:
-                status = "✓" if pattern.enabled else "○"
-                print(f"[{status}] {pattern.name}")
-                print(f"    Pattern: {pattern.pattern}")
-                if pattern.replacement:
-                    print(f"    Replacement: {pattern.replacement}")
-                if pattern.description:
-                    print(f"    {pattern.description}")
-                print()
-
-    elif args.action == 'search':
-        if not args.query:
-            print("Error: --query required for search")
-            return 1
-
-        results = library.search_patterns(args.query)
-
-        if not results:
-            print(f"No patterns found matching '{args.query}'")
-            return 0
-
-        print(f"Found {len(results)} patterns matching '{args.query}':\n")
-        for pattern in results:
-            status = "✓" if pattern.enabled else "○"
-            print(f"[{status}] {pattern.name} ({pattern.category})")
-            print(f"    Pattern: {pattern.pattern}")
-            if pattern.replacement:
-                print(f"    Replacement: {pattern.replacement}")
-            print()
-
-    elif args.action == 'show':
-        if not args.name:
-            print("Error: --name required for show")
-            return 1
-
-        pattern = library.get_pattern_by_name(args.name)
-        if not pattern:
-            print(f"Pattern '{args.name}' not found")
-            return 1
-
-        print(f"Name: {pattern.name}")
-        print(f"Category: {pattern.category}")
-        print(f"Enabled: {'Yes' if pattern.enabled else 'No'}")
-        print(f"Case Sensitive: {'Yes' if pattern.case_sensitive else 'No'}")
-        print(f"\nPattern:")
-        print(f"  {pattern.pattern}")
-        if pattern.replacement:
-            print(f"\nReplacement:")
-            print(f"  {pattern.replacement}")
-        if pattern.description:
-            print(f"\nDescription:")
-            print(f"  {pattern.description}")
-        if pattern.tags:
-            print(f"\nTags:")
-            print(f"  {', '.join(pattern.tags)}")
-
-    elif args.action == 'categories':
-        categories = library.get_categories()
-        print("Available categories:")
-        for cat in categories:
-            count = len(library.get_patterns_by_category(cat))
-            print(f"  - {cat} ({count} patterns)")
-
-    elif args.action == 'tags':
-        tags = library.get_all_tags()
-        print("Available tags:")
-        for tag in tags:
-            count = len(library.get_patterns_by_tag(tag))
-            print(f"  - {tag} ({count} patterns)")
-
-    elif args.action == 'apply':
-        # Apply a pattern from library to a file
-        if not args.name:
-            print("Error: --name required for apply")
-            return 1
-
-        if not args.file:
-            print("Error: --file required for apply")
-            return 1
-
-        pattern = library.get_pattern_by_name(args.name)
-        if not pattern:
-            print(f"Pattern '{args.name}' not found")
-            return 1
-
-        print(f"Applying pattern: {pattern.name}")
-        print(f"Pattern: {pattern.pattern}")
-        if pattern.replacement:
-            print(f"Replacement: {pattern.replacement}")
-        print()
-
-        # Create a mock args object for replace_command
-        class ReplaceArgs:
-            def __init__(self):
-                self.file = args.file
-                self.pattern = pattern.pattern
-                self.replacement = pattern.replacement
-                self.output = args.output
-                self.source = False
-                self.target = True
-                self.case_sensitive = pattern.case_sensitive
-                self.include_tags = False
-                self.no_backup = args.no_backup
-                self.max_replacements = 0
-
-        return replace_command(ReplaceArgs())
-
-    elif args.action == 'add':
-        # Add custom pattern
-        if not args.name or not args.pattern:
-            print("Error: --name and --pattern required for add")
-            return 1
-
-        new_pattern = Pattern(
-            name=args.name,
-            pattern=args.pattern,
-            replacement=args.replacement or "",
-            description=args.description or "",
-            category=args.category or "Custom",
-            case_sensitive=args.case_sensitive,
-            enabled=True,
-            tags=args.tag or []
-        )
-
-        if library.add_pattern(new_pattern):
-            if library.save_custom_patterns():
-                print(f"Pattern '{args.name}' added successfully")
-            else:
-                print("Failed to save pattern")
-                return 1
-        else:
-            print(f"Failed to add pattern (duplicate name?)")
-            return 1
-
-    elif args.action == 'remove':
-        if not args.name:
-            print("Error: --name required for remove")
-            return 1
-
-        if library.remove_pattern(args.name):
-            if library.save_custom_patterns():
-                print(f"Pattern '{args.name}' removed")
-            else:
-                print("Failed to save changes")
-                return 1
-        else:
-            print(f"Pattern '{args.name}' not found")
-            return 1
-
-    return 0
-
 
 def apply_edits_command(args):
     """Apply edits from JSON file to XLIFF or TMX."""
@@ -1091,7 +832,18 @@ def _sc_err(msg: str) -> None:
 
 
 def _sc_parse_and_convert(file_path: str):
-    """Parse XLIFF with the RegEx parser and convert to SpellcheckQA segments."""
+    """Parse XLIFF/docx and return (parser_or_None, segments).
+    For docx files, parser is None (no write-back supported).
+    """
+    ext = Path(file_path).suffix.lower()
+    if ext == ".docx":
+        try:
+            segments = parse_phrase_docx(file_path)
+            return None, segments
+        except Exception as e:
+            import sys
+            print(f"Error parsing docx: {e}", file=sys.stderr)
+            return None, None
     parser = XLIFFParser(file_path)
     if not parser.parse():
         return None, None
@@ -1100,10 +852,14 @@ def _sc_parse_and_convert(file_path: str):
 
 
 def sc_load_file_command(args):
+    ext = Path(args.file).suffix.lower()
+    is_docx = ext == ".docx"
+
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
+
     out_segments = [
         {"id": s.id, "source": s.source_plain, "target": s.target_plain, "file_name": s.file_name}
         for s in segments
@@ -1114,14 +870,29 @@ def sc_load_file_command(args):
         "untranslated": sum(1 for s in segments if not s.target_plain.strip()),
         "locked": sum(1 for s in segments if s.is_locked),
     }
-    # Extract target language from first <file> element
+
+    # Extract target language — from XLIFF metadata or docx filename heuristic
     target_language = ""
-    nsmap = parser.root.nsmap
-    default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
-    file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
-    if file_elements:
-        target_language = file_elements[0].get("target-language", "")
-    _sc_out({"segments": out_segments, "target_language": target_language, "stats": stats})
+    if not is_docx and parser is not None:
+        try:
+            nsmap = parser.root.nsmap
+            default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
+            file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
+            if file_elements:
+                target_language = file_elements[0].get("target-language", "")
+        except Exception:
+            pass
+    elif is_docx:
+        # Try to infer from filename: "nb-NO_job123-en-no-T.docx" → "nb-NO"
+        stem = Path(args.file).stem
+        parts = stem.split("_")
+        if parts:
+            first = parts[0]
+            if re.match(r"^[a-z]{2}(-[A-Z]{2})?$", first):
+                target_language = first
+
+    _sc_out({"segments": out_segments, "target_language": target_language,
+             "stats": stats, "is_docx": is_docx})
     return 0
 
 
@@ -1273,12 +1044,28 @@ def sc_run_term_check_command(args):
     if parser is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
+
+    # Extract source/target language from XLIFF so TBX parsing picks correct langSets
+    source_lang = getattr(args, 'source_lang', None) or "en"
+    target_lang = getattr(args, 'target_lang', None) or ""
+    if not target_lang:
+        try:
+            nsmap = parser.root.nsmap
+            default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
+            file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
+            if file_elements:
+                target_lang = file_elements[0].get("target-language", "")
+                if not source_lang or source_lang == "en":
+                    source_lang = file_elements[0].get("source-language", "en")
+        except Exception:
+            pass
+
     term_entries = []
     if args.termlists:
         for path in args.termlists.split(","):
             path = path.strip()
             if path:
-                term_entries.extend(load_termlist(path))
+                term_entries.extend(load_termlist(path, source_lang=source_lang, target_lang=target_lang))
     check_rules = []
     if args.checklists:
         for path in args.checklists.split(","):
@@ -1451,48 +1238,12 @@ def main():
     tmx_languages_parser.add_argument('file', help='TMX file path')
     tmx_languages_parser.set_defaults(func=tmx_languages_command)
 
-    # Xbench command
-    xbench_parser = subparsers.add_parser('xbench', help='Parse Xbench checklist file')
-    xbench_parser.add_argument('file', help='Xbench checklist file (.xbckl)')
-    xbench_parser.add_argument('--export', action='store_true', help='Export patterns')
-    xbench_parser.set_defaults(func=xbench_command)
-
     # Apply-edits command (for GUI integration)
     apply_edits_parser = subparsers.add_parser('apply-edits', help='Apply edits from JSON file')
     apply_edits_parser.add_argument('file', help='XLIFF or TMX file path')
     apply_edits_parser.add_argument('edits_json', help='JSON file with edits')
     apply_edits_parser.add_argument('--target-lang', help='Target language code (for TMX files with multiple languages)')
     apply_edits_parser.set_defaults(func=apply_edits_command)
-
-    # Backup command
-    backup_parser = subparsers.add_parser('backup', help='Manage backups')
-    backup_parser.add_argument('action', choices=['list', 'restore', 'cleanup'],
-                              help='Backup action')
-    backup_parser.add_argument('file', help='Original file path')
-    backup_parser.add_argument('--backup', help='Backup file to restore')
-    backup_parser.add_argument('--keep', type=int, default=10,
-                              help='Number of backups to keep (for cleanup)')
-    backup_parser.set_defaults(func=backup_command)
-
-    # Patterns command
-    patterns_parser = subparsers.add_parser('patterns', help='Manage pattern library')
-    patterns_parser.add_argument('action',
-                                choices=['list', 'search', 'show', 'categories', 'tags',
-                                        'apply', 'add', 'remove'],
-                                help='Pattern action')
-    patterns_parser.add_argument('--category', help='Filter by category')
-    patterns_parser.add_argument('--tag', action='append', help='Filter/tag patterns')
-    patterns_parser.add_argument('--enabled', action='store_true', help='Show only enabled patterns')
-    patterns_parser.add_argument('--query', help='Search query')
-    patterns_parser.add_argument('--name', help='Pattern name')
-    patterns_parser.add_argument('--pattern', help='Regex pattern (for add)')
-    patterns_parser.add_argument('--replacement', help='Replacement string (for add)')
-    patterns_parser.add_argument('--description', help='Pattern description (for add)')
-    patterns_parser.add_argument('--case-sensitive', action='store_true', help='Case sensitive (for add)')
-    patterns_parser.add_argument('--file', help='XLIFF file to apply pattern to')
-    patterns_parser.add_argument('--output', '-o', help='Output file (for apply)')
-    patterns_parser.add_argument('--no-backup', action='store_true', help='Skip backup (for apply)')
-    patterns_parser.set_defaults(func=patterns_command)
 
     # ─── SpellcheckQA subcommands (sc- prefix) ──────────────────────────────
 
@@ -1548,6 +1299,8 @@ def main():
     p.add_argument('--checklists', default="")
     p.add_argument('--skip-locked', default="true")
     p.add_argument('--skip-100-match', default="true")
+    p.add_argument('--source-lang', default="en")
+    p.add_argument('--target-lang', default="")
     p.set_defaults(func=sc_run_term_check_command)
 
     p = subparsers.add_parser('sc-run-number-check')

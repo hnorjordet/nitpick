@@ -93,12 +93,6 @@ fn sc_invoke_python(app_handle: &tauri::AppHandle, args: Vec<&str>) -> Result<Va
         .map_err(|e| format!("Failed to parse JSON: {} (output: {})", e, json_str))
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 #[tauri::command]
 fn get_user_guide_content(app_handle: tauri::AppHandle) -> Result<String, String> {
     // Determine path based on environment
@@ -1213,11 +1207,12 @@ fn sc_apply_spellcheck_edits(file_path: String, edits: String, app_handle: tauri
 }
 
 #[tauri::command]
-fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<String>, skip_locked: bool, skip_100_match: bool, app_handle: tauri::AppHandle) -> Result<Value, String> {
+fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<String>, skip_locked: bool, skip_100_match: bool, target_lang: Option<String>, app_handle: tauri::AppHandle) -> Result<Value, String> {
     let tl_str = termlists.join(",");
     let cl_str = checklists.join(",");
     let skip_locked_str = if skip_locked { "true" } else { "false" };
     let skip_100_match_str = if skip_100_match { "true" } else { "false" };
+    let tl_val = target_lang.unwrap_or_default();
     let mut args = vec!["sc-run-term-check", "--file", file_path.as_str()];
     if !tl_str.is_empty() {
         args.push("--termlists");
@@ -1231,6 +1226,10 @@ fn sc_run_term_check(file_path: String, termlists: Vec<String>, checklists: Vec<
     args.push(skip_locked_str);
     args.push("--skip-100-match");
     args.push(skip_100_match_str);
+    if !tl_val.is_empty() {
+        args.push("--target-lang");
+        args.push(tl_val.as_str());
+    }
     sc_invoke_python(&app_handle, args)
 }
 
@@ -1298,7 +1297,7 @@ fn sc_start_folder_watch(folder: String, app_handle: tauri::AppHandle) -> Result
     *guard = None;
 
     let app_handle_clone = app_handle.clone();
-    let xliff_extensions = vec!["xlf", "xliff", "mxliff", "mqxliff", "sdlxliff"];
+    let xliff_extensions = vec!["xlf", "xliff", "mxliff", "mqxliff", "sdlxliff", "docx"];
 
     let mut watcher = recommended_watcher(move |res: Result<NotifyEvent, notify::Error>| {
         if let Ok(event) = res {
@@ -1337,6 +1336,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             // Create menu items
             let open_item = MenuItemBuilder::with_id("open", "Open XLIFF File")
@@ -1345,6 +1345,10 @@ pub fn run() {
 
             let save_item = MenuItemBuilder::with_id("save", "Save Changes")
                 .accelerator("CmdOrCtrl+S")
+                .build(app)?;
+
+            let close_item = MenuItemBuilder::with_id("close", "Close File")
+                .accelerator("CmdOrCtrl+W")
                 .build(app)?;
 
             let about_item = MenuItemBuilder::with_id("about", "About Nitpick")
@@ -1404,6 +1408,7 @@ pub fn run() {
                 .separator()
                 .item(&open_item)
                 .item(&save_item)
+                .item(&close_item)
                 .separator()
                 .item(&settings_item)
                 .separator()
@@ -1461,6 +1466,9 @@ pub fn run() {
                     }
                     "save" => {
                         let _ = app.emit("menu-save", ());
+                    }
+                    "close" => {
+                        let _ = app.emit("menu-close", ());
                     }
                     "settings" => {
                         let _ = app.emit("menu-settings", ());
@@ -1530,7 +1538,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             // RegEx commands
-            greet, open_xliff, save_xliff, get_tmx_languages,
+            open_xliff, save_xliff, get_tmx_languages,
             load_regex_library, save_regex_library,
             batch_find, list_qa_profiles, batch_replace,
             save_qa_profile, delete_qa_profile, load_qa_profile,
