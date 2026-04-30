@@ -447,11 +447,10 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
     setFiles([{ fileIndex: 0, filePath: path, fileName, data, targetLang }]);
   }
 
-  // Notify AppShell whenever loaded file changes (covers all code paths)
+  // Notify AppShell whenever loaded file changes (covers all code paths,
+  // including close which sets filePath to "").
   useEffect(() => {
-    if (filePath) {
-      onFileLoaded?.(filePath);
-    }
+    onFileLoaded?.(filePath);
   }, [filePath]);
 
   // Load file when external path changes (from Spellcheck panel)
@@ -632,6 +631,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   const libraryModalRef = useFocusTrap(showLibraryModal);
   const profileManagerRef = useFocusTrap(showProfileManager);
   const qaModalRef = useFocusTrap(showQAModal);
+  const tmxModalRef = useFocusTrap(showTmxLangPicker);
   const profileEditorRef = useFocusTrap(showProfileEditor);
 
   // Filter units based on search
@@ -802,7 +802,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
         multiple: true,
         filters: [{
           name: 'Translation Files',
-          extensions: ['xliff', 'xlf', 'mxliff', 'mqxliff', 'sdlxliff', 'tmx']
+          extensions: ['xliff', 'xlf', 'mxliff', 'mqxliff', 'sdlxliff', 'tmx', 'docx']
         }]
       });
 
@@ -813,6 +813,12 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
       const paths = Array.isArray(selected) ? selected : [selected];
       if (paths.length === 0) return;
+
+      // docx files go straight to SpellcheckPanel — notify AppShell and bail
+      if (paths.length === 1 && paths[0].toLowerCase().endsWith('.docx')) {
+        onFileLoaded?.(paths[0]);
+        return;
+      }
 
       // For single TMX file, check available languages first
       if (paths.length === 1 && paths[0].toLowerCase().endsWith('.tmx')) {
@@ -859,6 +865,37 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
       setError(`Error opening file: ${err}`);
       console.error(err);
     }
+  }
+
+  // Close the currently open file(s). Prompts to save if there are unsaved edits.
+  async function closeFile() {
+    if (files.length === 0) return; // nothing to close
+
+    if (hasChanges) {
+      const choice = window.confirm(
+        `You have ${editedUnits.size} unsaved change(s). Do you want to save them before closing?\n\n` +
+        `Click OK to save, or Cancel to discard changes.`
+      );
+
+      if (choice) {
+        await saveFile();
+      } else {
+        const confirmDiscard = window.confirm(
+          "Are you sure you want to discard all unsaved changes?"
+        );
+        if (!confirmDiscard) return;
+      }
+    }
+
+    // Reset all file-related state
+    setFiles([]);
+    setEditedUnits(new Map());
+    clearSelection();
+    setSearchPattern("");
+    setSearchInput("");
+    setSourceSearchPattern("");
+    setError("");
+    setTmxTargetLang(null);
   }
 
   // Open a specific file path directly (used by SpellcheckQA IPC handoff)
@@ -1258,6 +1295,10 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
       if (filePath) saveFile();
     });
 
+    const unlistenClose = listen('menu-close', () => {
+      closeFile();
+    });
+
     const unlistenSettings = listen('menu-settings', () => {
       setShowSettingsModal(true);
     });
@@ -1319,6 +1360,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
       unlistenAbout.then(f => f());
       unlistenOpen.then(f => f());
       unlistenSave.then(f => f());
+      unlistenClose.then(f => f());
       unlistenSettings.then(f => f());
       unlistenHiddenChars.then(f => f());
       unlistenDarkMode.then(f => f());
@@ -2669,8 +2711,8 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
-          <button onClick={openFile} className="open-btn" title="Open XLIFF file (Ctrl/Cmd+O)">
-            Open XLIFF
+          <button onClick={openFile} className="open-btn" title="Open file (Ctrl/Cmd+O)">
+            Open file
           </button>
           {hasChanges && (
             <>
@@ -2687,28 +2729,43 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
       {/* TMX Language Picker Modal */}
       {showTmxLangPicker && (
-        <div className="library-modal-overlay" role="presentation">
-          <div className="library-modal" role="dialog" aria-modal="true" aria-label="Select target language">
+        <div
+          className="library-modal-overlay"
+          role="presentation"
+          onClick={() => { setShowTmxLangPicker(false); setPendingTmxPath(""); }}
+        >
+          <div
+            ref={tmxModalRef}
+            className="library-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tmx-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => { if (e.key === 'Escape') { setShowTmxLangPicker(false); setPendingTmxPath(""); } }}
+          >
             <div className="library-modal-header">
-              <h2>Select Target Language</h2>
+              <h2 id="tmx-modal-title">Select Target Language</h2>
             </div>
             <div className="library-modal-body" style={{ padding: '1.5rem' }}>
               <p>This TMX file contains multiple target languages. Select which one to use as the translation target.</p>
-              <p style={{ fontSize: '0.85rem', color: '#666' }}>Source language: <strong>{tmxSrcLang}</strong></p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-                {tmxAvailableLangs.map(lang => (
-                  <label key={lang} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}>
-                    <input
-                      type="radio"
-                      name="tmxLang"
-                      value={lang}
-                      onChange={() => setTmxTargetLang(lang)}
-                      checked={tmxTargetLang === lang}
-                    />
-                    {lang}
-                  </label>
-                ))}
-              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Source language: <strong>{tmxSrcLang}</strong></p>
+              <fieldset style={{ border: 'none', padding: 0, margin: '1rem 0 0' }}>
+                <legend className="sr-only">Choose target language</legend>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {tmxAvailableLangs.map(lang => (
+                    <label key={lang} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}>
+                      <input
+                        type="radio"
+                        name="tmxLang"
+                        value={lang}
+                        onChange={() => setTmxTargetLang(lang)}
+                        checked={tmxTargetLang === lang}
+                      />
+                      {lang}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
             </div>
             <div className="library-modal-footer">
               <button
@@ -2750,21 +2807,33 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
             </div>
             <div className="help-content">
               <div className="shortcuts-section">
-                <h3>File Operations</h3>
+                <h3>File</h3>
                 <div className="shortcut-list">
                   <div className="shortcut-item">
                     <kbd>Ctrl/Cmd + O</kbd>
-                    <span>Open XLIFF file</span>
+                    <span>Open file</span>
                   </div>
                   <div className="shortcut-item">
                     <kbd>Ctrl/Cmd + S</kbd>
                     <span>Save changes</span>
                   </div>
+                  <div className="shortcut-item">
+                    <kbd>Ctrl/Cmd + W</kbd>
+                    <span>Close file</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <kbd>Ctrl/Cmd + ,</kbd>
+                    <span>Open settings</span>
+                  </div>
+                  <div className="shortcut-item">
+                    <kbd>Ctrl/Cmd + Q</kbd>
+                    <span>Quit Nitpick</span>
+                  </div>
                 </div>
               </div>
 
               <div className="shortcuts-section">
-                <h3>Search & Replace</h3>
+                <h3>Search</h3>
                 <div className="shortcut-list">
                   <div className="shortcut-item">
                     <kbd>Ctrl/Cmd + F</kbd>
@@ -2778,11 +2847,11 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
                 <div className="shortcut-list">
                   <div className="shortcut-item">
                     <kbd>Ctrl/Cmd + L</kbd>
-                    <span>Open Regex Library</span>
+                    <span>Open regex library</span>
                   </div>
                   <div className="shortcut-item">
-                    <kbd>Ctrl/Cmd + Q</kbd>
-                    <span>Open Batch Check Profiles</span>
+                    <kbd>Ctrl/Cmd + P</kbd>
+                    <span>Open batch check profiles</span>
                   </div>
                 </div>
               </div>
@@ -2806,7 +2875,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
                 <div className="shortcut-list">
                   <div className="shortcut-item">
                     <kbd>Esc</kbd>
-                    <span>Close modals / Exit edit mode</span>
+                    <span>Close modals, exit edit mode</span>
                   </div>
                 </div>
               </div>
@@ -4554,9 +4623,9 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
       {!xliffData && !error && (
         <div className="welcome">
-          <p>Open an XLIFF or TMX file to get started</p>
+          <p>Open a translation file to get started</p>
           <p className="supported-formats">
-            Supported formats: .xliff, .xlf, .mxliff (Phrase), .mqxliff (MemoQ), .sdlxliff (Trados), .tmx
+            Supported formats: .xliff, .xlf, .mxliff (Phrase), .mqxliff (MemoQ), .sdlxliff (Trados), .tmx, .docx (Phrase bilingual table)
           </p>
         </div>
       )}
