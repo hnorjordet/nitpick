@@ -50,10 +50,47 @@ class Settings:
     qa_checks: dict = field(default_factory=lambda: dict(DEFAULT_QA_CHECKS))
 
 
+def _migrate_legacy_settings() -> None:
+    """
+    One-time migration from the two pre-merge apps:
+      - ~/.spellcheck-qa/settings.json  → spellcheck/terminology settings
+      - ~/.xliff-regex-tool/library.xml → not migrated (different format), skipped
+    Called only when ~/.nitpick/settings.json does not yet exist.
+    """
+    legacy_path = Path.home() / ".spellcheck-qa" / "settings.json"
+    if not legacy_path.exists():
+        return
+    try:
+        with open(legacy_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        s = Settings()
+        # Map fields that exist in both old and new schema
+        for field_name in ("dic_folder", "selected_dics", "termlists", "checklists",
+                           "backup_enabled", "strict_lang_match", "skip_locked",
+                           "skip_100_match", "compound_check",
+                           "watch_folder_enabled", "watch_folder"):
+            if field_name in data:
+                setattr(s, field_name, data[field_name])
+        if "qa_checks" in data:
+            s.qa_checks = {**DEFAULT_QA_CHECKS, **data["qa_checks"]}
+        save(s)
+        import sys
+        print(f"Migrated settings from {legacy_path}", file=sys.stderr)
+    except Exception as e:
+        import sys
+        print(f"Warning: could not migrate legacy settings from {legacy_path}: {e}",
+              file=sys.stderr)
+
+
 def load() -> Settings:
-    """Load settings from disk. Returns defaults if file doesn't exist."""
+    """Load settings from disk. Returns defaults if file doesn't exist.
+    On first run, migrates settings from the pre-merge ~/.spellcheck-qa/ app.
+    """
     if not SETTINGS_PATH.exists():
-        return Settings()
+        _migrate_legacy_settings()
+        # If migration wrote the file, load it; otherwise return defaults
+        if not SETTINGS_PATH.exists():
+            return Settings()
     try:
         with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -80,7 +117,16 @@ def load() -> Settings:
 
 
 def save(settings: Settings) -> None:
-    """Persist settings to disk."""
+    """Persist settings to disk atomically (write to .tmp, then rename)."""
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
-        json.dump(asdict(settings), f, indent=2, ensure_ascii=False)
+    tmp_path = SETTINGS_PATH.with_suffix(".tmp")
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(asdict(settings), f, indent=2, ensure_ascii=False)
+            f.flush()
+            import os
+            os.fsync(f.fileno())
+        tmp_path.replace(SETTINGS_PATH)
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise

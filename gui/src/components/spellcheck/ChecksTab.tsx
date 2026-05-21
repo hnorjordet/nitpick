@@ -84,6 +84,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
           ? invoke<{ violations: Violation[] }>("sc_run_term_check", {
               filePath, termlists: termlistPaths, checklists: checklistPaths,
               skipLocked: settings.skip_locked ?? true, skip100Match: settings.skip_100_match ?? true,
+              targetLang: fileData?.target_language ?? "",
             })
           : Promise.resolve({ violations: [] as Violation[] }),
         invoke<{ violations: Violation[] }>("sc_run_number_check", {
@@ -113,7 +114,6 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
     setViolations([]);
   }
 
-  // Right panel content
   function renderRight() {
     if (state === "triage") {
       return (
@@ -130,9 +130,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
       return (
         <div className="empty-state" role="status" aria-live="polite">
           <span className="spinner" aria-hidden="true" />
-          <h2 style={{ fontSize: 15, marginTop: 12, marginBottom: 6, color: "var(--text-secondary)" }}>
-            Running checks…
-          </h2>
+          <h2>Running checks…</h2>
           <p>Running terminology, number, and formatting checks.</p>
         </div>
       );
@@ -157,15 +155,11 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         {state === "running_spell" ? (
           <>
             <span className="spinner" aria-hidden="true" />
-            <h2 style={{ fontSize: 15, marginTop: 12, marginBottom: 6, color: "var(--text-secondary)" }}>
-              Running spellcheck…
-            </h2>
+            <h2>Running spellcheck…</h2>
           </>
         ) : (
           <>
-            <h2 style={{ fontSize: 15, marginBottom: 6, color: "var(--text-secondary)" }}>
-              Ready
-            </h2>
+            <h2>Ready</h2>
             <p>
               {!fileData
                 ? "Open an XLIFF file, then click Run."
@@ -178,33 +172,28 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
   }
 
   return (
-    <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
+    <div className="checks-tab-layout">
 
-      {/* ── Left sidebar: controls ─────────────────────────────────────────── */}
-      <div style={{
-        width: 220, flexShrink: 0, borderRight: "1px solid var(--border)",
-        overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 16,
-      }}>
+      {/* ── Left sidebar ─────────────────────────────────────────────────── */}
+      <div className="checks-tab-sidebar">
 
         {/* Checks */}
         <section>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
-            Checks
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+          <div className="section-label">Checks</div>
+          <div className="checks-list">
+            <label className="checkbox-row">
               <input type="checkbox" checked={runSpell} onChange={e => setRunSpell(e.target.checked)} />
               <span>Spellcheck</span>
             </label>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+            <label className="checkbox-row">
               <input type="checkbox" checked={runTerm} onChange={e => setRunTerm(e.target.checked)} />
               <span>Terminology</span>
             </label>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+            <label className="checkbox-row">
               <input type="checkbox" checked={runChecklist} onChange={e => setRunChecklist(e.target.checked)} />
               <span>Checklists</span>
             </label>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+            <label className="checkbox-row">
               <input type="checkbox" checked={runQA} onChange={e => setRunQA(e.target.checked)} />
               <span>QA checks</span>
             </label>
@@ -213,11 +202,9 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
 
         {/* Segment filter */}
         <section>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--text-secondary)", marginBottom: 8 }}>
-            Segment filter
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+          <div className="section-label">Segment filter</div>
+          <div className="checks-list">
+            <label className="checkbox-row">
               <input
                 type="checkbox"
                 checked={settings.skip_locked ?? true}
@@ -225,7 +212,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
               />
               <span>Skip locked</span>
             </label>
-            <label className="checkbox-row" style={{ fontSize: 13 }}>
+            <label className="checkbox-row">
               <input
                 type="checkbox"
                 checked={settings.skip_100_match ?? true}
@@ -238,7 +225,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
 
         {/* File info */}
         {fileData && (
-          <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+          <div className="checks-file-info">
             {filePath.split("/").pop()}<br />
             {fileData.stats.total_segments} segments
             {fileData.stats.untranslated > 0 && `, ${fileData.stats.untranslated} untranslated`}
@@ -247,7 +234,7 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
 
         {/* Error */}
         {error && (
-          <div className="error-banner" role="alert" style={{ fontSize: 12 }}>
+          <div className="error-banner" role="alert">
             {error}
           </div>
         )}
@@ -277,8 +264,8 @@ export default function ChecksTab({ fileData, filePath, settings, onSettingsChan
         )}
       </div>
 
-      {/* ── Right panel: results / triage / idle ──────────────────────────── */}
-      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* ── Right panel ─────────────────────────────────────────────────── */}
+      <div className="checks-tab-body">
         {renderRight()}
       </div>
 

@@ -67,10 +67,19 @@ _DNT_STATUS = {"notRecommended", "superseded", "deprecatedTerm"}
 _FORBIDDEN_STATUS = {"forbidden"}
 
 
-def parse_tbx(path: str) -> List[TermEntry]:
+def _lang_code_base(code: str) -> str:
+    """Return the base language code: 'nb-NO' → 'nb', 'en-US' → 'en'."""
+    return code.split("-")[0].split("_")[0].lower() if code else ""
+
+
+def parse_tbx(path: str, source_lang: str = "en", target_lang: str = "") -> List[TermEntry]:
     """
     Parse a TBX (ISO 30042) termlist.
-    Extracts source (first langSet) and target (second langSet) terms.
+
+    Uses xml:lang attributes to pick the correct source and target langSets.
+    Falls back to positional (first=source, second=target) when language codes
+    are absent or don't match, so older/simpler TBX files still work.
+
     Detects DNT/forbidden via <termNote type="administrativeStatus">.
     """
     entries: List[TermEntry] = []
@@ -78,30 +87,55 @@ def parse_tbx(path: str) -> List[TermEntry]:
         tree = etree.parse(path)
         root = tree.getroot()
 
-        # TBX files may or may not use a namespace
+        # TBX files may or may not use a namespace — build helpers that work either way
         nsmap = root.nsmap
         default_ns = nsmap.get(None, "")
         ns = {"t": default_ns} if default_ns else {}
 
-        def find_all(parent, tag):
+        def find_all_ns(parent, tag):
             if ns:
                 return parent.findall(f"t:{tag}", namespaces=ns)
             return parent.findall(tag)
 
-        def find_one(parent, tag):
-            if ns:
-                return parent.find(f"t:{tag}", namespaces=ns)
-            return parent.find(tag)
+        term_entries = (
+            root.findall(".//t:termEntry", namespaces=ns)
+            if ns
+            else root.findall(".//termEntry")
+        )
 
-        term_entries = find_all(root, ".//termEntry") if not ns else root.findall(".//t:termEntry", namespaces=ns)
+        src_base = _lang_code_base(source_lang)
+        tgt_base = _lang_code_base(target_lang)
 
         for entry in term_entries:
-            lang_sets = find_all(entry, "langSet")
-            if len(lang_sets) < 2:
+            lang_sets = find_all_ns(entry, "langSet")
+            if not lang_sets:
                 continue
 
-            source_terms = _extract_terms_from_langset(lang_sets[0], ns)
-            target_terms = _extract_terms_from_langset(lang_sets[1], ns)
+            # Build a map of base-language-code → langSet element
+            lang_map: dict = {}
+            for ls in lang_sets:
+                lang_attr = ls.get("{http://www.w3.org/XML/1998/namespace}lang") or ls.get("lang") or ls.get("xml:lang") or ""
+                base = _lang_code_base(lang_attr)
+                if base and base not in lang_map:
+                    lang_map[base] = ls
+
+            # Select source langSet: prefer explicit language match, fall back to first
+            if src_base and src_base in lang_map:
+                source_ls = lang_map[src_base]
+            else:
+                source_ls = lang_sets[0]
+
+            # Select target langSet: prefer explicit language match, fall back to second
+            if tgt_base and tgt_base in lang_map and lang_map[tgt_base] is not source_ls:
+                target_ls = lang_map[tgt_base]
+            elif len(lang_sets) >= 2:
+                # Pick any langSet that isn't the source
+                target_ls = next((ls for ls in lang_sets if ls is not source_ls), None)
+            else:
+                target_ls = None
+
+            source_terms = _extract_terms_from_langset(source_ls, ns)
+            target_terms = _extract_terms_from_langset(target_ls, ns) if target_ls else []
 
             if not source_terms:
                 continue
@@ -119,22 +153,23 @@ def parse_tbx(path: str) -> List[TermEntry]:
 
 def _extract_terms_from_langset(lang_set, ns) -> list:
     """Extract terms and their administrative status from a langSet element."""
+    if lang_set is None:
+        return []
     results = []
-    # tig or ntig containers
-    containers = lang_set.findall(".//tig")
-    if not containers:
-        containers = lang_set.findall(".//ntig")
+
+    # Search for tig/ntig containers using localname matching so namespace
+    # handling is not needed separately for these nested elements
+    containers = [el for el in lang_set.iter() if etree.QName(el).localname in ("tig", "ntig")]
     if not containers:
         containers = [lang_set]
 
     for container in containers:
-        term_elem = container.find("term") if not ns else container.find("term")
-        if term_elem is None:
-            # Try with any namespace
-            for child in container:
-                if etree.QName(child).localname == "term":
-                    term_elem = child
-                    break
+        # Find <term> by localname to avoid namespace issues
+        term_elem = None
+        for child in container:
+            if etree.QName(child).localname == "term":
+                term_elem = child
+                break
         if term_elem is None or not term_elem.text:
             continue
 
@@ -222,13 +257,17 @@ def parse_xbench(path: str) -> List[CheckRule]:
 
 # ─── Dispatcher ──────────────────────────────────────────────────────────────
 
-def load_termlist(path: str) -> List[TermEntry]:
-    """Load a termlist file based on its extension."""
+def load_termlist(path: str, source_lang: str = "en", target_lang: str = "") -> List[TermEntry]:
+    """Load a termlist file based on its extension.
+
+    source_lang / target_lang are used for TBX files to select the correct
+    langSet pair. They are ignored for CSV files.
+    """
     ext = Path(path).suffix.lower()
     if ext == ".csv":
         return parse_csv(path)
-    elif ext == ".tbx":
-        return parse_tbx(path)
+    elif ext in (".tbx", ".tbx2"):
+        return parse_tbx(path, source_lang=source_lang, target_lang=target_lang)
     else:
         print(f"Unsupported termlist format: {ext}", file=sys.stderr)
         return []

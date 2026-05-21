@@ -79,6 +79,7 @@ export default function TerminologyTab({ fileData, filePath, settings, onRunAll,
         checklists,
         skipLocked: settings.skip_locked ?? true,
         skip100Match: settings.skip_100_match ?? true,
+        targetLang: fileData?.target_language ?? "",
       });
       setViolations(result.violations);
       setRan(true);

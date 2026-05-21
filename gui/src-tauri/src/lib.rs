@@ -55,6 +55,53 @@ struct Stats {
     untranslated: i32,
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/// Returns the directory used to read bundled QA-profile XML files.
+/// In dev: ../../samples (relative to Cargo manifest dir).
+/// In production: resource_dir itself — glob resources are copied flat into it.
+fn bundled_samples_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
+    if cfg!(dev) {
+        Ok(PathBuf::from("../../samples"))
+    } else {
+        app_handle.path()
+            .resource_dir()
+            .map_err(|e| format!("Failed to get resource directory: {}", e))
+    }
+}
+
+/// Returns the user-writable directory for saved/imported QA-profile XML files.
+/// Always ~/.nitpick/samples/ — separate from read-only bundled profiles.
+fn user_samples_dir() -> Result<PathBuf, String> {
+    let home = dirs::home_dir()
+        .ok_or_else(|| "Failed to get home directory".to_string())?;
+    Ok(home.join(".nitpick").join("samples"))
+}
+
+// ─── Shared error formatter for CLI failures ─────────────────────────────────
+
+/// Produces a detailed error string when a CLI subprocess fails.
+/// Includes exit code, stderr, and a stdout tail so the user always sees
+/// something useful — even when the process crashes before printing to stderr.
+fn cli_error(cmd_desc: &str, output: &std::process::Output) -> String {
+    let code = output.status.code().map(|c| c.to_string()).unwrap_or_else(|| "?".to_string());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    let detail = if !stderr.trim().is_empty() {
+        stderr.trim().to_string()
+    } else if !stdout.trim().is_empty() {
+        // Python sometimes writes errors to stdout
+        let tail: String = stdout.lines().rev().take(5).collect::<Vec<_>>()
+            .into_iter().rev().collect::<Vec<_>>().join("\n");
+        format!("(stdout) {}", tail)
+    } else {
+        "no output".to_string()
+    };
+
+    format!("{} failed (exit {}): {}", cmd_desc, code, detail)
+}
+
 // ─── Shared Python invocation helper for sc-* commands ──────────────────────
 
 fn sc_invoke_python(app_handle: &tauri::AppHandle, args: Vec<&str>) -> Result<Value, String> {
@@ -79,18 +126,18 @@ fn sc_invoke_python(app_handle: &tauri::AppHandle, args: Vec<&str>) -> Result<Va
         command.arg(arg);
     }
 
+    let cmd_desc = args.first().copied().unwrap_or("cli");
     let output = command
         .output()
         .map_err(|e| format!("Failed to execute CLI: {}", e))?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("CLI error: {}", stderr));
+        return Err(cli_error(cmd_desc, &output));
     }
 
     let json_str = String::from_utf8_lossy(&output.stdout);
     serde_json::from_str(&json_str)
-        .map_err(|e| format!("Failed to parse JSON: {} (output: {})", e, json_str))
+        .map_err(|e| format!("Failed to parse JSON from {}: {} (output: {})", cmd_desc, e, json_str))
 }
 
 #[tauri::command]
@@ -173,14 +220,12 @@ fn open_xliff(file_path: String, target_lang: Option<String>, app_handle: tauri:
             .map_err(|e| format!("Failed to execute Python: {}", e))?;
 
         if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Python error: {}", stderr));
+            return Err(cli_error("stats", &output));
         }
 
-        // Parse JSON output from Python
         let json_str = String::from_utf8_lossy(&output.stdout);
         let data: XliffData = serde_json::from_str(&json_str)
-            .map_err(|e| format!("Failed to parse JSON: {} (output: {})", e, json_str))?;
+            .map_err(|e| format!("Failed to parse JSON from stats: {} (output: {})", e, json_str))?;
 
         return Ok(data);
     } else {
@@ -191,7 +236,6 @@ fn open_xliff(file_path: String, target_lang: Option<String>, app_handle: tauri:
         resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string()
     };
 
-    // Call CLI executable to parse XLIFF/TMX file
     let mut cmd = Command::new(&cli_path);
     cmd.arg("stats").arg(&file_path).arg("--json");
     if let Some(ref lang) = target_lang {
@@ -201,14 +245,12 @@ fn open_xliff(file_path: String, target_lang: Option<String>, app_handle: tauri:
         .map_err(|e| format!("Failed to execute CLI: {}", e))?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Python error: {}", stderr));
+        return Err(cli_error("stats", &output));
     }
 
-    // Parse JSON output from Python
     let json_str = String::from_utf8_lossy(&output.stdout);
     let data: XliffData = serde_json::from_str(&json_str)
-        .map_err(|e| format!("Failed to parse JSON: {} (output: {})", e, json_str))?;
+        .map_err(|e| format!("Failed to parse JSON from stats: {} (output: {})", e, json_str))?;
 
     Ok(data)
 }
@@ -244,8 +286,7 @@ fn get_tmx_languages(file_path: String, app_handle: tauri::AppHandle) -> Result<
     };
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Python error: {}", stderr));
+        return Err(cli_error("tmx-languages", &output));
     }
 
     let json_str = String::from_utf8_lossy(&output.stdout);
@@ -307,8 +348,7 @@ fn save_xliff(file_path: String, edited_units: Vec<EditedUnit>, target_lang: Opt
     let _ = fs::remove_file(&temp_json);
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Python error: {}", stderr));
+        return Err(cli_error("apply-edits", &output));
     }
 
     Ok("File saved successfully".to_string())
@@ -566,8 +606,7 @@ fn batch_find(file_path: String, profile_path: String, app_handle: tauri::AppHan
     };
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Python error: {}", stderr));
+        return Err(cli_error("batch-find", &output));
     }
 
     // Parse JSON output from Python
@@ -588,41 +627,36 @@ struct QAProfileInfo {
 
 #[tauri::command]
 fn list_qa_profiles(app_handle: tauri::AppHandle) -> Result<Vec<QAProfileInfo>, String> {
-    // Look for QA profiles in the samples directory
-    let profiles_dir = if cfg!(dev) {
-        PathBuf::from("../../samples")
-    } else {
-        let resource_dir = app_handle.path()
-            .resource_dir()
-            .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        resource_dir.join("_up_/_up_/samples")
-    };
-
-    if !profiles_dir.exists() {
-        return Ok(Vec::new());
-    }
+    // Collect profiles from both bundled (read-only) and user (writable) directories
+    let bundled_dir = bundled_samples_dir(&app_handle)?;
+    let user_dir = user_samples_dir()?;
 
     let mut profiles = Vec::new();
 
-    // Find all *_qa_profile.xml files
-    if let Ok(entries) = fs::read_dir(&profiles_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
-                if filename.ends_with("_qa_profile.xml") {
-                    // Try to parse basic metadata
-                    if let Ok(content) = fs::read_to_string(&path) {
-                        // Simple XML parsing to extract metadata
-                        let name = extract_xml_tag(&content, "name").unwrap_or_else(|| filename.to_string());
-                        let description = extract_xml_tag(&content, "description").unwrap_or_default();
-                        let language = extract_xml_tag(&content, "language").unwrap_or_default();
-
-                        profiles.push(QAProfileInfo {
-                            path: path.to_string_lossy().to_string(),
-                            name,
-                            description,
-                            language,
-                        });
+    // Collect profiles from both bundled (read-only) and user-writable directories
+    for profiles_dir in [&bundled_dir, &user_dir] {
+        if !profiles_dir.exists() {
+            continue;
+        }
+        if let Ok(entries) = fs::read_dir(profiles_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if let Some(filename) = path.file_name().and_then(|n| n.to_str()) {
+                    if filename.ends_with("_qa_profile.xml") {
+                        if let Ok(content) = fs::read_to_string(&path) {
+                            let name = extract_xml_tag(&content, "name")
+                                .unwrap_or_else(|| filename.to_string());
+                            let description = extract_xml_tag(&content, "description")
+                                .unwrap_or_default();
+                            let language = extract_xml_tag(&content, "language")
+                                .unwrap_or_default();
+                            profiles.push(QAProfileInfo {
+                                path: path.to_string_lossy().to_string(),
+                                name,
+                                description,
+                                language,
+                            });
+                        }
                     }
                 }
             }
@@ -688,8 +722,7 @@ fn batch_replace(file_path: String, profile_path: String, app_handle: tauri::App
     };
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Python error: {}", stderr));
+        return Err(cli_error("batch-replace", &output));
     }
 
     // Parse JSON output from Python - it's the last line
@@ -725,15 +758,13 @@ struct QACheckData {
 }
 
 #[tauri::command]
-fn save_qa_profile(profile_data: QAProfileData, file_name: String, app_handle: tauri::AppHandle) -> Result<String, String> {
-    // Determine save path
+fn save_qa_profile(profile_data: QAProfileData, file_name: String, _app_handle: tauri::AppHandle) -> Result<String, String> {
+    // Save to user-writable directory (~/.nitpick/samples/) so bundled read-only
+    // profiles are never overwritten and production builds work correctly.
     let profiles_dir = if cfg!(dev) {
         PathBuf::from("../../samples")
     } else {
-        let resource_dir = app_handle.path()
-            .resource_dir()
-            .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        resource_dir.join("_up_/_up_/samples")
+        user_samples_dir()?
     };
 
     // Ensure directory exists
@@ -754,12 +785,16 @@ fn save_qa_profile(profile_data: QAProfileData, file_name: String, app_handle: t
     xml.push_str(&format!("        <description>{}</description>\n", escape_xml(&profile_data.description)));
     xml.push_str(&format!("        <language>{}</language>\n", escape_xml(&profile_data.language)));
 
-    // Add timestamp
+    // Add timestamp (ISO-8601 date string, falls back to 0 if clock is misconfigured)
     use std::time::SystemTime;
-    let now = SystemTime::now()
+    let secs = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
-    let date = format!("{}", now.as_secs() / 86400 * 86400); // Simple date approximation
+        .unwrap_or_default()
+        .as_secs();
+    // Format as YYYY-MM-DD
+    let days = secs / 86400;
+    let y = 1970 + days / 365; // rough approximation sufficient for metadata display
+    let date = format!("{}-{:02}-{:02}", y, ((days % 365) / 30) + 1, (days % 30) + 1);
     xml.push_str(&format!("        <created>{}</created>\n", date));
     xml.push_str(&format!("        <modified>{}</modified>\n", date));
     xml.push_str("    </metadata>\n\n");
@@ -984,7 +1019,7 @@ fn import_regex_library(import_path: String) -> Result<RegexLibrary, String> {
                         current_entry = Some(RegexEntry {
                             id: format!("{}", std::time::SystemTime::now()
                                 .duration_since(std::time::UNIX_EPOCH)
-                                .unwrap().as_millis()),
+                                .unwrap_or_default().as_millis()),
                             name: String::new(),
                             description: String::new(),
                             pattern: String::new(),
@@ -1051,18 +1086,14 @@ fn export_qa_profile(profile_path: String, export_path: String) -> Result<String
 
 #[tauri::command]
 fn import_qa_profile(import_path: String) -> Result<String, String> {
-    // Get the samples directory (where profiles are stored)
-    let exe_path = std::env::current_exe()
-        .map_err(|e| format!("Failed to get executable path: {}", e))?;
-    let exe_dir = exe_path.parent()
-        .ok_or_else(|| "Failed to get executable directory".to_string())?;
-
-    // Go up to project root and into samples
-    let samples_dir = exe_dir
-        .parent().ok_or_else(|| "Failed to get parent directory".to_string())?
-        .parent().ok_or_else(|| "Failed to get parent directory".to_string())?
-        .parent().ok_or_else(|| "Failed to get parent directory".to_string())?
-        .join("samples");
+    // Import to user-writable directory (~/.nitpick/samples/)
+    let samples_dir = if cfg!(dev) {
+        PathBuf::from("../../samples")
+    } else {
+        user_samples_dir()?
+    };
+    fs::create_dir_all(&samples_dir)
+        .map_err(|e| format!("Failed to create samples directory: {}", e))?;
 
     // Read the import file
     let profile_content = fs::read_to_string(&import_path)
@@ -1112,12 +1143,8 @@ fn import_qa_profile(import_path: String) -> Result<String, String> {
     } else {
         format!("imported_profile_{}.xml", std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .unwrap().as_secs())
+            .unwrap_or_default().as_secs())
     };
-
-    // Create samples directory if it doesn't exist
-    fs::create_dir_all(&samples_dir)
-        .map_err(|e| format!("Failed to create samples directory: {}", e))?;
 
     let destination = samples_dir.join(&file_name);
 

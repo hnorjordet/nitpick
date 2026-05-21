@@ -5,15 +5,11 @@ Wraps spylls (pure-Python Hunspell) and applies filtering rules.
 
 import re
 import sys
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Set, Optional
 
 from spylls.hunspell import Dictionary
-
-# Max time for a single spylls lookup before we assume the word is unknown
-_LOOKUP_TIMEOUT_S = 0.5
 
 
 @dataclass

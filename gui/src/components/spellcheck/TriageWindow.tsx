@@ -393,9 +393,31 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
           </table>
         </div>
 
-        {/* Draggable splitter */}
+        {/* Draggable splitter — keyboard-accessible via arrow keys (ARIA separator pattern) */}
         <div
+          role="separator"
+          aria-label="Resize panels — use Left/Right arrow keys"
+          aria-orientation="vertical"
+          aria-valuenow={leftWidth}
+          aria-valuemin={280}
+          aria-valuemax={800}
+          tabIndex={0}
           onMouseDown={onSplitterMouseDown}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              setLeftWidth((w) => Math.max(280, w - 20));
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              setLeftWidth((w) => Math.min(800, w + 20));
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              setLeftWidth(280);
+            } else if (e.key === "End") {
+              e.preventDefault();
+              setLeftWidth(800);
+            }
+          }}
           style={{
             width: 5,
             flexShrink: 0,
@@ -405,8 +427,9 @@ export default function TriageWindow({ flaggedWords, filePath, settings, onDone 
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "var(--accent)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "var(--border)")}
-          title="Drag to resize"
-          aria-hidden="true"
+          onFocus={(e) => (e.currentTarget.style.background = "var(--accent)")}
+          onBlur={(e) => (e.currentTarget.style.background = "var(--border)")}
+          title="Drag or use arrow keys to resize"
         />
 
         {/* Right: context panel */}

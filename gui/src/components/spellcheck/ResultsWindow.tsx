@@ -150,7 +150,7 @@ export default function ResultsWindow({ realErrors, filePath, settings, onBack, 
     setError("");
     try {
       const result = await invoke<{ segments: Segment[]; word: string }>(
-        "get_segments_for_word",
+        "sc_get_segments_for_word",
         { filePath, word: fw.word, dics: settings.selected_dics }
       );
       setSegments(result.segments);
@@ -507,7 +507,7 @@ ${violSection}
         <button
           className="sidebar-item-ignore-btn"
           onClick={(e) => { e.stopPropagation(); ignoreItem(itemId); }}
-          aria-label="Ignore this item"
+          aria-label={`Ignore "${fw.word}"`}
           title="Ignore"
         >✕</button>
       </li>
@@ -532,17 +532,15 @@ ${violSection}
         }}
       >
         {isCombined && <span className="sidebar-item__type-icon" aria-hidden="true">T</span>}
-        <span className="word" style={{ flex: 1 }}>
+        <span className="word sidebar-term-word">
           {violation.source_term}
-          <span style={{ fontWeight: 400, color: "var(--text-secondary)", fontSize: 11, marginLeft: 6 }}>
-            {label}
-          </span>
+          <span className="sidebar-term-type">{label}</span>
         </span>
-        <span className="count" style={{ fontSize: 11 }}>#{violation.segment_id}</span>
+        <span className="count sidebar-term-seg">#{violation.segment_id}</span>
         <button
           className="sidebar-item-ignore-btn"
           onClick={(e) => { e.stopPropagation(); ignoreItem(itemId); }}
-          aria-label="Ignore this item"
+          aria-label={`Ignore "${violation.source_term}" (${label}) in segment ${violation.segment_id}`}
           title="Ignore"
         >✕</button>
       </li>
@@ -553,10 +551,8 @@ ${violSection}
     const totalIgnored = ignoredItems.size + (violations ?? []).filter(v => ignoredTypes.has(v.violation_type)).length;
     if (ignoredItems.size === 0 && ignoredTypes.size === 0) return null;
     return (
-      <div style={{ padding: "4px 14px", display: "flex", gap: 8, alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-          {totalIgnored} ignored
-        </span>
+      <div className="ignored-counter">
+        <span className="ignored-counter__label">{totalIgnored} ignored</span>
         <button className="btn btn-ghost btn-sm" onClick={restoreAll}>Restore all</button>
       </div>
     );
@@ -573,7 +569,7 @@ ${violSection}
             role="listbox"
             aria-labelledby="errors-list-heading"
             aria-label="Select an error word to review"
-            style={{ listStyle: "none", padding: 0, margin: 0 }}
+            className="sidebar-list"
           >
             {visibleSpell.map((fw) => renderSpellSidebarItem(fw))}
           </ul>
@@ -632,11 +628,11 @@ ${violSection}
           {sortMode === "segment" ? (
             <>
               {spellGroup.length > 0 && (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul className="sidebar-list">
                   {spellGroup.map((fw) => renderSpellSidebarItem(fw))}
                 </ul>
               )}
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              <ul className="sidebar-list">
                 {visibleViol.map((v) => {
                   const idx = violOriginalIndices.get(v) ?? 0;
                   return renderTermSidebarItem(v, idx);
@@ -650,7 +646,7 @@ ${violSection}
             <>
               {renderGroupHeader("spell", "Spelling", spellGroup.length)}
               {!collapsedGroups.has("spell") && (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul className="sidebar-list">
                   {spellGroup.map((fw) => renderSpellSidebarItem(fw))}
                 </ul>
               )}
@@ -661,7 +657,7 @@ ${violSection}
             <>
               {renderGroupHeader("termlist", "Termlist", termlistGroup.length)}
               {!collapsedGroups.has("termlist") && (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul className="sidebar-list">
                   {termlistGroup.map((v) => {
                     const idx = violOriginalIndices.get(v) ?? 0;
                     return renderTermSidebarItem(v, idx);
@@ -675,7 +671,7 @@ ${violSection}
             <>
               {renderGroupHeader("checklist", "Checklist", checklistGroup.length)}
               {!collapsedGroups.has("checklist") && (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul className="sidebar-list">
                   {checklistGroup.map((v) => {
                     const idx = violOriginalIndices.get(v) ?? 0;
                     return renderTermSidebarItem(v, idx);
@@ -689,7 +685,7 @@ ${violSection}
             <>
               {renderGroupHeader("qa", "QA / Numbers", qaGroup.length)}
               {!collapsedGroups.has("qa") && (
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <ul className="sidebar-list">
                   {qaGroup.map((v) => {
                     const idx = violOriginalIndices.get(v) ?? 0;
                     return renderTermSidebarItem(v, idx);
@@ -711,16 +707,8 @@ ${violSection}
     return (
       <>
         {/* Word heading + suggestions toolbar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 16,
-            flexWrap: "wrap",
-          }}
-        >
-          <h2 style={{ fontSize: 16, fontWeight: 600 }}>
+        <div className="detail-header-row">
+          <h2 className="detail-word-heading">
             <span className="sr-only">Reviewing word:</span>
             &ldquo;{selectedWord.word}&rdquo;
           </h2>
@@ -730,9 +718,7 @@ ${violSection}
             role="group"
             aria-label={`Suggestions for "${selectedWord.word}"`}
           >
-            <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-              Suggestions:
-            </span>
+            <span className="suggestions-label">Suggestions:</span>
             {suggestions.length > 0 ? (
               suggestions.map((s) => (
                 <button
@@ -746,16 +732,13 @@ ${violSection}
                 </button>
               ))
             ) : (
-              <span
-                style={{ fontSize: 12, color: "var(--text-secondary)" }}
-                aria-live="polite"
-              >
+              <span className="suggestions-label" aria-live="polite">
                 No suggestions
               </span>
             )}
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <div className="detail-actions">
             <button
               className="btn btn-primary"
               onClick={saveAll}
@@ -771,7 +754,7 @@ ${violSection}
             >
               {saving ? (
                 <>
-                  <span className="spinner" aria-hidden="true" style={{ marginRight: 6 }} />
+                  <span className="spinner" aria-hidden="true" />
                   Saving...
                 </>
               ) : (
@@ -784,7 +767,7 @@ ${violSection}
         {loading && (
           <div className="empty-state" role="status" aria-live="polite">
             <span className="spinner" aria-hidden="true" />
-            <span style={{ marginLeft: 8 }}>Loading segments...</span>
+            <span>Loading segments...</span>
           </div>
         )}
 
@@ -800,7 +783,7 @@ ${violSection}
             <article key={seg.id} className="segment-card" aria-label={`Segment ${seg.id}`}>
               <header className="segment-card-header">
                 <span>{seg.file_name}</span>
-                <span style={{ color: "var(--text-secondary)" }} aria-label={`Segment ID ${seg.id}`}>
+                <span className="segment-card-id" aria-label={`Segment ID ${seg.id}`}>
                   #{seg.id}
                 </span>
               </header>
@@ -834,7 +817,7 @@ ${violSection}
                   >
                     Edit target
                   </label>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div className="segment-edit-row">
                     <div style={{ flex: 1 }}>
                       <textarea
                         id={`edit-${seg.id}`}
@@ -848,15 +831,14 @@ ${violSection}
                     </div>
                     {suggestions.length > 0 && (
                       <div
-                        style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                        className="segment-chip-col"
                         role="group"
                         aria-label={`Apply suggestion to segment ${seg.id}`}
                       >
                         {suggestions.map((s) => (
                           <button
                             key={s}
-                            className="suggestion-chip"
-                            style={{ fontSize: 11 }}
+                            className="suggestion-chip suggestion-chip--sm"
                             aria-label={`Apply "${s}" to segment ${seg.id}`}
                             onClick={() => applySuggestion(seg.id, s)}
                           >
@@ -882,13 +864,13 @@ ${violSection}
     const hasViolEdit = editedTarget !== undefined && editedTarget !== selectedViolation.target_text;
     return (
       <>
-        <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
+        <h2 className="detail-word-heading" style={{ marginBottom: 16 }}>
           Violation — {label}
         </h2>
         <article className="segment-card" aria-label={`Violation in segment ${selectedViolation.segment_id}`}>
           <header className="segment-card-header">
             <span>{selectedViolation.file_name}</span>
-            <span style={{ color: "var(--text-secondary)" }}>#{selectedViolation.segment_id}</span>
+            <span className="segment-card-id">#{selectedViolation.segment_id}</span>
           </header>
           <div className="segment-card-body">
             <div>
@@ -902,26 +884,25 @@ ${violSection}
                 rows={3}
                 value={editedTarget ?? selectedViolation.target_text}
                 onChange={(e) => setViolationEdits(prev => ({ ...prev, [selectedViolation.segment_id]: e.target.value }))}
-                style={{ width: "100%", fontFamily: "inherit", fontSize: 13, padding: 8, borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", resize: "vertical" }}
               />
               {hasViolEdit && (
                 <button
                   className="btn btn-primary btn-sm"
+                  style={{ marginTop: 6 }}
                   onClick={() => saveViolationEdit(selectedViolation.segment_id, editedTarget)}
                   disabled={violSaving}
-                  style={{ marginTop: 6 }}
                 >
                   {violSaving ? "Saving…" : "Save changes"}
                 </button>
               )}
-              {violSaveResult && <div style={{ fontSize: 11, color: "var(--success)", marginTop: 4 }}>{violSaveResult}</div>}
+              {violSaveResult && <div className="viol-save-result">{violSaveResult}</div>}
             </div>
             <div>
               <div className="segment-label">Term</div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>
+              <div className="term-detail-text">
                 {selectedViolation.source_term}
                 {selectedViolation.target_term && (
-                  <span style={{ fontWeight: 400, color: "var(--text-secondary)" }}>
+                  <span className="term-detail-target">
                     {" -> "}{selectedViolation.target_term}
                   </span>
                 )}
@@ -938,8 +919,8 @@ ${violSection}
         </div>
         <button
           className="btn btn-secondary btn-sm"
-          onClick={() => ignoreType(selectedViolation.violation_type)}
           style={{ marginTop: 8 }}
+          onClick={() => ignoreType(selectedViolation.violation_type)}
         >
           Ignore all "{label}"
         </button>
@@ -954,37 +935,27 @@ ${violSection}
         className="results-sidebar"
         aria-label={isCombined ? "Results list" : "Errors list"}
       >
-        <div
-          style={{
-            padding: "10px 14px",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 600 }} id="errors-list-heading">
+        <div className="results-sidebar-toolbar">
+          <span className="results-count-label" id="errors-list-heading">
             {isCombined ? `RESULTS (${totalCount})` : `ERRORS (${realErrors.length})`}
           </span>
           {isCombined && (
-            <div style={{ display: "flex", gap: 3, marginLeft: 8 }}>
+            <div className="sort-btn-group" role="group" aria-label="Sort results by">
               <button
-                className={`btn btn-ghost btn-sm${sortMode === "default" ? " active" : ""}`}
-                style={{ fontSize: 10, padding: "2px 6px" }}
+                className={`btn btn-ghost btn-sm sort-btn${sortMode === "default" ? " active" : ""}`}
                 onClick={() => setSortMode("default")}
                 title="Group by type (default)"
                 aria-pressed={sortMode === "default"}
               >Type</button>
               <button
-                className={`btn btn-ghost btn-sm${sortMode === "segment" ? " active" : ""}`}
-                style={{ fontSize: 10, padding: "2px 6px" }}
+                className={`btn btn-ghost btn-sm sort-btn${sortMode === "segment" ? " active" : ""}`}
                 onClick={() => setSortMode("segment")}
                 title="Sort by segment number"
                 aria-pressed={sortMode === "segment"}
               >#Seg</button>
             </div>
           )}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexShrink: 0 }}>
+          <div className="results-actions">
             <button
               className="btn btn-secondary btn-sm"
               onClick={() => exportReport("csv")}
@@ -1034,19 +1005,7 @@ ${violSection}
         )}
 
         {saveResult && (
-          <div
-            role="status"
-            aria-live="polite"
-            style={{
-              background: "rgba(50,215,75,0.1)",
-              border: "1px solid var(--success)",
-              borderRadius: "var(--radius)",
-              padding: "10px 14px",
-              fontSize: 13,
-              marginBottom: 12,
-              color: "var(--success)",
-            }}
-          >
+          <div className="success-banner" role="status" aria-live="polite">
             {saveResult}
           </div>
         )}

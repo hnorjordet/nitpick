@@ -227,6 +227,7 @@ export default function ExportBar({ filePath, spellErrors, violations }: Props) 
         onClick={() => exportReport("csv")}
         disabled={exporting}
         aria-busy={exporting}
+        aria-label="Export QA report as CSV"
         title="Export as CSV"
       >
         CSV
@@ -236,6 +237,7 @@ export default function ExportBar({ filePath, spellErrors, violations }: Props) 
         onClick={() => exportReport("html")}
         disabled={exporting}
         aria-busy={exporting}
+        aria-label="Export QA report as HTML"
         title="Export as HTML report"
       >
         HTML
@@ -245,6 +247,7 @@ export default function ExportBar({ filePath, spellErrors, violations }: Props) 
         onClick={() => exportReport("xlsx")}
         disabled={exporting}
         aria-busy={exporting}
+        aria-label="Export QA report as Excel spreadsheet"
         title="Export as Excel (.xlsx)"
       >
         {exporting ? "Exporting…" : "Excel"}

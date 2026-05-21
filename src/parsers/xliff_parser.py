@@ -6,8 +6,8 @@ Preserves XML structure and tags while enabling regex operations on translatable
 import re
 from html import unescape
 from lxml import etree
-from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass, field
+from typing import List, Dict, Optional
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -77,8 +77,8 @@ class TransUnit:
         """
         if self.target is None:
             # Create target element if it doesn't exist
-            self.target = etree.SubElement(self.element,
-                                          f"{{{self.element.nsmap[None]}}}target")
+            ns = self.element.nsmap.get(None, "urn:oasis:names:tc:xliff:document:1.2")
+            self.target = etree.SubElement(self.element, f"{{{ns}}}target")
 
         # Clear existing content
         self.target.clear()
@@ -108,6 +108,8 @@ class TransUnit:
         Tags in _SKIP_CONTENT_TAGS are skipped entirely (their content is
         markup/code). Tags like g and mrk wrap translatable text and are
         recursed into.
+        A space is inserted where skipped tags occur so adjacent words are
+        not concatenated (e.g. "flere<ph/>pasienter" → "flere pasienter").
         """
         if element is None:
             return ""
@@ -118,6 +120,9 @@ class TransUnit:
             tag = etree.QName(child).localname
             if tag not in self._SKIP_CONTENT_TAGS:
                 parts.append(self._element_plain_text(child))
+            else:
+                # Skipped inline tag acts as a word boundary
+                parts.append(" ")
             if child.tail:
                 parts.append(child.tail)
         text = unescape("".join(parts))

@@ -39,6 +39,7 @@ export interface FileData {
   segments: Segment[];
   target_language: string;
   stats: { total_segments: number; translated: number; untranslated: number };
+  is_docx?: boolean;
 }
 
 export interface FileEntry {
@@ -130,6 +131,8 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
   });
 
   const settingsRef = useRef(settings);
+  // Track latest requested path to guard against stale async results (race condition)
+  const loadingPathRef = useRef<string>("");
 
   // Watch folder queue and banner state
   const [watchQueue, setWatchQueue] = useState<string[]>([]);
@@ -237,6 +240,9 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
   }
 
   async function loadFile(path: string) {
+    // Mark this as the latest requested load — any older in-flight result will be discarded
+    loadingPathRef.current = path;
+
     setFilePath(path);
     setLoadError("");
     setLoading(true);
@@ -248,23 +254,28 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
     setViolations([]);
     try {
       const data = await invoke<FileData>("sc_load_file", { filePath: path });
+      // Discard result if a newer load was started while we were awaiting
+      if (loadingPathRef.current !== path) return;
       setFileData(data);
       onFileLoaded?.(path);
     } catch (e: unknown) {
+      if (loadingPathRef.current !== path) return;
       setLoadError(String(e));
     } finally {
-      setLoading(false);
+      if (loadingPathRef.current === path) setLoading(false);
     }
   }
 
   function handleSettingsChange(newSettings: Settings) {
+    // Capture prev BEFORE overwriting the ref
+    const prev = settingsRef.current;
+
     setSettings(newSettings);
     settingsRef.current = newSettings;
     invoke("sc_save_settings", { data: JSON.stringify(newSettings) }).catch((e) =>
       console.error("Failed to save settings:", e)
     );
 
-    const prev = settingsRef.current;
     const watchChanged =
       prev.watch_folder_enabled !== newSettings.watch_folder_enabled ||
       prev.watch_folder !== newSettings.watch_folder;

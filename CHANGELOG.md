@@ -1,9 +1,22 @@
 # Changelog
 
-All notable changes to XLIFF Regex Tool will be documented in this file.
+All notable changes to Nitpick will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-05-22
+
+### Added
+- Spellcheck panel with Norwegian Bokmål support and custom word lists
+- Terminology check against custom term lists
+- DOCX bilingual table import and export (Phrase-style tables)
+- XTM match quality support via alt-trans and state-qualifier
+- New app icon
+
+### Changed
+- App renamed from "XLIFF RegEx Tool" to "Nitpick"
+- First public release
 
 ## [0.5.1] - 2026-03-24
 

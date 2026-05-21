@@ -47,3 +47,26 @@ library.xml
 
 # Logs
 *.log
+
+# Test and internal files
+test_*.xliff
+test_*.tmx
+*_backup_*.xliff
+samples/booking.com_qa_profile.xml
+samples/kahoot_qa_profile.xml
+samples/landsnavn_qa_profile.xml
+samples/numbers.xliff
+samples/sample*.xliff
+samples/test_*.xliff
+
+# Internal docs
+OPPSUMMERING_*.md
+GUI_PLAN.md
+EXCLUDE_EXAMPLES.md
+ACCESSIBILITY_AUDIT.md
+GITHUB_RELEASES_SETUP.md
+release-notes-*.md
+
+# Generated files
+USER_GUIDE.html
+latest.json

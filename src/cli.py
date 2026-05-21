@@ -6,9 +6,10 @@ Provides testing interface for the backend functionality.
 
 import argparse
 import re
+import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -499,11 +500,6 @@ def replace_command(args):
                     total_replacements += count
                     modified_units += 1
 
-        # Replace in source (if requested)
-        if args.source:
-            print("Warning: Replacing in source segments is not recommended")
-            # Implementation would go here if needed
-
     # Save modified file
     if total_replacements > 0:
         output_path = args.output if args.output else args.file
@@ -557,7 +553,41 @@ def replace_command(args):
 
 def stats_command(args):
     """Show statistics about XLIFF/TMX file."""
-    import json
+    # Docx (Phrase bilingual table) — convert to XliffData format
+    if args.file.lower().endswith('.docx'):
+        from parsers.docx_parser import parse_phrase_docx
+        try:
+            segments = parse_phrase_docx(args.file)
+        except Exception as e:
+            if args.json:
+                print(json.dumps({"error": f"Failed to parse docx: {e}"}))
+            else:
+                print(f"Failed to parse docx: {e}")
+            return 1
+
+        trans_units = []
+        for idx, seg in enumerate(segments, start=1):
+            trans_units.append({
+                "id": seg.id,
+                "segment_number": idx,
+                "source": seg.source_plain,
+                "target": seg.target_plain,
+                "metadata": None,
+                "icu_errors": None,
+                "tms_metadata": None,
+            })
+
+        stats = {
+            "total_units": len(trans_units),
+            "translated": sum(1 for u in trans_units if u["target"] and u["target"].strip()),
+            "untranslated": sum(1 for u in trans_units if not u["target"] or not u["target"].strip()),
+        }
+
+        if args.json:
+            print(json.dumps({"trans_units": trans_units, "stats": stats}))
+        else:
+            print(f"Docx segments: {stats['total_units']}, translated: {stats['translated']}, untranslated: {stats['untranslated']}")
+        return 0
 
     target_lang = getattr(args, 'target_lang', None)
     parser = get_parser(args.file, target_lang)
@@ -639,7 +669,6 @@ def stats_command(args):
                         metadata['locked'] = 'yes' if attr_value.lower() in ('true', '1', 'locked') else 'no'
                     elif 'modified-at' in attr_name.lower():
                         # Convert timestamp to readable format
-                        from datetime import datetime
                         try:
                             timestamp = int(attr_value) / 1000  # Convert from milliseconds
                             dt = datetime.fromtimestamp(timestamp)
@@ -649,7 +678,6 @@ def stats_command(args):
                     elif 'modified-by' in attr_name.lower():
                         metadata['modified_by'] = attr_value
                     elif 'created-at' in attr_name.lower():
-                        from datetime import datetime
                         try:
                             timestamp = int(attr_value) / 1000
                             dt = datetime.fromtimestamp(timestamp)
@@ -777,8 +805,6 @@ def stats_command(args):
 
 def apply_edits_command(args):
     """Apply edits from JSON file to XLIFF or TMX."""
-    import json
-
     # Read edits from JSON file
     try:
         with open(args.edits_json, 'r', encoding='utf-8') as f:
@@ -786,6 +812,19 @@ def apply_edits_command(args):
     except Exception as e:
         print(f"Failed to read edits JSON: {e}")
         return 1
+
+    # Docx (Phrase bilingual table) — write back via docx_parser
+    if args.file.lower().endswith('.docx'):
+        from parsers.docx_parser import load_phrase_docx, save_phrase_docx
+        try:
+            doc = load_phrase_docx(args.file)
+            edits_dict = {edit['id']: edit['target'] for edit in edits}
+            result = save_phrase_docx(doc, edits_dict, args.file, backup=True)
+            print(result)
+            return 0
+        except Exception as e:
+            print(f"Error applying edits to docx: {e}")
+            return 1
 
     # Parse file (XLIFF or TMX)
     target_lang = getattr(args, 'target_lang', None)
@@ -833,7 +872,8 @@ def _sc_err(msg: str) -> None:
 
 def _sc_parse_and_convert(file_path: str):
     """Parse XLIFF/docx and return (parser_or_None, segments).
-    For docx files, parser is None (no write-back supported).
+    For docx files parser is None — write-back goes through docx_parser directly.
+    Check `segments is None` (not `parser is None`) to detect parse failure.
     """
     ext = Path(file_path).suffix.lower()
     if ext == ".docx":
@@ -841,7 +881,6 @@ def _sc_parse_and_convert(file_path: str):
             segments = parse_phrase_docx(file_path)
             return None, segments
         except Exception as e:
-            import sys
             print(f"Error parsing docx: {e}", file=sys.stderr)
             return None, None
     parser = XLIFFParser(file_path)
@@ -935,7 +974,7 @@ def sc_save_settings_command(args):
 
 def sc_run_spellcheck_command(args):
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
     dic_paths = [d.strip() for d in args.dics.split(",") if d.strip()] if args.dics else []
@@ -979,15 +1018,14 @@ def sc_add_to_dic_command(args):
 
 
 def sc_get_segments_for_word_command(args):
-    import re as re_mod
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
-    pattern = r"(?<!\w)" + re_mod.escape(args.word) + r"(?!\w)"
+    pattern = r"(?<!\w)" + re.escape(args.word) + r"(?!\w)"
     matching = []
     for seg in segments:
-        if re_mod.search(pattern, seg.target_plain, re_mod.IGNORECASE):
+        if re.search(pattern, seg.target_plain, re.IGNORECASE):
             matching.append({
                 "id": seg.id, "source": seg.source_plain,
                 "target": seg.target_plain, "file_name": seg.file_name,
@@ -1035,24 +1073,19 @@ def sc_apply_spellcheck_edits_command(args):
         _sc_err(f"Failed to parse: {args.file}")
         return 1
 
-    import shutil
     backup_path = str(file_path) + ".bak"
     shutil.copy2(file_path, backup_path)
 
-    segments = trans_units_to_segments(xliff_parser.get_trans_units(), file_path.name)
-    seg_map = {s.id: s for s in segments}
+    # Use a dict keyed by id for O(1) lookup
+    tu_map = {tu.id: tu for tu in xliff_parser.get_trans_units()}
 
     for edit in edits_list:
         seg_id = edit.get("id", "")
         new_target = edit.get("target", "")
-        if seg_id and seg_id in seg_map:
-            seg = seg_map[seg_id]
-            elem = seg.target_element
-            if elem is not None:
-                elem.clear()
-                elem.text = new_target
-                seg.target_plain = new_target
-                seg.target_raw = new_target
+        if seg_id and seg_id in tu_map:
+            # Use set_target_text() so inline tags (<g>, <x>, <ph> etc.) are
+            # preserved. Direct elem.clear()+elem.text= would strip them.
+            tu_map[seg_id].set_target_text(new_target)
 
     if not xliff_parser.save():
         _sc_err("Failed to save XLIFF")
@@ -1063,24 +1096,32 @@ def sc_apply_spellcheck_edits_command(args):
 
 def sc_run_term_check_command(args):
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
 
-    # Extract source/target language from XLIFF so TBX parsing picks correct langSets
+    # Extract source/target language for TBX parsing
     source_lang = getattr(args, 'source_lang', None) or "en"
     target_lang = getattr(args, 'target_lang', None) or ""
     if not target_lang:
-        try:
-            nsmap = parser.root.nsmap
-            default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
-            file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
-            if file_elements:
-                target_lang = file_elements[0].get("target-language", "")
-                if not source_lang or source_lang == "en":
-                    source_lang = file_elements[0].get("source-language", "en")
-        except Exception:
-            pass
+        if parser is not None:
+            # XLIFF: read from XML attributes
+            try:
+                nsmap = parser.root.nsmap
+                default_ns = nsmap.get(None, 'urn:oasis:names:tc:xliff:document:1.2')
+                file_elements = parser.root.xpath(".//ns:file", namespaces={'ns': default_ns})
+                if file_elements:
+                    target_lang = file_elements[0].get("target-language", "")
+                    if not source_lang or source_lang == "en":
+                        source_lang = file_elements[0].get("source-language", "en")
+            except Exception:
+                pass
+        else:
+            # Docx: try to detect language from filename (e.g. "nb-NO_jobid-en-no-T.docx")
+            fname = Path(args.file).stem
+            lang_match = re.search(r'[-_]([a-z]{2}-[A-Z]{2})[-_T]', fname)
+            if lang_match:
+                target_lang = lang_match.group(1)
 
     term_entries = []
     if args.termlists:
@@ -1115,7 +1156,7 @@ def sc_run_term_check_command(args):
 
 def sc_run_number_check_command(args):
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
     skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
@@ -1138,7 +1179,7 @@ def sc_run_number_check_command(args):
 
 def sc_run_qa_checks_command(args):
     parser, segments = _sc_parse_and_convert(args.file)
-    if parser is None:
+    if segments is None:
         _sc_err(f"Failed to parse: {args.file}")
         return 1
     skip_locked = (args.skip_locked.lower() != "false") if args.skip_locked else True
@@ -1237,7 +1278,6 @@ def main():
     replace_parser.add_argument('pattern', help='Regex pattern to find')
     replace_parser.add_argument('replacement', help='Replacement string')
     replace_parser.add_argument('--output', '-o', help='Output file (default: overwrite input)')
-    replace_parser.add_argument('--source', action='store_true', help='Replace in source segments')
     replace_parser.add_argument('--target', action='store_true', help='Replace in target segments')
     replace_parser.add_argument('--case-sensitive', action='store_true', help='Case sensitive search')
     replace_parser.add_argument('--include-tags', action='store_true', help='Include XML tags in replacement')

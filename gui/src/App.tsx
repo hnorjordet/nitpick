@@ -111,13 +111,15 @@ function validateRegex(pattern: string): { valid: boolean; error?: string } {
   }
 }
 
+// Shared ICU constants
+const ICU_KEYWORDS = ['plural', 'select', 'selectordinal'];
+const CATEGORY_KEYWORDS = ['zero', 'one', 'two', 'few', 'many', 'other'];
+
 // ICU validation function
 function validateICU(source: string, target: string): string[] {
   if (!target) return [];
 
   const errors: string[] = [];
-  const ICU_KEYWORDS = ['plural', 'select', 'selectordinal'];
-  const CATEGORY_KEYWORDS = ['zero', 'one', 'two', 'few', 'many', 'other'];
 
   // Check 1: ICU keywords must be present in exact same form
   for (const keyword of ICU_KEYWORDS) {
@@ -199,11 +201,6 @@ function validateICU(source: string, target: string): string[] {
 
 // Attempt to automatically fix ICU errors
 function autoFixICUError(source: string, target: string, error: string): string | null {
-  // Debug logging (commented out - uncomment if needed for debugging)
-  // console.log('[autoFixICUError] Called with:', { source, target, error });
-  const ICU_KEYWORDS = ['plural', 'select', 'selectordinal'];
-  const CATEGORY_KEYWORDS = ['zero', 'one', 'two', 'few', 'many', 'other'];
-
   // Fix 1: ICU keyword missing or incorrectly translated
   for (const keyword of ICU_KEYWORDS) {
     if (error.includes(`ICU keyword "${keyword}" is missing or incorrectly translated`)) {
@@ -449,8 +446,12 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
   // Notify AppShell whenever loaded file changes (covers all code paths,
   // including close which sets filePath to "").
+  // Only propagate when exactly one file is open — comma-joined multi-file
+  // paths must not be forwarded to SpellcheckPanel as a load target.
   useEffect(() => {
-    onFileLoaded?.(filePath);
+    if (files.length <= 1) {
+      onFileLoaded?.(filePath);
+    }
   }, [filePath]);
 
   // Load file when external path changes (from Spellcheck panel)
@@ -479,11 +480,6 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
   const [error, setError] = useState<string>("");
 
-  // Debug log state (commented out - uncomment if needed for debugging)
-  // const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  // const addDebugLog = (msg: string) => {
-  //   setDebugLogs(prev => [...prev.slice(-9), `[${new Date().toLocaleTimeString()}] ${msg}`]);
-  // };
 
   // Search/Replace state
   const [searchPattern, setSearchPattern] = useState<string>("");
@@ -591,6 +587,8 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   const [easterEggMessage, setEasterEggMessage] = useState<string>("");
   const konamiSequence = useRef<string[]>([]);
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  // Guard against stale async results when switching files quickly
+  const loadingPathRef = useRef<string>("");
 
   // TMS Integration settings
   const [tmsAutoCopy, setTmsAutoCopy] = useState<boolean>(true);
@@ -898,16 +896,19 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
     setTmxTargetLang(null);
   }
 
-  // Open a specific file path directly (used by SpellcheckQA IPC handoff)
+  // Open a specific file path directly (used by cross-panel file sync)
   async function openFileByPath(path: string) {
+    loadingPathRef.current = path;
     try {
       setTmxTargetLang(null);
       setError("");
       setEditedUnits(new Map());
       clearSelection();
       const data = await invoke<XliffData>("open_xliff", { filePath: path, targetLang: null });
+      if (loadingPathRef.current !== path) return;
       setSingleFile(path, data);
     } catch (err) {
+      if (loadingPathRef.current !== path) return;
       setError(`Error opening file: ${err}`);
       console.error(err);
     }
@@ -1386,6 +1387,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   // also inherit the CSS variable overrides defined under .dark-mode
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
+    return () => { document.body.classList.remove('dark-mode'); };
   }, [darkMode]);
 
   // Propagate retro-mode and hacker-mode to <body> so SpellcheckPanel
@@ -1393,6 +1395,10 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   useEffect(() => {
     document.body.classList.toggle('retro-mode', retroMode);
     document.body.classList.toggle('hacker-mode', hackerMode);
+    return () => {
+      document.body.classList.remove('retro-mode');
+      document.body.classList.remove('hacker-mode');
+    };
   }, [retroMode, hackerMode]);
 
   // Preserve scroll position when opening/closing editor
