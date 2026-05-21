@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { open as openDialog, save, ask, message } from '@tauri-apps/plugin-dialog';
 import { listen, emit } from '@tauri-apps/api/event';
 import { check } from '@tauri-apps/plugin-updater';
@@ -513,6 +514,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   const [changelogContent, setChangelogContent] = useState<string>('');
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
+  const [appVersion, setAppVersion] = useState<string>('');
 
   // Update state
   const [updateAvailable, setUpdateAvailable] = useState<boolean>(false);
@@ -1239,6 +1241,10 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
   }, [editedUnits]);
 
   // Load regex library on component mount
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(() => setAppVersion('1.0.0'));
+  }, []);
+
   useEffect(() => {
     async function loadLibrary() {
       try {
@@ -2983,7 +2989,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
                 <h1>Nitpick</h1>
               </div>
               <div className="about-info">
-                <p className="version">Version 0.5.1</p>
+                <p className="version">Version {appVersion}</p>
                 <p className="description">
                   A complete QA tool for translators working with XLIFF files.
                   Combines advanced regex search &amp; replace, spellcheck, terminology verification,

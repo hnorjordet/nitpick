@@ -28,7 +28,13 @@ Download the latest version from the [Releases](https://github.com/hnorjordet/ni
 
 1. Download `Nitpick_<version>_aarch64.dmg`
 2. Open the DMG and drag Nitpick to your Applications folder
-3. On first launch, right-click the app and select "Open" (Gatekeeper requirement)
+3. Open Terminal and run:
+   ```bash
+   xattr -cr /Applications/Nitpick.app
+   ```
+4. Launch Nitpick normally from Applications or the Dock
+
+> **Why is this needed?** Nitpick is not signed with an Apple Developer certificate, so macOS Gatekeeper will block it on first launch. The `xattr -cr` command removes the quarantine flag. This is a one-time step.
 
 ## Building from Source
 
