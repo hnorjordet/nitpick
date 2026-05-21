@@ -37,7 +37,7 @@
       "bin/qa_app_cli",
       "../../USER_GUIDE.html",
       "../../CHANGELOG.md",
-      "../../samples/*_qa_profile.xml"
+      "../../samples/example_qa_profile.xml"
     ]
   },
   "plugins": {
