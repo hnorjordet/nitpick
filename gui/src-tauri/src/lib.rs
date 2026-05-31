@@ -57,9 +57,10 @@ struct Stats {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/// Returns the directory used to read bundled QA-profile XML files.
-/// In dev: ../../samples (relative to Cargo manifest dir).
-/// In production: resource_dir itself — glob resources are copied flat into it.
+/// Returns the directory for read-only *bundled* QA-profile XML files (shipped with the app).
+/// In dev: the project-root samples/ folder (source of truth for bundled profiles).
+/// In production: the Tauri resource directory (profiles are copied there by tauri.conf.json).
+/// Never write to this directory — it may be inside the .app bundle.
 fn bundled_samples_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
     if cfg!(dev) {
         Ok(PathBuf::from("../../samples"))
@@ -71,7 +72,8 @@ fn bundled_samples_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String>
 }
 
 /// Returns the user-writable directory for saved/imported QA-profile XML files.
-/// Always ~/.nitpick/samples/ — separate from read-only bundled profiles.
+/// Always ~/.nitpick/samples/ in both dev and production — this is the single
+/// source of truth for user-created profiles regardless of build mode.
 fn user_samples_dir() -> Result<PathBuf, String> {
     let home = dirs::home_dir()
         .ok_or_else(|| "Failed to get home directory".to_string())?;
@@ -114,7 +116,8 @@ fn sc_invoke_python(app_handle: &tauri::AppHandle, args: Vec<&str>) -> Result<Va
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        // --onedir: binary lives inside the qa_app_cli/ folder
+        let cli_path = resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string();
         (cli_path, None)
     };
 
@@ -233,7 +236,7 @@ fn open_xliff(file_path: String, target_lang: Option<String>, app_handle: tauri:
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string()
+        resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string()
     };
 
     let mut cmd = Command::new(&cli_path);
@@ -277,7 +280,7 @@ fn get_tmx_languages(file_path: String, app_handle: tauri::AppHandle) -> Result<
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string();
         Command::new(&cli_path)
             .arg("tmx-languages")
             .arg(&file_path)
@@ -333,7 +336,7 @@ fn save_xliff(file_path: String, edited_units: Vec<EditedUnit>, target_lang: Opt
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string();
 
         let mut cmd = Command::new(&cli_path);
         cmd.arg("apply-edits").arg(&file_path).arg(&temp_json);
@@ -377,9 +380,9 @@ struct RegexLibrary {
 }
 
 fn get_library_path() -> Result<PathBuf, String> {
-    let home = std::env::var("HOME")
-        .map_err(|_| "Failed to get home directory".to_string())?;
-    let lib_dir = PathBuf::from(home).join(".xliff-regex-tool");
+    let home = dirs::home_dir()
+        .ok_or_else(|| "Failed to get home directory".to_string())?;
+    let lib_dir = home.join(".nitpick");
 
     // Create directory if it doesn't exist
     if !lib_dir.exists() {
@@ -387,7 +390,17 @@ fn get_library_path() -> Result<PathBuf, String> {
             .map_err(|e| format!("Failed to create library directory: {}", e))?;
     }
 
-    Ok(lib_dir.join("library.xml"))
+    let new_path = lib_dir.join("library.xml");
+
+    // One-time migration from legacy ~/.xliff-regex-tool/library.xml
+    if !new_path.exists() {
+        let legacy_path = home.join(".xliff-regex-tool").join("library.xml");
+        if legacy_path.exists() {
+            let _ = fs::copy(&legacy_path, &new_path);
+        }
+    }
+
+    Ok(new_path)
 }
 
 #[tauri::command]
@@ -594,7 +607,7 @@ fn batch_find(file_path: String, profile_path: String, app_handle: tauri::AppHan
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string();
 
         Command::new(&cli_path)
             .arg("batch-find")
@@ -710,7 +723,7 @@ fn batch_replace(file_path: String, profile_path: String, app_handle: tauri::App
         let resource_dir = app_handle.path()
             .resource_dir()
             .map_err(|e| format!("Failed to get resource directory: {}", e))?;
-        let cli_path = resource_dir.join("bin/qa_app_cli").to_string_lossy().to_string();
+        let cli_path = resource_dir.join("bin/qa_app_cli/qa_app_cli").to_string_lossy().to_string();
 
         Command::new(&cli_path)
             .arg("batch-replace")
@@ -759,13 +772,9 @@ struct QACheckData {
 
 #[tauri::command]
 fn save_qa_profile(profile_data: QAProfileData, file_name: String, _app_handle: tauri::AppHandle) -> Result<String, String> {
-    // Save to user-writable directory (~/.nitpick/samples/) so bundled read-only
-    // profiles are never overwritten and production builds work correctly.
-    let profiles_dir = if cfg!(dev) {
-        PathBuf::from("../../samples")
-    } else {
-        user_samples_dir()?
-    };
+    // Always save to ~/.nitpick/samples/ — consistent across dev and production.
+    // Bundled read-only profiles (in resources/) are never overwritten.
+    let profiles_dir = user_samples_dir()?;
 
     // Ensure directory exists
     if !profiles_dir.exists() {
@@ -1086,12 +1095,8 @@ fn export_qa_profile(profile_path: String, export_path: String) -> Result<String
 
 #[tauri::command]
 fn import_qa_profile(import_path: String) -> Result<String, String> {
-    // Import to user-writable directory (~/.nitpick/samples/)
-    let samples_dir = if cfg!(dev) {
-        PathBuf::from("../../samples")
-    } else {
-        user_samples_dir()?
-    };
+    // Always import to ~/.nitpick/samples/ — consistent across dev and production.
+    let samples_dir = user_samples_dir()?;
     fs::create_dir_all(&samples_dir)
         .map_err(|e| format!("Failed to create samples directory: {}", e))?;
 

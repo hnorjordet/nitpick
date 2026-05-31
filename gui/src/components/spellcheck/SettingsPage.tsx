@@ -548,7 +548,30 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
           ))}
         </fieldset>
 
-        {/* Group 3: Content matching */}
+        {/* Group 3: Punctuation */}
+        <fieldset className="qa-fieldset">
+          <legend className="qa-group-legend">Punctuation</legend>
+          {([
+            ["punctuation_mismatch", "Trailing punctuation mismatch (e.g. source ends with '?', target with '.')"],
+            ["double_punctuation", "Double punctuation in target (e.g. '..', ',,', '!!')"],
+            ["quotation_mark_style", 'Straight ASCII quotes in target (use typographic quotes instead, e.g. «»)'],
+          ] as [string, string][]).map(([id, label]) => (
+            <label key={id} className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={(settings.qa_checks ?? DEFAULT_QA_CHECKS)[id] ?? false}
+                onChange={(e) =>
+                  update({
+                    qa_checks: { ...(settings.qa_checks ?? DEFAULT_QA_CHECKS), [id]: e.target.checked },
+                  })
+                }
+              />
+              <span>{label}</span>
+            </label>
+          ))}
+        </fieldset>
+
+        {/* Group 4: Content matching */}
         <fieldset className="qa-fieldset">
           <legend className="qa-group-legend">Content matching</legend>
           {([
@@ -570,6 +593,28 @@ export default function SettingsPage({ settings, onSettingsChange }: Props) {
               <span>{label}</span>
             </label>
           ))}
+        </fieldset>
+
+        {/* Group 5: Segment length */}
+        <fieldset className="qa-fieldset">
+          <legend className="qa-group-legend">Segment length</legend>
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={(settings.qa_checks ?? DEFAULT_QA_CHECKS)["segment_length_ratio"] ?? false}
+              onChange={(e) =>
+                update({
+                  qa_checks: { ...(settings.qa_checks ?? DEFAULT_QA_CHECKS), segment_length_ratio: e.target.checked },
+                })
+              }
+            />
+            <span>
+              Segment length ratio — flag target that is &lt;25% or &gt;300% of source length
+              <span className="settings-note" style={{ display: "block", marginTop: 2 }}>
+                Useful for software UI strings where character limits matter. Off by default.
+              </span>
+            </span>
+          </label>
         </fieldset>
       </section>
 

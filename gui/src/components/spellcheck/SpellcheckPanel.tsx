@@ -75,6 +75,10 @@ export const DEFAULT_QA_CHECKS: Record<string, boolean> = {
   repeated_words: true,
   uppercase_mismatch: true,
   camelcase_mismatch: true,
+  punctuation_mismatch: true,
+  double_punctuation: true,
+  quotation_mark_style: false,   // Off by default — only relevant for certain language pairs
+  segment_length_ratio: false,   // Off by default — mainly useful for UI/software strings
 };
 
 export type TabId = "checks" | "spellcheck" | "terminology" | "qa" | "settings";

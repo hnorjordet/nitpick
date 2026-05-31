@@ -13,6 +13,10 @@ Checks:
 - Repeated words in target
 - UPPERCASE word mismatches
 - CamelCase word mismatches
+- Punctuation mismatch (trailing punctuation differs between source and target)
+- Double punctuation in target
+- Quotation mark style (wrong quote characters for target language)
+- Segment length ratio (target much longer or shorter than source)
 """
 
 import re
@@ -35,6 +39,10 @@ ALL_QA_CHECKS = [
     "repeated_words",
     "uppercase_mismatch",
     "camelcase_mismatch",
+    "punctuation_mismatch",
+    "double_punctuation",
+    "quotation_mark_style",
+    "segment_length_ratio",
 ]
 
 # ─── Regex patterns ──────────────────────────────────────────────────────────
@@ -42,6 +50,17 @@ ALL_QA_CHECKS = [
 _URL_EMAIL_RE = re.compile(
     r"https?://\S+|[\w.+-]+@[\w-]+\.[\w.-]+", re.IGNORECASE
 )
+
+# Trailing punctuation: last non-whitespace char that is a sentence-end mark
+_TRAILING_PUNCT_RE = re.compile(r"[.!?:;……]\s*$")
+
+# Double punctuation: two or more identical (or mixed) sentence-end marks
+_DOUBLE_PUNCT_RE = re.compile(r"[.!?,;:]{2,}")
+
+# Straight ASCII quotes in target text (English-style " and ')
+# These are almost always wrong when the target is Norwegian/Scandinavian
+_STRAIGHT_DOUBLE_QUOTE_RE = re.compile(r'"')
+_STRAIGHT_SINGLE_QUOTE_RE = re.compile(r"(?<!\w)'|'(?!\w)")  # word-boundary single quote
 
 # Alphanumeric tokens: must contain both letters and digits, at least 2 chars
 _ALPHANUM_RE = re.compile(
@@ -194,6 +213,109 @@ def _check_camelcase_mismatch(seg) -> List[Violation]:
     return []
 
 
+def _trailing_punct_char(text: str) -> str:
+    """Return the trailing punctuation character of text, or '' if none."""
+    m = _TRAILING_PUNCT_RE.search(text.strip())
+    return m.group(0).strip() if m else ""
+
+
+def _check_punctuation_mismatch(seg) -> List[Violation]:
+    """Flag segments where trailing punctuation differs between source and target.
+
+    Only triggers when BOTH source and target have trailing punctuation but
+    it differs — e.g. source ends with '?' and target ends with '.'.
+    Segments where only one side has punctuation are intentionally skipped
+    (some CAT workflows strip/add trailing periods systematically).
+    """
+    s = seg.source_plain.strip()
+    t = seg.target_plain.strip()
+    if not s or not t:
+        return []
+    src_p = _trailing_punct_char(s)
+    tgt_p = _trailing_punct_char(t)
+    # Only flag when both sides have punctuation but it differs
+    if src_p and tgt_p and src_p != tgt_p:
+        return [_v(seg, "punctuation_mismatch", src_p, tgt_p,
+                   f"Trailing punctuation differs: source ends with '{src_p}', target ends with '{tgt_p}'")]
+    return []
+
+
+def _check_double_punctuation(seg) -> List[Violation]:
+    """Flag double/repeated punctuation marks in the target (e.g. '..', ',,', '!!')."""
+    t = seg.target_plain
+    if not t:
+        return []
+    m = _DOUBLE_PUNCT_RE.search(t)
+    if m:
+        return [_v(seg, "double_punctuation", "", m.group(0),
+                   f"Double punctuation in target: '{m.group(0)}'")]
+    return []
+
+
+def _check_quotation_mark_style(seg) -> List[Violation]:
+    """Flag straight ASCII quotation marks (" or ') used as quotation in the target.
+
+    In Norwegian (and most European languages), proper typographic quotes should
+    be used: «» or "" or '' — not straight ASCII "  and '.
+    Source text containing the same straight quotes is excluded so that
+    technical strings / code snippets do not trigger false positives.
+    """
+    t = seg.target_plain
+    s = seg.source_plain
+    if not t:
+        return []
+
+    # Count straight double quotes in target that are not also in source
+    # (exact same string → likely a code/variable token, skip)
+    if t.strip() == s.strip():
+        return []
+
+    issues = []
+
+    # Check for straight double quotes used as quotation (pairs)
+    tgt_dq = len(_STRAIGHT_DOUBLE_QUOTE_RE.findall(t))
+    src_dq = len(_STRAIGHT_DOUBLE_QUOTE_RE.findall(s))
+    # If target has more straight double quotes than source → likely added by translator
+    if tgt_dq > src_dq and tgt_dq >= 2:
+        issues.append('straight double quotes "…"')
+
+    if issues:
+        return [_v(seg, "quotation_mark_style", "", None,
+                   f"Straight ASCII quotation marks in target — use typographic quotes instead: {'; '.join(issues)}")]
+    return []
+
+
+def _check_segment_length_ratio(seg) -> List[Violation]:
+    """Flag segments where the target is extremely long or short relative to the source.
+
+    Thresholds (character count):
+      - Target > 300% of source length → suspiciously long
+      - Target < 25% of source length  → suspiciously short
+
+    Segments shorter than 10 characters are skipped to avoid noise on
+    short labels/codes where ratios are naturally extreme.
+    """
+    s = seg.source_plain.strip()
+    t = seg.target_plain.strip()
+    if not s or not t:
+        return []
+    src_len = len(s)
+    tgt_len = len(t)
+    # Skip very short segments — ratios are meaningless for labels/codes
+    if src_len < 10:
+        return []
+    ratio = tgt_len / src_len
+    if ratio > 3.0:
+        pct = int(ratio * 100)
+        return [_v(seg, "segment_length_ratio", f"{src_len} chars", f"{tgt_len} chars",
+                   f"Target is {pct}% of source length — unusually long (>{300}%)")]
+    if ratio < 0.25:
+        pct = int(ratio * 100)
+        return [_v(seg, "segment_length_ratio", f"{src_len} chars", f"{tgt_len} chars",
+                   f"Target is {pct}% of source length — unusually short (<25%)")]
+    return []
+
+
 # ─── Cross-segment checks ───────────────────────────────────────────────────
 
 def _check_inconsistent_same_source(segments, skip_locked: bool, skip_100_match: bool = True) -> List[Violation]:
@@ -265,6 +387,10 @@ _PER_SEGMENT_CHECKS = {
     "repeated_words": _check_repeated_words,
     "uppercase_mismatch": _check_uppercase_mismatch,
     "camelcase_mismatch": _check_camelcase_mismatch,
+    "punctuation_mismatch": _check_punctuation_mismatch,
+    "double_punctuation": _check_double_punctuation,
+    "quotation_mark_style": _check_quotation_mark_style,
+    "segment_length_ratio": _check_segment_length_ratio,
 }
 
 

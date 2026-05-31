@@ -5,6 +5,23 @@ All notable changes to Nitpick will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-31
+
+### Added
+- **Punctuation mismatch check** — flags segments where trailing punctuation differs between source and target (e.g. source ends with `?`, target ends with `.`)
+- **Double punctuation check** — detects repeated punctuation marks in the target (e.g. `!!`, `..`, `,,`)
+- **Quotation mark style check** — flags straight ASCII double quotes `"…"` used in the target where typographic quotes should be used (off by default)
+- **Segment length ratio check** — flags targets that are shorter than 25% or longer than 300% of the source length, useful for software UI strings (off by default)
+- All four new checks appear under a new **Punctuation** group and a **Segment length** group in the QA checks settings panel
+
+### Fixed
+- **Spellcheck false positives on tag-split words** — words separated by inline tags such as `<nl>` or `<br>` were concatenated (e.g. `flerepasienter` instead of `flere pasienter`) and flagged as misspelled. Inline tags now insert a word boundary so each side is checked independently
+- **Regex library path** — the regex library (`library.xml`) was stored under `~/.xliff-regex-tool/` (the old app name). It is now stored under `~/.nitpick/library.xml`. Existing libraries are migrated automatically on first launch
+- **QA profile path inconsistency** — saved/imported QA profiles were written to the project `samples/` folder in dev mode but `~/.nitpick/samples/` in production, making dev-created profiles invisible in the production build. Both modes now always use `~/.nitpick/samples/`
+
+### Changed
+- **Faster startup in production builds** — switched PyInstaller from `--onefile` to `--onedir` mode. The binary no longer extracts itself to a tmp directory on every invocation, reducing per-call startup time from ~1–2 s to ~100–200 ms
+
 ## [1.0.0] - 2026-05-22
 
 ### Added

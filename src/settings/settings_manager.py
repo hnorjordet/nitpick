@@ -31,6 +31,10 @@ DEFAULT_QA_CHECKS = {
     "repeated_words": True,
     "uppercase_mismatch": True,
     "camelcase_mismatch": True,
+    "punctuation_mismatch": True,
+    "double_punctuation": True,
+    "quotation_mark_style": False,   # Off by default — only relevant for certain language pairs
+    "segment_length_ratio": False,   # Off by default — mainly useful for UI/software strings
 }
 
 
@@ -50,13 +54,33 @@ class Settings:
     qa_checks: dict = field(default_factory=lambda: dict(DEFAULT_QA_CHECKS))
 
 
+def _migrate_regex_library() -> None:
+    """
+    Idempotent migration of the regex library from the old app name to ~/.nitpick/.
+    Safe to call on every startup — exits immediately if already done.
+    """
+    import sys, shutil
+    legacy_lib = Path.home() / ".xliff-regex-tool" / "library.xml"
+    new_lib = SETTINGS_DIR / "library.xml"
+    if legacy_lib.exists() and not new_lib.exists():
+        try:
+            SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(legacy_lib, new_lib)
+            print(f"Migrated regex library from {legacy_lib}", file=sys.stderr)
+        except Exception as e:
+            print(f"Warning: could not migrate regex library from {legacy_lib}: {e}",
+                  file=sys.stderr)
+
+
 def _migrate_legacy_settings() -> None:
     """
-    One-time migration from the two pre-merge apps:
-      - ~/.spellcheck-qa/settings.json  → spellcheck/terminology settings
-      - ~/.xliff-regex-tool/library.xml → not migrated (different format), skipped
+    One-time migration of spellcheck settings from the pre-merge app.
+      - ~/.spellcheck-qa/settings.json → ~/.nitpick/settings.json
     Called only when ~/.nitpick/settings.json does not yet exist.
     """
+    import sys
+
+    # ── Spellcheck settings: ~/.spellcheck-qa/settings.json → ~/.nitpick/settings.json ──
     legacy_path = Path.home() / ".spellcheck-qa" / "settings.json"
     if not legacy_path.exists():
         return
@@ -74,10 +98,8 @@ def _migrate_legacy_settings() -> None:
         if "qa_checks" in data:
             s.qa_checks = {**DEFAULT_QA_CHECKS, **data["qa_checks"]}
         save(s)
-        import sys
         print(f"Migrated settings from {legacy_path}", file=sys.stderr)
     except Exception as e:
-        import sys
         print(f"Warning: could not migrate legacy settings from {legacy_path}: {e}",
               file=sys.stderr)
 
@@ -85,7 +107,10 @@ def _migrate_legacy_settings() -> None:
 def load() -> Settings:
     """Load settings from disk. Returns defaults if file doesn't exist.
     On first run, migrates settings from the pre-merge ~/.spellcheck-qa/ app.
+    The regex library migration runs every time (idempotent) so users who
+    already have settings.json but not the migrated library are also covered.
     """
+    _migrate_regex_library()
     if not SETTINGS_PATH.exists():
         _migrate_legacy_settings()
         # If migration wrote the file, load it; otherwise return defaults

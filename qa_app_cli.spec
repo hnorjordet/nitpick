@@ -1,4 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
+#
+# --onedir build: produces dist/qa_app_cli/ folder instead of a single file.
+# Benefit: no extraction to a tmp dir on every invocation — Python starts
+# directly from the unpacked directory, cutting startup time from ~1-2s to
+# ~100-200ms per call.
 
 block_cipher = None
 
@@ -67,12 +72,10 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+# --onedir: EXE receives only scripts; COLLECT gathers everything into one folder.
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
     name='qa_app_cli',
     debug=False,
@@ -87,4 +90,15 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='qa_app_cli',
 )
