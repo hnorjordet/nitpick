@@ -73,6 +73,8 @@ a = Analysis(
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 # --onedir: EXE receives only scripts; COLLECT gathers everything into one folder.
+# The EXE is named 'qa_app_cli_bin' internally to avoid a path collision with the
+# COLLECT output folder, which is also named 'qa_app_cli'.
 exe = EXE(
     pyz,
     a.scripts,
@@ -90,6 +92,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    exclude_binaries=True,
 )
 
 coll = COLLECT(
