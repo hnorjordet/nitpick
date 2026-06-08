@@ -5,6 +5,11 @@ All notable changes to Nitpick will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-08
+
+### Added
+- **Multi-file spellcheck support** — you can now select multiple XLIFF files in the Search panel, perform search/replace across all of them, then switch to the Spellcheck/QA panel where files are automatically merged and spellcheck, terminology, and QA checks run on the combined content. Harmonizes spellcheck functionality with the existing multi-file regex engine
+
 ## [1.1.0] - 2026-05-31
 
 ### Added

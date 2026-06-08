@@ -94,11 +94,11 @@ const TAB_LABELS: Record<TabId, string> = {
 const TAB_IDS = ["checks", "spellcheck", "terminology", "qa", "settings"] as TabId[];
 
 interface SpellcheckPanelProps {
-  filePath: string;
-  onFileLoaded?: (path: string) => void;
+  filePaths: string[];
+  onFileLoaded?: (paths: string[]) => void;
 }
 
-export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoaded }: SpellcheckPanelProps) {
+export default function SpellcheckPanel({ filePaths: externalFilePaths, onFileLoaded }: SpellcheckPanelProps) {
   const [activeTab, setActiveTab] = useState<TabId>("checks");
   const [filePath, setFilePath] = useState<string>("");
   const [fileData, setFileData] = useState<FileData | null>(null);
@@ -137,6 +137,8 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
   const settingsRef = useRef(settings);
   // Track latest requested path to guard against stale async results (race condition)
   const loadingPathRef = useRef<string>("");
+  // Track the last external paths key we acted on to avoid redundant loads
+  const lastExternalKeyRef = useRef<string>("");
 
   // Watch folder queue and banner state
   const [watchQueue, setWatchQueue] = useState<string[]>([]);
@@ -167,13 +169,14 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
       .catch((e) => console.error("Failed to load settings:", e));
   }, []);
 
-  // When external file path changes (file opened or closed in RegEx panel), sync state
+  // When external file paths change (files opened or closed in RegEx panel), sync state
   useEffect(() => {
-    if (externalFilePath && externalFilePath !== filePath) {
-      // New file opened in Search panel — load it here too
-      loadFile(externalFilePath);
-    } else if (externalFilePath === "" && filePath !== "") {
-      // File closed in Search panel — clear our state too
+    const externalKey = externalFilePaths.join("|");
+    if (externalKey === lastExternalKeyRef.current) return;
+    lastExternalKeyRef.current = externalKey;
+
+    if (externalFilePaths.length === 0) {
+      // Files closed in Search panel — clear our state too
       setFilePath("");
       setFileData(null);
       setLoadError("");
@@ -183,8 +186,13 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
       setRealErrors([]);
       setCombinedMode(false);
       setViolations([]);
+    } else if (externalFilePaths.length === 1) {
+      loadFile(externalFilePaths[0]);
+    } else {
+      // Multiple files — merge and load
+      mergeAndLoad(externalFilePaths);
     }
-  }, [externalFilePath]);
+  }, [externalFilePaths]);
 
   async function startWatcher(folder: string) {
     invoke("sc_start_folder_watch", { folder }).catch(console.error);
@@ -261,7 +269,7 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
       // Discard result if a newer load was started while we were awaiting
       if (loadingPathRef.current !== path) return;
       setFileData(data);
-      onFileLoaded?.(path);
+      onFileLoaded?.([path]);
     } catch (e: unknown) {
       if (loadingPathRef.current !== path) return;
       setLoadError(String(e));
@@ -298,15 +306,21 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
 
   async function openFile() {
     const selected = await openDialog({
-      multiple: false,
+      multiple: true,
       filters: [{
         name: "Translation Files",
         extensions: ["xliff", "xlf", "mxliff", "mqxliff", "sdlxliff", "docx"],
       }],
     });
-    if (selected && typeof selected === "string") {
-      loadFile(selected);
-      onFileLoaded?.(selected);
+    if (!selected) return;
+    const paths = Array.isArray(selected) ? selected : [selected];
+    if (paths.length === 0) return;
+    if (paths.length === 1) {
+      loadFile(paths[0]);
+      onFileLoaded?.(paths);
+    } else {
+      onFileLoaded?.(paths);
+      mergeAndLoad(paths);
     }
   }
 
@@ -383,7 +397,11 @@ export default function SpellcheckPanel({ filePath: externalFilePath, onFileLoad
       {activeTab !== "settings" && (
         <div className="file-bar" role="region" aria-label="File info">
           <span className="file-path" aria-live="polite">
-            {filePath ? filePath.split("/").pop() : "No file loaded"}
+            {filePath
+              ? filePath.includes("|")
+                ? `${filePath.split("|").length} files merged`
+                : filePath.split("/").pop()
+              : "No file loaded"}
           </span>
           {fileData && (
             <span className="lang-badge" aria-label={`Target language: ${fileData.target_language || "unknown"}`}>

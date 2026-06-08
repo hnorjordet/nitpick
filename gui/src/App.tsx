@@ -411,7 +411,7 @@ function extractTags(text: string): Array<{start: number, end: number, tag: stri
 }
 
 interface AppProps {
-  onFileLoaded?: (path: string) => void;
+  onFileLoaded?: (paths: string[]) => void;
   externalFilePath?: string;
 }
 
@@ -445,15 +445,11 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
     setFiles([{ fileIndex: 0, filePath: path, fileName, data, targetLang }]);
   }
 
-  // Notify AppShell whenever loaded file changes (covers all code paths,
-  // including close which sets filePath to "").
-  // Only propagate when exactly one file is open — comma-joined multi-file
-  // paths must not be forwarded to SpellcheckPanel as a load target.
+  // Notify AppShell whenever loaded files change (covers all code paths,
+  // including close which emits an empty array).
   useEffect(() => {
-    if (files.length <= 1) {
-      onFileLoaded?.(filePath);
-    }
-  }, [filePath]);
+    onFileLoaded?.(files.map(f => f.filePath));
+  }, [files]);
 
   // Load file when external path changes (from Spellcheck panel)
   useEffect(() => {
@@ -816,7 +812,7 @@ function App({ onFileLoaded, externalFilePath }: AppProps = {}) {
 
       // docx files go straight to SpellcheckPanel — notify AppShell and bail
       if (paths.length === 1 && paths[0].toLowerCase().endsWith('.docx')) {
-        onFileLoaded?.(paths[0]);
+        onFileLoaded?.(paths);
         return;
       }
 

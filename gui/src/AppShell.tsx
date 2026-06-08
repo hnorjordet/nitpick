@@ -8,13 +8,13 @@ const PANELS: Panel[] = ["regex", "spellcheck"];
 
 export default function AppShell() {
   const [activePanel, setActivePanel] = useState<Panel>("regex");
-  const [sharedFilePath, setSharedFilePath] = useState("");
+  const [sharedFilePaths, setSharedFilePaths] = useState<string[]>([]);
   const switcherRef = useRef<HTMLDivElement>(null);
 
-  function handleFileLoaded(path: string) {
-    setSharedFilePath(path);
+  function handleFileLoaded(paths: string[]) {
+    setSharedFilePaths(paths);
     // docx files are only supported in Spellcheck/QA — auto-switch panel
-    if (path.toLowerCase().endsWith('.docx')) {
+    if (paths.length === 1 && paths[0].toLowerCase().endsWith('.docx')) {
       setActivePanel("spellcheck");
     }
   }
@@ -74,7 +74,7 @@ export default function AppShell() {
         style={{ flex: 1, overflow: "hidden", display: activePanel === "regex" ? "flex" : "none", flexDirection: "column" }}
         inert={activePanel !== "regex" || undefined}
       >
-        <App onFileLoaded={handleFileLoaded} externalFilePath={sharedFilePath} />
+        <App onFileLoaded={handleFileLoaded} externalFilePath={sharedFilePaths.length === 1 ? sharedFilePaths[0] : ""} />
       </div>
       <div
         id="panel-spellcheck"
@@ -83,7 +83,7 @@ export default function AppShell() {
         style={{ flex: 1, overflow: "hidden", display: activePanel === "spellcheck" ? "flex" : "none", flexDirection: "column" }}
         inert={activePanel !== "spellcheck" || undefined}
       >
-        <SpellcheckPanel filePath={sharedFilePath} onFileLoaded={handleFileLoaded} />
+        <SpellcheckPanel filePaths={sharedFilePaths} onFileLoaded={handleFileLoaded} />
       </div>
     </div>
   );

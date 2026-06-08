@@ -1,6 +1,6 @@
 [package]
 name = "nitpick"
-version = "1.1.0"
+version = "1.2.0"
 description = "Nitpick - XLIFF RegEx & Spellcheck QA Tool"
 authors = ["Håvard Norjordet"]
 edition = "2021"
