@@ -374,12 +374,14 @@ function hasICUSyntax(text: string): boolean {
 function getTagPattern(): RegExp {
   // Match paired XLIFF tags with their content, self-closing tags, escaped tags, entities, and placeholders
   // Pattern breakdown:
-  // 1. Regular XML tags: <tag attr="value">
-  // 2. Single-escaped tags: &lt;tag attr="value"&gt;
-  // 3. Double-escaped tags: &amp;lt;tag attr="value"&amp;gt;
-  // 4. HTML entities: &nbsp;, &quot;, &#160;, etc.
-  // 5. Placeholders: {var}, [1], %s, %1$s
-  return /(?:<(?:bpt|ept|ph|it|g|x|mrk|sub|ut)\b[^>]*>.*?<\/(?:bpt|ept|ph|it|g|x|mrk|sub|ut)>|<[^<>]+>|&lt;(?:[^&]|&[a-zA-Z]+;|&#x?[\da-fA-F]+;)*?&gt;|&amp;lt;(?:[^&]|&(?:amp|quot|apos|lt|gt|#x?[\da-fA-F]+);)*?&amp;gt;|&(?:[a-zA-Z]+|#x?[\da-fA-F]+);|\{[\w\d_]+\}|\[\d+\]|%(?:\d+\$)?[sd])/gs;
+  // 1. Paired XLIFF tags: <bpt>...</bpt>
+  // 2. Regular XML tags: <tag attr="value">
+  // 3. Single-escaped tags: &lt;tag attr="value"&gt;
+  // 4. Double-escaped tags: &amp;lt;tag attr="value"&amp;gt;
+  // 5. Phrase-style inline markers: {N> and <N}
+  // 6. HTML entities: &nbsp;, &quot;, &#160;, etc.
+  // 7. Placeholders: {var}, [1], %s, %1$s
+  return /(?:<(?:bpt|ept|ph|it|g|x|mrk|sub|ut)\b[^>]*>.*?<\/(?:bpt|ept|ph|it|g|x|mrk|sub|ut)>|<[^<>]+>|&lt;(?:[^&]|&[a-zA-Z]+;|&#x?[\da-fA-F]+;)*?&gt;|&amp;lt;(?:[^&]|&(?:amp|quot|apos|lt|gt|#x?[\da-fA-F]+);)*?&amp;gt;|\{\d+>|<\d+\}|&(?:[a-zA-Z]+|#x?[\da-fA-F]+);|\{[\w\d_]+\}|\[\d+\]|%(?:\d+\$)?[sd])/gs;
 }
 
 /**

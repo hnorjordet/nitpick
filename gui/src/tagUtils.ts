@@ -33,8 +33,16 @@ export type SegmentPart =
 /**
  * Regex pattern that matches all inline tag types in XLIFF content.
  * Must stay in sync with getTagPattern() in App.tsx.
+ *
+ * Matches:
+ * - Standard XLIFF tags: <bpt>...</bpt>, <ph/>, <x/>, etc.
+ * - Generic XML tags: <...>
+ * - HTML-encoded tags: &lt;...&gt;, &amp;lt;...&amp;gt;
+ * - Phrase-style inline markers: {N> and <N} (tag boundaries)
+ * - HTML entities: &amp;, &lt;, etc.
+ * - Placeholders: {...}, [...], %s, %d
  */
-const TAG_PATTERN = /(?:<(?:bpt|ept|ph|it|g|x|mrk|sub|ut)\b[^>]*>.*?<\/(?:bpt|ept|ph|it|g|x|mrk|sub|ut)>|<[^<>]+>|&lt;(?:[^&]|&[a-zA-Z]+;|&#x?[\da-fA-F]+;)*?&gt;|&amp;lt;(?:[^&]|&(?:amp|quot|apos|lt|gt|#x?[\da-fA-F]+);)*?&amp;gt;|&(?:[a-zA-Z]+|#x?[\da-fA-F]+);|\{[\w\d_]+\}|\[\d+\]|%(?:\d+\$)?[sd])/gs;
+const TAG_PATTERN = /(?:<(?:bpt|ept|ph|it|g|x|mrk|sub|ut)\b[^>]*>.*?<\/(?:bpt|ept|ph|it|g|x|mrk|sub|ut)>|<[^<>]+>|&lt;(?:[^&]|&[a-zA-Z]+;|&#x?[\da-fA-F]+;)*?&gt;|&amp;lt;(?:[^&]|&(?:amp|quot|apos|lt|gt|#x?[\da-fA-F]+);)*?&amp;gt;|\{\d+>|<\d+\}|&(?:[a-zA-Z]+|#x?[\da-fA-F]+);|\{[\w\d_]+\}|\[\d+\]|%(?:\d+\$)?[sd])/gs;
 
 /**
  * Determine if a tag is opening, closing, or standalone.
@@ -43,6 +51,10 @@ function classifyTag(tag: string): 'open' | 'close' | 'standalone' {
   // XLIFF paired tags
   if (/^<bpt\b/i.test(tag)) return 'open';
   if (/^<ept\b/i.test(tag)) return 'close';
+
+  // Phrase-style inline tag markers: {N> is open, <N} is close
+  if (/^\{\d+>$/.test(tag)) return 'open';
+  if (/^<\d+\}$/.test(tag)) return 'close';
 
   // Regular XML-style tags
   if (/^<\//.test(tag) || /^&lt;\//.test(tag) || /^&amp;lt;\//.test(tag)) return 'close';
