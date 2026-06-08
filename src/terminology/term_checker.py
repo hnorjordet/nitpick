@@ -40,12 +40,35 @@ def _normalize_quotes(text: str) -> str:
     return text.translate(_QUOTE_NORM)
 
 
+def _is_tag_like(term: str) -> bool:
+    """Check if term looks like a tag number/placeholder rather than actual content.
+    Tags should never be flagged as terminology violations.
+    """
+    # Single digits or pure numbers: 1, 2, 42 (common XLIFF tag IDs)
+    if term.isdigit():
+        return True
+    # Phrase-style tags: 1, 4 in {1>...}<4}
+    if re.match(r'^\d+$', term):
+        return True
+    # Placeholder patterns
+    if re.match(r'^[\d<>|/\-_]+$', term):  # tag-like characters only
+        return True
+    return False
+
+
 def _contains(text: str, term: str, case_sensitive: bool = False) -> bool:
     """Check if term appears as a whole word or phrase in text.
 
     Quote characters are normalised before comparison so that
     'word', "word", «word» etc. are treated as equivalent.
+
+    Tag-like terms (pure numbers, placeholder patterns) are always skipped
+    to prevent false positives when tag numbers are included in plain text.
     """
+    # Never flag tag-like terms as violations
+    if _is_tag_like(term):
+        return False
+
     flags = 0 if case_sensitive else re.IGNORECASE
     pattern = r"(?<!\w)" + re.escape(_normalize_quotes(term)) + r"(?!\w)"
     return bool(re.search(pattern, _normalize_quotes(text), flags))

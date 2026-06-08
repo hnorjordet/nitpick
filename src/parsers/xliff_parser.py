@@ -126,7 +126,17 @@ class TransUnit:
             if child.tail:
                 parts.append(child.tail)
         text = unescape("".join(parts))
+        # Strip XML-style tags: <...>
         text = re.sub(r"<[^>]+>", " ", text)
+        # Strip Phrase-style inline tags: {N>...}<N}, [...], {...}, %N$s, %s, etc.
+        # This handles tags like {1>content<4} that appear in some XLIFF exports
+        text = re.sub(r"\{\d+>[^}]*\}\s*<\d+\}", " ", text)  # {1>...}<4} pattern
+        text = re.sub(r"\{\w+\}", " ", text)  # {placeholder} pattern
+        text = re.sub(r"\[\d+\]", " ", text)  # [N] pattern
+        text = re.sub(r"%(?:\d+\$)?[sd]", " ", text)  # %s, %d, %1$s pattern
+        text = re.sub(r"&(?:[a-zA-Z]+|#x?[\da-fA-F]+);", " ", text)  # HTML entities
+        # Collapse multiple spaces into one
+        text = re.sub(r"\s+", " ", text)
         return text.strip()
 
     def get_plain_text(self, field: str = "target") -> str:
